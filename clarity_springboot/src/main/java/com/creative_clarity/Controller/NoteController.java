@@ -1,4 +1,4 @@
-package com.creative_clarity.clarity_springboot.Controller;
+package com.creative_clarity.Controller;
 
 import java.util.List;
 
@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.creative_clarity.clarity_springboot.Entity.NoteEntity;
-import com.creative_clarity.clarity_springboot.Service.NoteService;
+import com.creative_clarity.Entity.NoteEntity;
+import com.creative_clarity.Service.NoteService;
 
 @RestController
 @RequestMapping(method = RequestMethod.GET,path="/api/note")

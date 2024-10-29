@@ -1,4 +1,4 @@
-package com.creative_clarity.clarity_springboot.Service;
+package com.creative_clarity.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -8,8 +8,8 @@ import javax.naming.NameNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.creative_clarity.clarity_springboot.Entity.NotificationEntity;
-import com.creative_clarity.clarity_springboot.Repository.NotificationRepository;
+import com.creative_clarity.Entity.NotificationEntity;
+import com.creative_clarity.Repository.NotificationRepository;
 
 @Service
 public class NotificationService {

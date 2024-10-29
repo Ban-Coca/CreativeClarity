@@ -1,4 +1,4 @@
-package com.creative_clarity.clarity_springboot.Entity;
+package com.creative_clarity.Entity;
 
 import java.util.Date;
 import jakarta.persistence.Entity;

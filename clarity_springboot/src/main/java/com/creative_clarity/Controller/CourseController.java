@@ -1,4 +1,4 @@
-package com.creative_clarity.clarity_springboot.Controller;
+package com.creative_clarity.Controller;
 
 import java.util.List;
 
@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
-import com.creative_clarity.clarity_springboot.Service.CourseService;
+import com.creative_clarity.Entity.CourseEntity;
+import com.creative_clarity.Service.CourseService;
 
 @RestController
 @RequestMapping(method = RequestMethod.GET,path="/api/course")
