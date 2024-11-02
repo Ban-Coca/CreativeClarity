@@ -1,6 +1,6 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
-import java.util.Date;
+import java.time.LocalDate;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,14 +14,14 @@ public class AssignmentEntity {
 	private int assignmentId;
 	private String title;
 	private String description;
-	private Date due_date;
+	private LocalDate  due_date;
 	private double score;
 	
 	public AssignmentEntity() {
 		
 	}
 
-	public AssignmentEntity(String title, String description, Date due_date, double score) {
+	public AssignmentEntity(String title, String description, LocalDate due_date, double score) {
 		super();
 		this.title = title;
 		this.description = description;
@@ -49,11 +49,11 @@ public class AssignmentEntity {
 		this.description = description;
 	}
 
-	public Date getDue_date() {
+	public LocalDate getDue_date() {
 		return due_date;
 	}
 
-	public void setDue_date(Date due_date) {
+	public void setDue_date(LocalDate due_date) {
 		this.due_date = due_date;
 	}
 

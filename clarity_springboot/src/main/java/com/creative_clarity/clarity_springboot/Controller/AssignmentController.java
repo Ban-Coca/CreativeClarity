@@ -3,6 +3,7 @@ package com.creative_clarity.clarity_springboot.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,8 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.creative_clarity.clarity_springboot.Entity.AssignmentEntity;
 import com.creative_clarity.clarity_springboot.Service.AssignmentService;
 
+@CrossOrigin(origins = "http://localhost:5173") // Allow your React app's origin
 @RestController
-@RequestMapping(method = RequestMethod.GET,path="/api/assignment")
+@RequestMapping(method = RequestMethod.GET,path="/api/assignments")
 public class AssignmentController {
 	@Autowired
 	AssignmentService aserv;
