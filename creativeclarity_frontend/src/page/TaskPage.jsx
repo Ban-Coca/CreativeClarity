@@ -219,7 +219,7 @@ const TaskPage = () => {
                                         <Button 
                                             variant="contained" 
                                             sx={{backgroundColor:"red"}} 
-                                            onClick={() => deleteTask(task.id)}
+                                            onClick={() => deleteTask(task.taskId)}
                                         >
                                             Delete
                                         </Button>
