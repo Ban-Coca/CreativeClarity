@@ -15,6 +15,7 @@ public class UserEntity {
 	
 	private String username;
 	private String email;
+	private String phoneNumber;
 	private String password;
 	private Date created_at;
 	
@@ -22,10 +23,11 @@ public class UserEntity {
 		
 	}
 
-	public UserEntity(String username, String email, String password, Date created_at) {
+	public UserEntity(String username, String email, String phoneNumber, String password, Date created_at) {
 		super();
 		this.username = username;
 		this.email = email;
+		this.phoneNumber = phoneNumber;
 		this.password = password;
 		this.created_at = created_at;
 	}
@@ -48,6 +50,14 @@ public class UserEntity {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getPhoneNumber() {
+    return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
 	}
 
 	public String getPassword() {

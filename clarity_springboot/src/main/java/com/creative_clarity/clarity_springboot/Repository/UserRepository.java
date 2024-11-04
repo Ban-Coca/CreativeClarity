@@ -7,5 +7,5 @@ import com.creative_clarity.clarity_springboot.Entity.UserEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Integer>{
-
+  UserEntity findByEmail(String email);
 }

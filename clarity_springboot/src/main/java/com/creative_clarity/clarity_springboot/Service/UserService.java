@@ -20,6 +20,10 @@ public class UserService {
 	public UserService() {
 		super();
 	}
+
+	public UserEntity findByEmail(String email) {
+		return urepo.findByEmail(email);
+	}
 	
 	//Create of CRUD
 	public UserEntity postUserRecord(UserEntity user) {
