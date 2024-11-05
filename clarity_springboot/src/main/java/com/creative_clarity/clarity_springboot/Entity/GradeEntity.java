@@ -13,31 +13,25 @@ public class GradeEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int gradeId;
 	
-	private String gradeType;
 	private float score;
-	private Date date_recorded;
+	private float total_points;
+	private String gradeType;
+	private Date date_received;
 	
 	public GradeEntity() {
 		
 	}
 
-	public GradeEntity(String gradeType, float score, Date date_recorded) {
+	public GradeEntity(float score, float total_points, String gradeType, Date date_received) {
 		super();
-		this.gradeType = gradeType;
 		this.score = score;
-		this.date_recorded = date_recorded;
+		this.total_points = total_points;
+		this.gradeType = gradeType;
+		this.date_received = date_received;
 	}
 
 	public int getGradeId() {
 		return gradeId;
-	}
-
-	public String getGradeType() {
-		return gradeType;
-	}
-
-	public void setGradeType(String gradeType) {
-		this.gradeType = gradeType;
 	}
 
 	public float getScore() {
@@ -48,12 +42,28 @@ public class GradeEntity {
 		this.score = score;
 	}
 
-	public Date getDate_recorded() {
-		return date_recorded;
+	public float getTotal_points() {
+		return total_points;
 	}
 
-	public void setDate_recorded(Date date_recorded) {
-		this.date_recorded = date_recorded;
+	public void setTotal_points(float total_points) {
+		this.total_points = total_points;
+	}
+
+	public String getGradeType() {
+		return gradeType;
+	}
+
+	public void setGradeType(String gradeType) {
+		this.gradeType = gradeType;
+	}
+
+	public Date getDate_received() {
+		return date_received;
+	}
+
+	public void setDate_received(Date date_received) {
+		this.date_received = date_received;
 	}
 	
 	

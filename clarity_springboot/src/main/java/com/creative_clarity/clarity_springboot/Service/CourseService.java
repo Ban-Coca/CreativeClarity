@@ -39,9 +39,9 @@ public class CourseService {
 			course = crepo.findById(courseId).get();
 			
 			course.setCourseName(newCourseDetails.getCourseName());
-			course.setSubject(newCourseDetails.getSubject());
-			course.setStartDate(newCourseDetails.getStartDate());
-			course.setEndDate(newCourseDetails.getEndDate());
+			course.setCode(newCourseDetails.getCode());
+			course.setSemester(newCourseDetails.getSemester());
+			course.setYear(newCourseDetails.getYear());
 		}catch(NoSuchElementException nex){
 			throw new NameNotFoundException("Course "+ courseId +"not found");
 		}finally {

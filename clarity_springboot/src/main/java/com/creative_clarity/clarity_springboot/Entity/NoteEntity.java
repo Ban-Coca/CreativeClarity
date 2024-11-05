@@ -16,16 +16,18 @@ public class NoteEntity {
 	private String title;
 	private String content;
 	private Date created_at;
+	private String tags;
 	
 	public NoteEntity() {
 		
 	}
 
-	public NoteEntity(String title, String content, Date created_at) {
+	public NoteEntity(String title, String content, Date created_at, String tags) {
 		super();
 		this.title = title;
 		this.content = content;
 		this.created_at = created_at;
+		this.tags = tags;
 	}
 
 	public int getNoteId() {
@@ -55,5 +57,15 @@ public class NoteEntity {
 	public void setCreated_at(Date created_at) {
 		this.created_at = created_at;
 	}
+
+	public String getTags() {
+		return tags;
+	}
+
+	public void setTags(String tags) {
+		this.tags = tags;
+	}
+	
+	
 	
 }
