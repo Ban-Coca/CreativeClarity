@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 const ProfileSetupPage = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -11,6 +12,7 @@ const ProfileSetupPage = () => {
     academicLevel: '',
     majorField: ''
   });
+  const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -20,10 +22,43 @@ const ProfileSetupPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  // ProfileSetupPage.jsx
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    localStorage.setItem('profileSetup1', JSON.stringify(formData));
-    navigate('/setup-success');
+    setIsLoading(true);
+    setError('');
+    
+    // Log the form data being sent
+    console.log('Sending form data:', formData);
+    
+    try {
+      const response = await fetch('http://localhost:3001/api/user/setup-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.error || 'Failed to save profile');
+      }
+  
+      const userData = await response.json();
+      console.log('Received user data:', userData);
+      
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', userData.token);
+      
+      navigate('/setup-success');
+    } catch (error) {
+      console.error('Profile setup error:', error);
+      setError(error.message || 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const inputClasses = "w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200 placeholder:text-gray-500 placeholder:opacity-60";
@@ -240,12 +275,18 @@ const ProfileSetupPage = () => {
                   </div>
                 </div>
               </div>
+              {error && (
+                <div className="text-red-600 text-sm mt-2">
+                  {error}
+                </div>
+              )}
 
               <button
                 type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+                disabled={isLoading}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
-                Continue
+                {isLoading ? 'Saving...' : 'Continue'}
               </button>
             </form>
           </div>

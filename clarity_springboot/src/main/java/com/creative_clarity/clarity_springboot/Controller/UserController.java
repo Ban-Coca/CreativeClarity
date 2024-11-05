@@ -84,7 +84,13 @@ public class UserController {
             response.put("user", Map.of(
                 "userId", user.getUserId(),
                 "email", user.getEmail(),
-                "username", user.getUsername()
+                "username", user.getUsername(),
+                "firstName", user.getFirstName() != null ? user.getFirstName() : "",
+                "lastName", user.getLastName() != null ? user.getLastName() : "",
+                "institution", user.getInstitution() != null ? user.getInstitution() : "",
+                "role", user.getRole() != null ? user.getRole() : "",
+                "academicLevel", user.getAcademicLevel() != null ? user.getAcademicLevel() : "",
+                "majorField", user.getMajorField() != null ? user.getMajorField() : ""
             ));
 
             return ResponseEntity.ok(response);
@@ -132,6 +138,14 @@ public class UserController {
             // Set username and created_at
             user.setUsername(user.getEmail());
             user.setCreated_at(new Date());
+
+            // Initialize profile fields with default values
+            user.setFirstName(user.getFirstName() != null ? user.getFirstName() : "");
+            user.setLastName(user.getLastName() != null ? user.getLastName() : "");
+            user.setInstitution(user.getInstitution() != null ? user.getInstitution() : "");
+            user.setRole(user.getRole() != null ? user.getRole() : "");
+            user.setAcademicLevel(user.getAcademicLevel() != null ? user.getAcademicLevel() : "");
+            user.setMajorField(user.getMajorField() != null ? user.getMajorField() : "");
             
             UserEntity savedUser = userv.postUserRecord(user);
             
@@ -144,6 +158,82 @@ public class UserController {
             logger.error("Error creating user: ", e);
             return ResponseEntity.badRequest()
                 .body("Error creating user: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/setup-profile")
+    public ResponseEntity<?> setupProfile(@RequestBody Map<String, String> profileData) {
+        try {
+            // Log the received data
+            logger.info("Received profile data: {}", profileData);
+            
+            if (profileData == null || profileData.isEmpty()) {
+                logger.error("Profile data is empty");
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "No profile data provided"));
+            }
+    
+            // Get the most recently created user
+            List<UserEntity> users = userv.getAllUsers();
+            if (users.isEmpty()) {
+                logger.error("No users found in database");
+                return ResponseEntity.status(404)
+                    .body(Map.of("error", "No users found"));
+            }
+            
+            // Get the most recent user
+            UserEntity user = users.stream()
+                .max((u1, u2) -> u1.getCreated_at().compareTo(u2.getCreated_at()))
+                .orElseThrow(() -> new RuntimeException("No users found"));
+            
+            logger.info("Found user to update: {}", user.getEmail());
+    
+            // Update profile fields with null checks
+            if (profileData.containsKey("firstName")) {
+                user.setFirstName(profileData.get("firstName"));
+            }
+            if (profileData.containsKey("lastName")) {
+                user.setLastName(profileData.get("lastName"));
+            }
+            if (profileData.containsKey("institution")) {
+                user.setInstitution(profileData.get("institution"));
+            }
+            if (profileData.containsKey("role")) {
+                user.setRole(profileData.get("role"));
+            }
+            if (profileData.containsKey("academicLevel")) {
+                user.setAcademicLevel(profileData.get("academicLevel"));
+            }
+            if (profileData.containsKey("majorField")) {
+                user.setMajorField(profileData.get("majorField"));
+            }
+            
+            UserEntity updatedUser = userv.postUserRecord(user);
+            logger.info("Successfully updated user: {}", updatedUser.getEmail());
+            
+            // Generate new token
+            String token = generateToken(updatedUser);
+            
+            // Create response
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("userId", updatedUser.getUserId());
+            response.put("email", updatedUser.getEmail());
+            response.put("username", updatedUser.getUsername());
+            response.put("firstName", updatedUser.getFirstName());
+            response.put("lastName", updatedUser.getLastName());
+            response.put("institution", updatedUser.getInstitution());
+            response.put("role", updatedUser.getRole());
+            response.put("academicLevel", updatedUser.getAcademicLevel());
+            response.put("majorField", updatedUser.getMajorField());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            logger.error("Error during profile setup: ", e);
+            logger.error("Stack trace: ", e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Profile setup failed: " + e.getMessage()));
         }
     }
 

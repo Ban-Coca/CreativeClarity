@@ -29,6 +29,11 @@ public class UserService {
 	public UserEntity postUserRecord(UserEntity user) {
 		return urepo.save(user);
 	}
+
+	//find by ID
+	public UserEntity findById(int userId) {
+		return urepo.findById(userId).get();
+	}
 	
 	//Read of CRUD
 	public List<UserEntity> getAllUsers(){
@@ -47,6 +52,12 @@ public class UserService {
 			user.setEmail(newUserDetails.getEmail());
 			user.setPassword(newUserDetails.getPassword());
 			user.setCreated_at(newUserDetails.getCreated_at());
+			user.setFirstName(newUserDetails.getFirstName());
+			user.setLastName(newUserDetails.getLastName());
+			user.setInstitution(newUserDetails.getInstitution());
+			user.setRole(newUserDetails.getRole());
+			user.setAcademicLevel(newUserDetails.getAcademicLevel());
+			user.setMajorField(newUserDetails.getMajorField());
 		}catch(NoSuchElementException nex){
 			throw new NameNotFoundException("User "+ userId +"not found");
 		}finally {
