@@ -1,5 +1,4 @@
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import AssignmentIcon from "@mui/icons-material/Assignment";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import CheckIcon from "@mui/icons-material/Check";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -61,13 +60,6 @@ const SideBar = () => {
             primary="Courses" 
             sx={{ typography: 'h6', fontSize: '1.25rem' }} // Adjust font size here
           />
-        </ListItem>
-
-        <ListItem button>
-          <ListItemIcon>
-            <AssignmentIcon />
-          </ListItemIcon>
-          <ListItemText primary="Assignments" />
         </ListItem>
 
         <ListItem button>
