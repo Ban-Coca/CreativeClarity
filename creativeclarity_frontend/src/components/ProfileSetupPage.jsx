@@ -7,7 +7,7 @@ const ProfileSetupPage = () => {
     firstName: '',
     lastName: '',
     institution: '',
-    role: 'student',
+    role: '',
     academicLevel: '',
     majorField: ''
   });
@@ -22,13 +22,17 @@ const ProfileSetupPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Store the first page data in localStorage
     localStorage.setItem('profileSetup1', JSON.stringify(formData));
     navigate('/setup-success');
   };
 
   const inputClasses = "w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200 placeholder:text-gray-500 placeholder:opacity-60";
   const iconClasses = "h-5 w-5 opacity-60";
+  
+  // Function to get select classes based on individual field's value
+  const getSelectClasses = (value) => `w-full pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200 appearance-none ${
+    value ? 'text-gray-900' : 'text-gray-400/60'
+  }`;
 
   return (
     <div className="min-h-screen bg-white">
@@ -145,14 +149,20 @@ const ProfileSetupPage = () => {
                     name="role"
                     value={formData.role}
                     onChange={handleInputChange}
-                    className={inputClasses}
+                    className={getSelectClasses(formData.role)}
                     required
                   >
+                    <option value="">Select your role</option>
                     <option value="student">Student</option>
                     <option value="teacher">Teacher</option>
                     <option value="researcher">Researcher</option>
                     <option value="other">Other</option>
                   </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 
@@ -164,20 +174,26 @@ const ProfileSetupPage = () => {
                     <img src="/src/assets/images/volume.png" alt="Level" className={iconClasses} />
                   </div>
                   <select
-                    name="role2"
-                    value={formData.role2}
+                    name="academicLevel"
+                    value={formData.academicLevel}
                     onChange={handleInputChange}
-                    className={inputClasses}
+                    className={getSelectClasses(formData.academicLevel)}
                     required
                   >
-                    <option value="student">Undergraduate</option>
-                    <option value="teacher">Elementary</option>
-                    <option value="researcher">Junior Highschool</option>
-                    <option value="other">Senior Highschool</option>
-                    <option value="other">Masters</option>
-                    <option value="other">Doctorate</option>
-                    <option value="other">Others</option>
+                    <option value="">Select your academic level</option>
+                    <option value="undergraduate">Undergraduate</option>
+                    <option value="elementary">Elementary</option>
+                    <option value="junior-highschool">Junior Highschool</option>
+                    <option value="senior-highschool">Senior Highschool</option>
+                    <option value="masters">Masters</option>
+                    <option value="doctorate">Doctorate</option>
+                    <option value="others">Others</option>
                   </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 
@@ -189,12 +205,13 @@ const ProfileSetupPage = () => {
                     <img src="/src/assets/images/open-book.png" alt="Major" className={iconClasses} />
                   </div>
                   <select
-                    name="role3"
-                    value={formData.role3}
+                    name="majorField"
+                    value={formData.majorField}
                     onChange={handleInputChange}
-                    className={inputClasses}
+                    className={getSelectClasses(formData.majorField)}
                     required
                   >
+                    <option value="">Select your field of study</option>
                     <option value="information-technology">Information Technology</option>
                     <option value="computer-science">Computer Science</option>
                     <option value="business">Business Administration</option>
@@ -216,6 +233,11 @@ const ProfileSetupPage = () => {
                     <option value="environmental-science">Environmental Science</option>
                     <option value="others">Others</option>
                   </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 

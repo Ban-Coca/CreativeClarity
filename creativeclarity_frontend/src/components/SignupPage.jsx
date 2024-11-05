@@ -51,22 +51,43 @@ const SignupPage = ({ onSignupSuccess }) => {
         },
         body: JSON.stringify(requestBody),
       });
-      
+
+      // Get response text first
+      const responseText = await response.text();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server error response:', errorData);
-        throw new Error(errorData.message || 'Signup failed');
+        // Check for specific SQL error patterns
+        if (responseText.includes('Duplicate entry') && responseText.includes('uk_email')) {
+          throw new Error('An account with this email already exists.');
+        }
+        
+        // For other SQL errors, provide a generic message
+        if (responseText.includes('could not execute statement')) {
+          throw new Error('Unable to create account. Please try again later.');
+        }
+
+        // For any other errors
+        throw new Error(responseText || 'An unexpected error occurred. Please try again.');
       }
-  
-      const data = await response.json();
-      console.log('Signup successful:', data);
-      
-      // Set authentication in localStorage
+
+      // Try to parse successful response as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Error parsing response:', e);
+        data = {};
+      }
+
+      // Handle successful signup
       localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('token', data.token); // If your API returns a token
-      localStorage.setItem('user', JSON.stringify(data.user)); // If your API returns user data
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
       
-      // Call the onSignupSuccess prop if provided
       if (onSignupSuccess) {
         onSignupSuccess();
       }
@@ -75,7 +96,7 @@ const SignupPage = ({ onSignupSuccess }) => {
       
     } catch (error) {
       console.error('Signup error:', error);
-      setErrorMessages([error.message || 'Failed to create account. Please try again.']);
+      setErrorMessages([error.message]);
     } finally {
       setIsLoading(false);
     }
