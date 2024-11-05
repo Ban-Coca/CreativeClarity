@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Toaster, toast } from 'sonner';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import './TaskPage.css';
-import { Button } from '@mui/material';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { Button, Modal, Box, Typography, Paper } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 // Set the base URL for Axios
 axios.defaults.baseURL = 'http://localhost:8080';
 const style = {
@@ -19,17 +18,24 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
-  };
+};
+const columns = [
+    { field: 'id', headerName: 'ID', width: 90 },
+    { field: 'title', headerName: 'Title', width: 150 },
+    { field: 'description', headerName: 'Description', width: 250 },
+    { field: 'due_date', headerName: 'Due Date', width: 150 }
+]
+
 const TaskPage = () => {
     const [tasks, setTasks] = useState([]);
     const [open, setOpen] = useState(false);
-    const [editingTask, setEditingTask] = useState(null);
+    const [editingTaskId, setEditingTaskId] = useState(null);
     const [editForm, setEditForm] = useState({
         title: '',
         description: '',
         completed: false,
         due_date: '' // Ensure this matches the backend
-    })
+    });
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
@@ -50,8 +56,10 @@ const TaskPage = () => {
                     'Access-Control-Allow-Origin': '*'
                 }
             });
+            toast.success('Tasks fetched successfully');
             setTasks(response.data);
         } catch (error) {
+            toast.error('Error fetching tasks');
             console.error('Error fetching tasks:', error);
         }
     };
@@ -71,7 +79,9 @@ const TaskPage = () => {
                 completed: false,
                 due_date: '' // Ensure this matches the backend field name
             });
+            toast.success('Task created successfully');
         } catch (error) {
+            toast.error('Error creating task');
             console.error('Error creating task:', error);
         }
     };
@@ -93,15 +103,17 @@ const TaskPage = () => {
 
             if (response.data) {
                 setTasks(tasks.map(task => 
-                    task.id === taskId ? {
+                    task.taskId === taskId ? {
                         ...response.data,
                         due_date: response.data.due_date // Keep the date in the response format
                     } : task
                 ));
-                setEditingTask(null);
+                setEditingTaskId(null);
+                toast.success('Task updated successfully');
             }
             fetchTasks();
         } catch (error) {
+            toast.error('Error updating task');
             console.error('Error updating task:', error.response?.data || error.message);
         }
     };
@@ -114,15 +126,17 @@ const TaskPage = () => {
                     'Access-Control-Allow-Origin': '*'
                 }
             });
-            setTasks(tasks.filter(task => task.id !== taskId));
+            setTasks(tasks.filter(task => task.taskId !== taskId));
             fetchTasks();
+            toast.success('Task deleted successfully');
         } catch (error) {
+            toast.error('Error deleting task');
             console.error('Error deleting task:', error);
         }
     };
 
     const handleEdit = (task) => {
-        setEditingTask(task.id);
+        setEditingTaskId(task.taskId);
         setEditForm({
             title: task.title,
             description: task.description,
@@ -131,10 +145,21 @@ const TaskPage = () => {
         });
     };
     
-    // Add this function to handle save
     const handleSave = async (taskId) => {
         await updateTask(taskId, editForm);
-        setEditingTask(null);
+        setEditingTaskId(null);
+    };
+
+    const handleBlur = (taskId) => {
+        if (editingTaskId === taskId) {
+            handleSave(taskId);
+        }
+    };
+
+    const handleKeyPress = (e, taskId) => {
+        if (e.key === 'Enter') {
+            handleSave(taskId);
+        }
     };
 
     const handleOpen = () => setOpen(true);
@@ -149,12 +174,20 @@ const TaskPage = () => {
         const date = new Date(dateString);
         return date.toISOString().split('T')[0];
     };
+
+    const rows =[...tasks].map(task => ({
+        id: task.taskId,
+        title: task.title,
+        description: task.description,
+        due_date: formatDate(task.due_date)
+    }));
+    const paginationModel = {page: 0, pageSize: 5};
     return (
         <div className="container">
             <div className="sidebar">
                 <Sidebar />
             </div>
-            
+            <Toaster richColors position="bottom-right"/>
             <div className="main-content">
                 <div className="topbar">
                     <Topbar />
@@ -168,66 +201,16 @@ const TaskPage = () => {
                         </div>
                     </div>
                     <div className="task-list">
-                    {tasks.map(task => (
-                        <div key={task.id} className="task">
-                            {editingTask === task.id ? (
-                                // Edit form
-                                <div>
-                                    <input
-                                        type="text"
-                                        value={editForm.title}
-                                        onChange={(e) => setEditForm({...editForm, title: e.target.value})}
-                                    />
-                                    <input
-                                        type="text"
-                                        value={editForm.description}
-                                        onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                                    />
-                                    <input
-                                        type="date"
-                                        value={editForm.due_date}
-                                        onChange={(e) => setEditForm({...editForm, due_date: e.target.value})}
-                                    />
-                                    <Button 
-                                        variant="contained" 
-                                        color="primary"
-                                        onClick={() => handleSave(task.taskId)}
-                                    >
-                                        Save
-                                    </Button>
-                                    <Button 
-                                        variant="contained"
-                                        onClick={() => setEditingTask(null)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                </div>
-                            ) : (
-                                // Normal display
-                                <>
-                                    <h3>{task.title}</h3>
-                                    <p>{task.description}</p>
-                                    <p>Due: {formatDate(task.due_date)}</p>
-                                    <div className="task-buttons">
-                                        <Button 
-                                            variant="contained" 
-                                            color="primary"
-                                            onClick={() => handleEdit(task)}
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button 
-                                            variant="contained" 
-                                            sx={{backgroundColor:"red"}} 
-                                            onClick={() => deleteTask(task.taskId)}
-                                        >
-                                            Delete
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    ))}
+                        <Paper style={{ height: 400, width: '100%' }}>
+                            <DataGrid
+                                rows={rows}
+                                columns={columns}
+                                initialState={{pagination: {paginationModel}}}
+                                pageSize={[5, 10]}
+                                checkBoxSelection
+                                sx={{border:0}}
+                            />
+                        </Paper>
                     </div>
                 </div>
 
