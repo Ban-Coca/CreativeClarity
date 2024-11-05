@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
@@ -41,10 +40,10 @@ public class CourseController {
 	public List<CourseEntity> getAllCourses(){
 		return cserv.getAllCourses();
 	}
-		
+			
 	//Update of CRUD
-	@PutMapping("/putcoursedetails")
-	public CourseEntity putCourseDetails(@RequestParam int courseId, @RequestBody CourseEntity newCourseDetails) {
+	@PutMapping("/putcoursedetails/{courseId}")
+	public CourseEntity putCourseDetails(@PathVariable int courseId, @RequestBody CourseEntity newCourseDetails) {
 		return cserv.putCourseDetails(courseId, newCourseDetails);
 	}
 		

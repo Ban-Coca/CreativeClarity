@@ -1,6 +1,6 @@
 import SideBar from '../components/SideBar';
 import Frame from '../components/Frame';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from '@mui/material';
 import axios from 'axios';
 import '../components/css/Course.css';
@@ -20,32 +20,11 @@ function Course() {
     startDate: '',
     endDate: '',
   });
-
-  // For delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
 
-  // Configure axios
   axios.defaults.baseURL = 'http://localhost:8080';
 
-  // Add request interceptor for debugging
-  axios.interceptors.request.use(request => {
-    console.log('Starting Request:', request);
-    return request;
-  });
-
-  // Add response interceptor for debugging
-  axios.interceptors.response.use(
-    response => {
-      console.log('Response:', response);
-      return response;
-    },
-    error => {
-      console.log('Response Error:', error);
-      return Promise.reject(error);
-    }
-  );
-
-  // Show snackbar message
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({
       open: true,
@@ -54,19 +33,14 @@ function Course() {
     });
   };
 
-  // Handle snackbar close
   const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+    if (reason === 'clickaway') return;
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
-  // Fetch all courses
   const fetchCourses = async () => {
     try {
       const response = await axios.get('/api/course/getallcourse');
-      console.log('Fetched courses:', response.data);
       setCourses(response.data);
     } catch (error) {
       console.error('Error fetching courses:', error);
@@ -74,95 +48,101 @@ function Course() {
     }
   };
 
-  // Open modal
+  // Update the handleOpen function to properly set course details
   const handleOpen = (course) => {
-    setSelectedCourse(course);
     if (course) {
-      const formattedCourse = {
-        ...course,
+      setCourseDetails({
+        courseId: course.courseId,
+        courseName: course.courseName,
+        subject: course.subject,
         startDate: course.startDate?.split('T')[0] || '',
         endDate: course.endDate?.split('T')[0] || ''
-      };
-      setCourseDetails(formattedCourse);
+      });
+      setSelectedCourse(course.courseId);
     } else {
-      setCourseDetails({ courseName: '', subject: '', startDate: '', endDate: '' });
+      const currentDate = new Date().toISOString().split('T')[0];  // Get today's date in YYYY-MM-DD format
+      setCourseDetails({
+        courseName: '',
+        subject: '',
+        startDate: currentDate,  // Set today's date as default
+        endDate: ''
+      });
+      setSelectedCourse(null);
     }
     setModalOpen(true);
   };
-
-  // Close modal
+  
   const handleClose = () => {
     setModalOpen(false);
     setSelectedCourse(null);
-    setCourseDetails({ courseName: '', subject: '', startDate: '', endDate: '' });
+    setCourseDetails({
+      courseName: '',
+      subject: '',
+      startDate: '',
+      endDate: ''
+    });
   };
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCourseDetails(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submit
   const handleSubmit = async () => {
     try {
-      let response;
       if (selectedCourse) {
-        // Update course
-        response = await axios.put(`/api/course/putcoursedetails`, {
-          ...courseDetails,
-          courseId: selectedCourse.courseId
-        });
+        const updateData = {
+          courseId: selectedCourse,
+          courseName: courseDetails.courseName,
+          subject: courseDetails.subject,
+          startDate: courseDetails.startDate,
+          endDate: courseDetails.endDate
+        };
+        
+        await axios.put(`/api/course/putcoursedetails/${selectedCourse}`, updateData);
         showSnackbar('Course updated successfully');
       } else {
-        // Create new course
-        response = await axios.post('/api/course/postcourserecord', courseDetails);
+        await axios.post('/api/course/postcourserecord', courseDetails);
         showSnackbar('Course created successfully');
       }
       await fetchCourses();
       handleClose();
     } catch (error) {
       console.error('Error saving course:', error);
-      showSnackbar('Failed to save course', 'error');
+      const errorMessage = error.response?.data || error.message || 'An unknown error occurred';
+      showSnackbar(`Failed to save course: ${errorMessage}`, 'error');
     }
   };
 
-  // Handle delete confirmation
   const handleDeleteConfirmation = (courseId) => {
-    setSelectedCourse(courseId);
+    setCourseToDelete(courseId);
     setDeleteDialogOpen(true);
   };
 
-  // Confirm delete
   const handleDelete = async () => {
+    if (!courseToDelete) {
+      showSnackbar('Invalid course ID', 'error');
+      return;
+    }
+  
     try {
-      if (!selectedCourse) {
-        console.error('No courseId selected for deletion');
-        showSnackbar('Invalid course ID', 'error');
-        return;
-      }
-  
-      const response = await axios.delete(`/api/course/deletecourse/${selectedCourse}`);
-  
-      if (response.status === 200) {
-        console.log('Course deleted successfully');
-        setCourses(prevCourses => prevCourses.filter(course => course.courseId !== selectedCourse));
-        showSnackbar('Course deleted successfully');
-      }
-      setDeleteDialogOpen(false);  // Close the delete confirmation dialog after deletion
+      await axios.delete(`/api/course/deletecoursedetails/${courseToDelete}`);
+      await fetchCourses(); // Refresh the list after deletion
+      showSnackbar('Course deleted successfully');
+      setDeleteDialogOpen(false);
+      setCourseToDelete(null);
     } catch (error) {
       console.error('Error deleting course:', error);
-      showSnackbar(`Failed to delete course: ${error.message || error}`, 'error');
-      setDeleteDialogOpen(false);  // Close the dialog if error occurs
+      showSnackbar(`Failed to delete course: ${error.response?.data || error.message}`, 'error');
+      setDeleteDialogOpen(false);
     }
   };
 
-  // Cancel delete action
   const handleCancelDelete = () => {
     setDeleteDialogOpen(false);
+    setCourseToDelete(null);
   };
 
-  // Initial fetch
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -173,7 +153,6 @@ function Course() {
       <Box sx={{ flexGrow: 1 }}>
         <Frame />
         <main className="main-content">
-          {/* Title and Add Button */}
           <div className="title-container">
             <h2>Courses</h2>
             <Button
@@ -185,7 +164,6 @@ function Course() {
             </Button>
           </div>
 
-          {/* Course Grid */}
           <div className="course-grid">
             {courses.map((course) => (
               <div key={course.courseId} className="course-card">
@@ -215,7 +193,6 @@ function Course() {
             ))}
           </div>
 
-          {/* Add/Edit Course Dialog */}
           <Dialog 
             open={modalOpen}
             onClose={handleClose}
@@ -281,7 +258,6 @@ function Course() {
             </DialogActions>
           </Dialog>
 
-          {/* Delete Confirmation Dialog */}
           <Dialog 
             open={deleteDialogOpen}
             onClose={handleCancelDelete}
@@ -297,13 +273,12 @@ function Course() {
             </DialogActions>
           </Dialog>
 
-          {/* Snackbar for notifications */}
           <Snackbar 
             open={snackbar.open} 
-            autoHideDuration={3000} // Set to 3 seconds (3000 milliseconds)
+            autoHideDuration={3000}
             onClose={handleSnackbarClose}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
+          >
             <Alert 
               onClose={handleSnackbarClose} 
               severity={snackbar.severity} 
