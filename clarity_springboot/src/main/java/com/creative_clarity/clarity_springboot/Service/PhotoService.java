@@ -39,8 +39,9 @@ public class PhotoService {
 		try {
 			photo = prepo.findById(photoId).get();
 		
+			photo.setFilename(newPhotoDetails.getFilename());
 			photo.setFile_path(newPhotoDetails.getFile_path());
-			photo.setUpload_at(newPhotoDetails.getUpload_at());
+			photo.setCaption(newPhotoDetails.getCaption());
 		}catch(NoSuchElementException nex){
 			throw new NameNotFoundException("Photo "+ photoId +"not found");
 		}finally {

@@ -37,8 +37,8 @@ public class GradeService {
 		GradeEntity grade = new GradeEntity();
 		
 		grade.setGradeType(newGradeDetails.getGradeType());
+		grade.setTotal_points(newGradeDetails.getTotal_points());
 		grade.setScore(newGradeDetails.getScore());
-		grade.setDate_recorded(newGradeDetails.getDate_recorded());
 		try {
 			grade = grepo.findById(gradeId).get();
 		}catch(NoSuchElementException nex){
