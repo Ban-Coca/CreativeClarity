@@ -24,7 +24,7 @@ const ProfileSetupPage = () => {
     e.preventDefault();
     // Store the first page data in localStorage
     localStorage.setItem('profileSetup1', JSON.stringify(formData));
-    navigate('/profile-setup-2');
+    navigate('/setup-success');
   };
 
   const inputClasses = "w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200 placeholder:text-gray-500 placeholder:opacity-60";
@@ -66,22 +66,22 @@ const ProfileSetupPage = () => {
             <img
               src="/src/assets/images/logoCreativeClarity.png"
               alt="Logo"
-              className="h-16 mx-auto mb-6"
+              className="h-16 mx-auto mb-2 mt-2"
             />
 
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Profile Setup (1/2)</h2>
-              <p className="text-gray-600 mt-2">Let&apos;s get to know you better</p>
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Profile Setup</h2>
+              <p className="text-gray-600 mt-1 -mb-1">Let&apos;s get to know you better</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 {/* First Name */}
                 <div className="relative col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img src="/src/assets/images/userIcon.png" alt="User" className={iconClasses} />
+                      <img src="/src/assets/images/firstname.png" alt="User" className={iconClasses} />
                     </div>
                     <input
                       type="text"
@@ -100,7 +100,7 @@ const ProfileSetupPage = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img src="/src/assets/images/userIcon.png" alt="User" className={iconClasses} />
+                      <img src="/src/assets/images/lastname.png" alt="User" className={iconClasses} />
                     </div>
                     <input
                       type="text"
@@ -120,7 +120,7 @@ const ProfileSetupPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Institution</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <img src="/src/assets/images/buildingIcon.png" alt="Institution" className={iconClasses} />
+                    <img src="/src/assets/images/mortarboard.png" alt="Institution" className={iconClasses} />
                   </div>
                   <input
                     type="text"
@@ -139,7 +139,7 @@ const ProfileSetupPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <img src="/src/assets/images/roleIcon.png" alt="Role" className={iconClasses} />
+                    <img src="/src/assets/images/group.png" alt="Role" className={iconClasses} />
                   </div>
                   <select
                     name="role"
@@ -161,17 +161,23 @@ const ProfileSetupPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Academic Level</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <img src="/src/assets/images/educationIcon.png" alt="Level" className={iconClasses} />
+                    <img src="/src/assets/images/volume.png" alt="Level" className={iconClasses} />
                   </div>
-                  <input
-                    type="text"
-                    name="academicLevel"
-                    value={formData.academicLevel}
+                  <select
+                    name="role2"
+                    value={formData.role2}
                     onChange={handleInputChange}
-                    placeholder="e.g., Undergraduate"
                     className={inputClasses}
                     required
-                  />
+                  >
+                    <option value="student">Undergraduate</option>
+                    <option value="teacher">Elementary</option>
+                    <option value="researcher">Junior Highschool</option>
+                    <option value="other">Senior Highschool</option>
+                    <option value="other">Masters</option>
+                    <option value="other">Doctorate</option>
+                    <option value="other">Others</option>
+                  </select>
                 </div>
               </div>
 
@@ -180,17 +186,36 @@ const ProfileSetupPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Field of Study</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <img src="/src/assets/images/bookIcon.png" alt="Major" className={iconClasses} />
+                    <img src="/src/assets/images/open-book.png" alt="Major" className={iconClasses} />
                   </div>
-                  <input
-                    type="text"
-                    name="majorField"
-                    value={formData.majorField}
+                  <select
+                    name="role3"
+                    value={formData.role3}
                     onChange={handleInputChange}
-                    placeholder="Major/Field of Study"
                     className={inputClasses}
                     required
-                  />
+                  >
+                    <option value="information-technology">Information Technology</option>
+                    <option value="computer-science">Computer Science</option>
+                    <option value="business">Business Administration</option>
+                    <option value="engineering">Engineering</option>
+                    <option value="psychology">Psychology</option>
+                    <option value="nursing">Nursing</option>
+                    <option value="biology">Biology</option>
+                    <option value="education">Education</option>
+                    <option value="economics">Economics</option>
+                    <option value="communications">Communications</option>
+                    <option value="accounting">Accounting</option>
+                    <option value="political-science">Political Science</option>
+                    <option value="sociology">Sociology</option>
+                    <option value="law">Law</option>
+                    <option value="arts">Fine Arts</option>
+                    <option value="history">History</option>
+                    <option value="english">English Literature</option>
+                    <option value="medicine">Medicine</option>
+                    <option value="environmental-science">Environmental Science</option>
+                    <option value="others">Others</option>
+                  </select>
                 </div>
               </div>
 

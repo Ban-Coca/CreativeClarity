@@ -9,6 +9,7 @@ import ForgotPage2 from './components/ForgotPage2';
 import ForgotSuccess from './components/ForgotSuccess';
 import DashboardPage from './components/DashboardPage';
 import ProfileSetupPage from './components/ProfileSetupPage';
+import ProfileSuccessPage from './components/ProfileSuccessPage';
 
 // Custom 404 component
 const NotFound = () => {
@@ -133,6 +134,15 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ProfileSetupPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/setup-success"
+            element={
+              <ProtectedRoute>
+                <ProfileSuccessPage />
               </ProtectedRoute>
             }
           />
