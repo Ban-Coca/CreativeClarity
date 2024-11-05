@@ -1,9 +1,9 @@
-import AssignmentsPage from "./Pages/Assignment";
+import ArchivePage from "./Pages/Archive";
 
 function App() {
   return (
     <>
-      <AssignmentsPage/>
+      <ArchivePage/>
     </>
   )
 }
