@@ -1,10 +1,15 @@
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Badge, Box, IconButton, InputBase, Paper } from "@mui/material";
-import React from "react";
+import { Badge, Box, IconButton, InputBase, Paper, Modal, Typography } from "@mui/material";
+import React, { useState } from "react";
 
 export const Frame = () => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   return (
     <Box
       sx={{
@@ -38,7 +43,7 @@ export const Frame = () => {
       </Paper>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <IconButton aria-label="notifications">
+        <IconButton aria-label="notifications" onClick={handleOpen}>
           <Badge badgeContent={3} color="error">
             <NotificationsIcon />
           </Badge>
@@ -47,6 +52,37 @@ export const Frame = () => {
           <SettingsIcon />
         </IconButton>
       </Box>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="notification-modal-title"
+        aria-describedby="notification-modal-description"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '19%',
+            left: '83%',
+            transform: 'translate(-50%, -50%)',
+            width: 300,
+            bgcolor: 'background.paper',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography id="notification-modal-title" variant="h6" component="h2">
+            Notifications
+          </Typography>
+          <Typography id="notification-modal-description" sx={{ mt: 3 }}>
+            - Task 1: Pending
+            <br />
+            - Task 2: In Progress
+            <br />
+            - Task 3: Completed
+          </Typography>
+        </Box>
+      </Modal>
     </Box>
   );
 };

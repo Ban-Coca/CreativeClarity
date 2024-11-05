@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from '@mui/material';
 import axios from 'axios';
 import '../components/css/Course.css';
+import { ArrowBack } from '@mui/icons-material'; // Add this import
 
 function Course() {
   const [courses, setCourses] = useState([]);
@@ -154,6 +155,12 @@ function Course() {
         <Frame />
         <main className="main-content">
           <div className="title-container">
+            <Button
+              startIcon={<ArrowBack />} // Add this line
+              onClick={() => window.history.back()} // Add this line
+            >
+              Back
+            </Button>
             <h2>Courses</h2>
             <Button
               variant="contained"
