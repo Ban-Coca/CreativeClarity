@@ -2,39 +2,7 @@ body{
   padding: 0;
   margin: 0;
 }
-/* Layout */
-.min-h-screen {
-  min-height: 100vh;
-}
 
-/* Header */
-.header {
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-/* Top Bar */
-.top-bar {
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.search-input {
-  border: 1px solid #d1d5db;
-  border-radius: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  width: 12rem;
-}
 .app-container{
   display: flex;
   font-family: Arial, sans-serif;
@@ -111,7 +79,7 @@ body{
 .assignment-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 5px;
   height: 457px;
   overflow-y: auto;
 }
@@ -120,6 +88,7 @@ body{
 }
 
 .assignment-card {
+  margin-right: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -128,6 +97,10 @@ body{
   border: 1px solid #ccc;
   border-radius: 8px;
   margin-bottom: 1rem;
+}
+
+.assignment-card h3{
+  margin-top: 5px;
 }
 .assignment-content {
   flex: 1;
@@ -186,15 +159,15 @@ body{
   z-index: 1000;
 }
 
-.modal {
+.modal{
   background: white;
   padding: 40px;
   border-radius: 8px;
   max-width: 470px;
-  width: 90%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 1001;
 }
+
 
 .modal h2 {
   margin-top: 0;
@@ -202,6 +175,7 @@ body{
 
 .modal input,
 .modal textarea {
+  margin-top: 10px;
   width: 96%;
   margin-bottom: 10px;
   padding: 8px;
@@ -210,17 +184,26 @@ body{
 }
 
 .submit-button {
+  margin:20px 10px 0 120px;
   background-color: #1d4ed8;
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 10px;
 }
 
 .submit-button:hover {
   background-color: #2563eb;
+}
+
+.confirm-delete-button, .cancel-delete-button {
+  border-radius: 10px;
+  font-weight: bold;
+  color: white;
+  background: #2563eb;
+  margin: 10px 0 0 50px;
+  padding: 10px 20px;
 }
 
 .close-button {

@@ -8,7 +8,7 @@ export const Frame = () => {
   return (
     <Box
       sx={{
-        width: 1260,
+        maxWidth: 1260,
         height: 64,
         backgroundColor: "#0aa5ec",
         display: "flex",

@@ -43,8 +43,8 @@ public class AssignmentController {
 	}
 		
 	//Update of CRUD
-	@PutMapping("/putassignmentdetails")
-	public AssignmentEntity putAssignemntDetails(@RequestParam int assignmentId, @RequestBody AssignmentEntity newAssignmentDetails) {
+	@PutMapping("/putassignmentdetails/{assignmentId}")
+	public AssignmentEntity putAssignemntDetails(@PathVariable int assignmentId, @RequestBody AssignmentEntity newAssignmentDetails) {
 		return aserv.putAssignmentDetails(assignmentId, newAssignmentDetails);
 	}
 		

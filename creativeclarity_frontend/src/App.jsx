@@ -1,5 +1,4 @@
-import AssignmentsPage from "../Pages/Assignment";
-
+import AssignmentsPage from "./Pages/Assignment";
 
 function App() {
   return (
