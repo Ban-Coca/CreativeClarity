@@ -13,17 +13,30 @@ public class PhotoEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int photoId;
 	
+	private String filename;
 	private String file_path;
-	private Date upload_at;
+	private Date upload_date;
+	private String caption;
 	
 	public PhotoEntity() {
 		
 	}
 
-	public PhotoEntity(String file_path, Date upload_at) {
+	public PhotoEntity(String filename, String file_path, Date upload_date, String caption) {
 		super();
+		this.filename = filename;
 		this.file_path = file_path;
-		this.upload_at = upload_at;
+		this.upload_date = upload_date;
+		this.caption = caption;
+	}
+	
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 
 	public int getPhotoId() {
@@ -38,13 +51,20 @@ public class PhotoEntity {
 		this.file_path = file_path;
 	}
 
-	public Date getUpload_at() {
-		return upload_at;
+	public Date getUpload_date() {
+		return upload_date;
 	}
 
-	public void setUpload_at(Date upload_at) {
-		this.upload_at = upload_at;
+	public void setUpload_date(Date upload_date) {
+		this.upload_date = upload_date;
 	}
-	
+
+	public String getCaption() {
+		return caption;
+	}
+
+	public void setCaption(String caption) {
+		this.caption = caption;
+	}
 	
 }

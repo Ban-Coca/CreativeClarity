@@ -41,7 +41,7 @@ public class NoteService {
 			
 			note.setTitle(newNoteDetails.getTitle());
 			note.setContent(newNoteDetails.getContent());
-			note.setCreated_at(newNoteDetails.getCreated_at());
+			note.setTags(newNoteDetails.getTags());
 		}catch(NoSuchElementException nex){
 			throw new NameNotFoundException("Note "+ noteId +"not found");
 		}finally {

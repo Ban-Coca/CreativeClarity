@@ -7,21 +7,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class AssignmentEntity {
+public class ArchiveEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int assignmentId;
+	private int archiveId;
 	private String title;
 	private String description;
 	private LocalDate  due_date;
 	private double score;
 	
-	public AssignmentEntity() {
+	public ArchiveEntity() {
 		
 	}
-
-	public AssignmentEntity(String title, String description, LocalDate due_date, double score) {
+	public ArchiveEntity(String title, String description, LocalDate due_date, double score) {
 		super();
 		this.title = title;
 		this.description = description;
@@ -29,8 +28,8 @@ public class AssignmentEntity {
 		this.score = score;
 	}
 
-	public int getAssignmentId() {
-		return assignmentId;
+	public int getArchiveId() {
+		return archiveId;
 	}
 
 	public String getTitle() {
