@@ -11,15 +11,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Service.CourseService;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5174")
 @RestController
-@RequestMapping(method = RequestMethod.GET,path="/api/course")
+@RequestMapping("/api/course")
 public class CourseController {
 	@Autowired
 	CourseService cserv;

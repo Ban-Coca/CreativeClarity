@@ -1,10 +1,13 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class GradeEntity {
@@ -15,18 +18,20 @@ public class GradeEntity {
 	
 	private float score;
 	private float total_points;
-	private String gradeType;
 	private Date date_received;
+	
+	@ManyToOne
+	@JoinColumn(name = "course_id")
+	private CourseEntity course;
 	
 	public GradeEntity() {
 		
 	}
 
-	public GradeEntity(float score, float total_points, String gradeType, Date date_received) {
+	public GradeEntity(float score, float total_points, Date date_received) {
 		super();
 		this.score = score;
 		this.total_points = total_points;
-		this.gradeType = gradeType;
 		this.date_received = date_received;
 	}
 
@@ -50,14 +55,6 @@ public class GradeEntity {
 		this.total_points = total_points;
 	}
 
-	public String getGradeType() {
-		return gradeType;
-	}
-
-	public void setGradeType(String gradeType) {
-		this.gradeType = gradeType;
-	}
-
 	public Date getDate_received() {
 		return date_received;
 	}
@@ -66,5 +63,12 @@ public class GradeEntity {
 		this.date_received = date_received;
 	}
 	
+	public CourseEntity getCourse() {
+		return course;
+	}
+
+	public void setCourse(CourseEntity course) {
+		this.course = course;
+	}
 	
 }

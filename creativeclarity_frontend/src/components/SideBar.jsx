@@ -38,7 +38,7 @@ const SideBar = () => {
       </Box>
 
       <List>
-        <ListItem button>
+        <ListItem button={true.toString()}>
           <ListItemIcon>
             <DashboardIcon />
           </ListItemIcon>
@@ -46,7 +46,7 @@ const SideBar = () => {
         </ListItem>
 
         <ListItem
-          button
+          button={true.toString()}
           sx={{
             bgcolor: "primary.main",
             color: "primary.contrastText",
@@ -62,21 +62,21 @@ const SideBar = () => {
           />
         </ListItem>
 
-        <ListItem button>
+        <ListItem button={true.toString()}>
           <ListItemIcon>
             <CheckIcon />
           </ListItemIcon>
           <ListItemText primary="Tasks" />
         </ListItem>
 
-        <ListItem button>
+        <ListItem button={true.toString()}>
           <ListItemIcon>
             <ScheduleIcon />
           </ListItemIcon>
           <ListItemText primary="My Schedule" />
         </ListItem>
 
-        <ListItem button>
+        <ListItem button={true.toString()}>
           <ListItemIcon>
             <BarChartIcon />
           </ListItemIcon>
@@ -88,14 +88,14 @@ const SideBar = () => {
       <Box sx={{ mt: "auto" }}>
         <Divider />
         <List>
-          <ListItem button>
+          <ListItem button={true.toString()}>
             <ListItemIcon>
               <HelpOutlineIcon />
             </ListItemIcon>
             <ListItemText primary="Help" />
           </ListItem>
 
-          <ListItem button>
+          <ListItem button={true.toString()}>
             <ListItemIcon>
               <ExitToAppIcon />
             </ListItemIcon>

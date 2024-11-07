@@ -13,26 +13,15 @@ public class PhotoEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int photoId;
 	
-<<<<<<< HEAD
-	private String file_path;
-	private Date upload_at;
-=======
 	private String filename;
 	private String file_path;
 	private Date upload_date;
 	private String caption;
->>>>>>> origin
 	
 	public PhotoEntity() {
 		
 	}
 
-<<<<<<< HEAD
-	public PhotoEntity(String file_path, Date upload_at) {
-		super();
-		this.file_path = file_path;
-		this.upload_at = upload_at;
-=======
 	public PhotoEntity(String filename, String file_path, Date upload_date, String caption) {
 		super();
 		this.filename = filename;
@@ -48,7 +37,6 @@ public class PhotoEntity {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
->>>>>>> origin
 	}
 
 	public int getPhotoId() {
@@ -63,18 +51,6 @@ public class PhotoEntity {
 		this.file_path = file_path;
 	}
 
-<<<<<<< HEAD
-	public Date getUpload_at() {
-		return upload_at;
-	}
-
-	public void setUpload_at(Date upload_at) {
-		this.upload_at = upload_at;
-	}
-	
-	
-}
-=======
 	public Date getUpload_date() {
 		return upload_date;
 	}
@@ -92,4 +68,3 @@ public class PhotoEntity {
 	}
 	
 }
->>>>>>> origin

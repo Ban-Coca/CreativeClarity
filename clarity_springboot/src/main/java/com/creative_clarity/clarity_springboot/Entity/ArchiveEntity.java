@@ -1,6 +1,7 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,25 +13,22 @@ public class ArchiveEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int archiveId;
+	
 	private String title;
-	private String description;
-	private Date due_date;
-	private double score;
+	private String type;
+	private Date archive_date;
+	private String tags;
 	
 	public ArchiveEntity() {
 		
 	}
 
-<<<<<<< Updated upstream:clarity_springboot/src/main/java/com/creative_clarity/clarity_springboot/Entity/AssignmentEntity.java
-	public AssignmentEntity(String title, String description, Date due_date, double score) {
-=======
-	public ArchiveEntity(String title, String description, LocalDate due_date, double score) {
->>>>>>> Stashed changes:clarity_springboot/src/main/java/com/creative_clarity/clarity_springboot/Entity/ArchiveEntity.java
+	public ArchiveEntity(String title, String type, Date archive_date, String tags) {
 		super();
 		this.title = title;
-		this.description = description;
-		this.due_date = due_date;
-		this.score = score;
+		this.type = type;
+		this.archive_date = archive_date;
+		this.tags = tags;
 	}
 
 	public int getArchiveId() {
@@ -45,28 +43,29 @@ public class ArchiveEntity {
 		this.title = title;
 	}
 
-	public String getDescription() {
-		return description;
+	public String getType() {
+		return type;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
+	public void setType(String type) {
+		this.type = type;
 	}
 
-	public Date getDue_date() {
-		return due_date;
+	public Date getArchive_date() {
+		return archive_date;
 	}
 
-	public void setDue_date(Date due_date) {
-		this.due_date = due_date;
+	public void setArchive_date(Date archive_date) {
+		this.archive_date = archive_date;
 	}
 
-	public double getScore() {
-		return score;
+	public String getTags() {
+		return tags;
 	}
 
-	public void setScore(double score) {
-		this.score = score;
+	public void setTags(String tags) {
+		this.tags = tags;
 	}
+
 	
 }
