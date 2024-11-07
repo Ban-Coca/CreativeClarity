@@ -28,7 +28,7 @@ public class ArchiveController {
 	public String print() {
 		return "Hello, Archive";
 	}
-	
+
 	//Create of CRUD
 	@PostMapping("/postarchiverecord")
 	public ArchiveEntity postArchiveRecord(@RequestBody ArchiveEntity archive) {

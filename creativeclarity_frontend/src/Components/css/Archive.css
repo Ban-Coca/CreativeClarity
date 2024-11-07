@@ -1,9 +1,9 @@
-body{
+body {
   padding: 0;
   margin: 0;
 }
 
-.app-container{
+.app-container {
   display: flex;
   font-family: Arial, sans-serif;
 }
@@ -31,13 +31,34 @@ body{
 .section-header {
   margin-bottom: 1rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
 .section-title {
   font-size: 1.25rem;
   font-weight: bold;
+  margin-right: auto;
+  margin-left: 20px;
+}
+.course-filter {
+  margin-right: 10px;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background-color: #f9fafb;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.course-filter select {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
 }
 
 /* Archive Cards */
@@ -45,15 +66,16 @@ body{
   display: flex;
   flex-direction: column;
   gap: 5px;
-  height: 457px;
+  height: 510px;
   overflow-y: auto;
 }
+
 .archives-section {
   padding: 1.5rem;
 }
 
-.archives-card {
-  margin-right: 10px;
+.archive-card {
+  margin-right: 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -64,9 +86,10 @@ body{
   margin-bottom: 1rem;
 }
 
-.archive-card h3{
+.archive-card h3 {
   margin-top: 5px;
 }
+
 .archive-content {
   flex: 1;
 }
@@ -124,7 +147,7 @@ body{
   z-index: 1000;
 }
 
-.modal{
+.modal {
   background: white;
   padding: 40px;
   border-radius: 8px;
@@ -133,48 +156,58 @@ body{
   z-index: 1001;
 }
 
-
+/* Archive Details Modal */
+.modal-content {
+  max-width: 600px; /* Adjust width */
+  width: 40%; /* Ensure it scales to 100% up to the max-width */
+  height: auto; /* Allow height to adjust based on content */
+  max-height: 80%; /* Limit the height */
+  margin-top: 0;
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.modal-header{
+  background-color: #5085f8;
+}
+.modal-content h2{
+  margin: 0;
+  padding: 20px 0 20px 20px;
+  color: #ffffff;
+}
+.modal-content p{
+  margin-left: 40px;
+  margin-top: 30px;
+  margin-right: 40px;
+}
 .modal h2 {
   margin-top: 0;
 }
-
-.modal input,
-.modal textarea {
-  margin-top: 10px;
-  width: 96%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+.modal-description{
+  width: auto;
+  max-width: 100%; /* Limit to the width of the modal */
+  overflow-wrap: break-word; /* Ensure long words break to fit within the container */
+  word-wrap: break-word; /* Fallback for older browsers */
+  white-space: normal; /* Allow text to wrap */
 }
 
-.submit-button {
-  margin:20px 10px 0 120px;
-  background-color: #1d4ed8;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.submit-button:hover {
-  background-color: #2563eb;
-}
-
-.confirm-delete-button, .cancel-delete-button {
+.confirm-delete-button,
+.cancel-delete-button {
   border-radius: 10px;
   font-weight: bold;
   color: white;
   background: #2563eb;
-  margin: 10px 0 0 50px;
+  margin: 30px 0 0 50px;
   padding: 10px 20px;
 }
 
 .close-button {
   background-color: #f44336;
+  float: right;
   color: white;
   border: none;
+  margin: 20px;
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
@@ -216,4 +249,49 @@ body{
 
 .dropdown-menu button:hover {
   background-color: #f0f0f0;
+}
+
+/* Archive Details Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  max-width: 470px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+.modal h2 {
+  margin-top: 0;
+}
+
+.modal p {
+  margin: 8px 0;
+  font-size: 1rem;
+}
+
+.close-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  background-color: #dc2626;
 }

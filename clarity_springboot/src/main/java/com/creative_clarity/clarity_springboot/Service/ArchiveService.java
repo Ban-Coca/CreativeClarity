@@ -40,8 +40,9 @@ public class ArchiveService {
 			
 			archive.setTitle(newArchiveDetails.getTitle());
 			archive.setDescription(newArchiveDetails.getDescription());
-			archive.setScore(newArchiveDetails.getScore());
-			archive.setDue_date(newArchiveDetails.getDue_date());
+			archive.setType(newArchiveDetails.getType());
+			archive.setArchive_date(newArchiveDetails.getArchive_date());
+			archive.setTags(newArchiveDetails.getTags());
 		}catch(NoSuchElementException nex){
 			throw new NameNotFoundException("Archive "+ archiveId +"not found");
 		}finally {

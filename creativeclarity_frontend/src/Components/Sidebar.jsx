@@ -1,5 +1,4 @@
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import AssignmentIcon from "@mui/icons-material/Assignment";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import CheckIcon from "@mui/icons-material/Check";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -7,6 +6,7 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import ScheduleIcon from "@mui/icons-material/Schedule";
+
 import {
   Box,
   Divider,
@@ -46,22 +46,15 @@ const SideBar = () => {
           <ListItemText primary="Overview" />
         </ListItem>
 
-        <ListItem button>
-          <ListItemIcon>
-            <MenuBookIcon />
-          </ListItemIcon>
-          <ListItemText primary="Courses" />
-        </ListItem>
-
         <ListItem button sx={{
             bgcolor: "primary.main",
             color: "primary.contrastText",
             borderRadius: 1,
           }}>
           <ListItemIcon>
-            <AssignmentIcon sx={{ color: "primary.contrastText" }} />
+            <MenuBookIcon sx={{ color: "primary.contrastText" }} />
           </ListItemIcon>
-          <ListItemText primary="Assignments" />
+          <ListItemText primary="Courses" />
         </ListItem>
 
         <ListItem button>
