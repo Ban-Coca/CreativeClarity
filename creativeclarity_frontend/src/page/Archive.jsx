@@ -1,28 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../Components/Sidebar';
 import '../Components/css/Archive.css';
-import Frame from '../Components/TopBar';
+import Frame from '../Components/Topbar';
 import ArrowBack from "@mui/icons-material/ArrowBack";
+import { Snackbar, Alert } from '@mui/material';
 
 const ArchivePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [archives, setArchives] = useState([]);
-  const [courses, setCourses] = useState([]); // New state for course list
-  const [selectedCourse, setSelectedCourse] = useState(''); // New state for selected course
-  const [newArchive, setNewArchive] = useState({
-    archiveId: null,
-    title: '',
-    description: '',
-  });
-  const [openMenuId, setOpenMenuId] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [openMenuId, setOpenMenuId] = useState(null); // Track open menu for archive cards
   const [archiveToDelete, setArchiveToDelete] = useState(null);
-  const [selectedArchive, setSelectedArchive] = useState(null);
+  const [selectedArchive, setSelectedArchive] = useState(null); // Track selected archive for modal
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
   const menuRef = useRef(null);
 
   const toggleDeleteModal = () => setIsDeleteModalOpen(!isDeleteModalOpen);
 
-  // Format the date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -32,7 +32,20 @@ const ArchivePage = () => {
     });
   };
 
-  // Fetch archives and courses
+  // Show Snackbar function
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
   useEffect(() => {
     const fetchArchives = async () => {
       try {
@@ -42,17 +55,19 @@ const ArchivePage = () => {
         setArchives(data);
       } catch (error) {
         console.error('Error fetching archives:', error);
+        showSnackbar('Failed to fetch archives', 'error');
       }
     };
 
     const fetchCourses = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/course/getallcourses');
+        const response = await fetch('http://localhost:8080/api/course/getallcourse');
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         setCourses(data);
       } catch (error) {
         console.error('Error fetching courses:', error);
+        showSnackbar('Failed to fetch courses', 'error');
       }
     };
 
@@ -60,7 +75,6 @@ const ArchivePage = () => {
     fetchCourses();
   }, []);
 
-  // Delete function
   const handleDelete = async () => {
     try {
       const response = await fetch(
@@ -71,17 +85,20 @@ const ArchivePage = () => {
         setArchives((prevArchives) =>
           prevArchives.filter((a) => a.archiveId !== archiveToDelete)
         );
+        showSnackbar('Archive deleted successfully');
         toggleDeleteModal();
       } else {
         console.error('Failed to delete the archive');
+        showSnackbar('Failed to delete archive', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
+      showSnackbar('Error occurred while deleting archive', 'error');
     }
   };
 
   const toggleMenu = (id) => {
-    setOpenMenuId(openMenuId === id ? null : id);
+      setOpenMenuId(openMenuId === id ? null : id);
   };
 
   useEffect(() => {
@@ -92,11 +109,9 @@ const ArchivePage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle opening archive details modal
   const openArchiveDetailsModal = (archive) => setSelectedArchive(archive);
   const closeArchiveDetailsModal = () => setSelectedArchive(null);
 
-  // Filter archives by course
   const filteredArchives = archives.filter((archive) =>
     selectedCourse ? archive.course_id === selectedCourse : true
   );
@@ -110,7 +125,7 @@ const ArchivePage = () => {
         </header>
         <section className="archives-section">
           <div className="section-header">
-            <ArrowBack/>
+            <ArrowBack />
             <h2 className="section-title">Archives</h2>
             <select
               value={selectedCourse}
@@ -119,8 +134,8 @@ const ArchivePage = () => {
             >
               <option value="">All Courses</option>
               {courses.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.name}
+                <option key={course.courseId} value={course.courseId}>
+                  {course.courseName}
                 </option>
               ))}
             </select>
@@ -141,11 +156,11 @@ const ArchivePage = () => {
                   </div>
                   <button
                     className="menu-button"
-                    onClick={() => toggleMenu(archive.archiveId)}
+                    onClick={() => toggleMenu(archive.archiveId)} // Toggle menu for archive cards
                   >
                     ⋮
                   </button>
-                  {openMenuId === archive.archiveId && (
+                  {openMenuId === archive.archiveId && !selectedArchive && ( // Only show menu if modal isn't open
                     <div className="dropdown-menu" ref={menuRef}>
                       <button
                         onClick={() => {
@@ -174,6 +189,24 @@ const ArchivePage = () => {
             >
               <div className='modal-header'>
                 <h2>{selectedArchive.title}</h2>
+                <button
+                  className="menu-button"
+                  onClick={() => toggleMenu(selectedArchive.archiveId)} // Toggle menu for selected archive
+                >
+                  ⋮
+                </button>
+                {openMenuId === selectedArchive.archiveId && ( // Show menu for selected archive
+                  <div className="selected-dropdown-menu" ref={menuRef}>
+                    <button
+                      onClick={() => {
+                        setArchiveToDelete(selectedArchive.archiveId);
+                        toggleDeleteModal();
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
               <div className='modal-details'>
                 <p className='modal-description'>{selectedArchive.description}</p>
@@ -181,9 +214,14 @@ const ArchivePage = () => {
                 <p><strong>Tags:</strong> {selectedArchive.tags}</p>
                 <p><strong>Archived:</strong> {formatDate(selectedArchive.archive_date)}</p>
               </div>
-              <button className="close-button" onClick={closeArchiveDetailsModal}>
-                Close
-              </button>
+              <div className='modal-button'>
+                <button className='restore-button'>
+                  Restore
+                </button>
+                <button className="close-button" onClick={closeArchiveDetailsModal}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -204,6 +242,22 @@ const ArchivePage = () => {
           </div>
         )}
       </main>
+
+      {/* Snackbar (Toast) */}
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

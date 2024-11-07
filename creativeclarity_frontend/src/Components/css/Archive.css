@@ -73,6 +73,9 @@ body {
 .archives-section {
   padding: 1.5rem;
 }
+.archive-info{
+  padding: 10px;
+}
 
 .archive-card {
   margin-right: 15px;
@@ -169,7 +172,15 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 .modal-header{
+  display: flex;
+  justify-content: space-between;
   background-color: #5085f8;
+  padding: 10px;
+}
+
+.modal-header button{
+  color: white;
+  margin-right: 20px;
 }
 .modal-content h2{
   margin: 0;
@@ -194,24 +205,39 @@ body {
 
 .confirm-delete-button,
 .cancel-delete-button {
-  border-radius: 10px;
+  border-radius: 5px;
   font-weight: bold;
   color: white;
   background: #2563eb;
   margin: 30px 0 0 50px;
   padding: 10px 20px;
 }
+.modal-button{
+  display: flex;
+  justify-content: flex-end; /* Align items to the right */
+  width: 100%;
+}
 
-.close-button {
-  background-color: #f44336;
-  float: right;
+.modal-button button{
+  margin: 20px 20px 20px 0;
+}
+
+.restore-button {
+  background-color: #2563eb;
   color: white;
-  border: none;
-  margin: 20px;
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
 }
+
+.close-button {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 
 .close-button:hover {
   background-color: #dc2626;
@@ -239,15 +265,31 @@ body {
   z-index: 10; /* Ensure it appears above other elements */
 }
 
-.dropdown-menu button {
+.selected-dropdown-menu {
+  position: absolute;
+  left: 947px;
+  top: 170px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 10; /* Ensure it appears above other elements */
+}
+
+.dropdown-menu button, .selected-dropdown-menu button {
   background: none;
   border: none;
+  width: 100%;
+  color: black;
   padding: 8px;
   cursor: pointer;
   text-align: left;
 }
 
-.dropdown-menu button:hover {
+.dropdown-menu button:hover, .selected-dropdown-menu button:hover {
   background-color: #f0f0f0;
 }
 
@@ -281,17 +323,4 @@ body {
 .modal p {
   margin: 8px 0;
   font-size: 1rem;
-}
-
-.close-button {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.close-button:hover {
-  background-color: #dc2626;
 }

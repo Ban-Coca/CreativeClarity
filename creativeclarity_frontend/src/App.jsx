@@ -1,4 +1,4 @@
-import ArchivePage from "./Pages/Archive";
+import ArchivePage from "./page/Archive";
 
 function App() {
   return (
