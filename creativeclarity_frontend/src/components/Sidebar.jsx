@@ -25,11 +25,13 @@ const SideBar = () => {
         display: "flex",
         flexDirection: "column",
         width: 240,
-        minHeight: "100vh",
+        height: "100vh",
+        maxHeight: "100vh",
         bgcolor: "background.paper",
         borderRight: 1,
         borderColor: "divider",
         p: 2,
+        overflowY: "fixed",
       }}
     >
       <Box sx={{ mb: 2, textAlign: "center" }}>

@@ -3,9 +3,13 @@ import { Toaster, toast } from 'sonner';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import EnhancedTable from '../components/TablesTask';
 import './TaskPage.css';
-import { Button, Modal, Box, Typography, Paper } from '@mui/material';
+import { Button, Modal, Box, Typography, Paper, TextField } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { fetchTasks, createTask, updateTask, deleteTask } from '../service/taskService';
 // Set the base URL for Axios
 axios.defaults.baseURL = 'http://localhost:8080';
 const style = {
@@ -21,7 +25,7 @@ const style = {
 };
 const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'title', headerName: 'Title', width: 150 },
+    { field: 'title', headerName: 'Title', width: 150 , editable: true},
     { field: 'description', headerName: 'Description', width: 250 },
     { field: 'due_date', headerName: 'Due Date', width: 150 }
 ]
@@ -118,21 +122,10 @@ const TaskPage = () => {
         }
     };
     
-    const deleteTask = async (taskId) => {
-        try {
-            await axios.delete(`/api/task/deletetaskdetails/${taskId}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                }
-            });
-            setTasks(tasks.filter(task => task.taskId !== taskId));
-            fetchTasks();
-            toast.success('Task deleted successfully');
-        } catch (error) {
-            toast.error('Error deleting task');
-            console.error('Error deleting task:', error);
-        }
+    const handleDelete = async (taskId) => {
+        await deleteTask(taskId);
+        setTasks(tasks.filter(task => task.taskId !== taskId));
+        fetchTasks();
     };
 
     const handleEdit = (task) => {
@@ -175,13 +168,14 @@ const TaskPage = () => {
         return date.toISOString().split('T')[0];
     };
 
-    const rows =[...tasks].map(task => ({
+    const rows = tasks.map(task => ({
         id: task.taskId,
         title: task.title,
         description: task.description,
         due_date: formatDate(task.due_date)
     }));
-    const paginationModel = {page: 0, pageSize: 5};
+    const paginationModel = {page: 0, pageSize: 7};
+
     return (
         <div className="container">
             <div className="sidebar">
@@ -195,50 +189,63 @@ const TaskPage = () => {
 
                 <div className="task-section">
                     <div className="task-header">
-                        <h1>Tasks</h1>
+                        <Typography variant="h3">Tasks</Typography>
                         <div className="addTaskButton">
                             <Button variant="contained" onClick={handleOpen}>Add Task</Button>
                         </div>
                     </div>
-                    <div className="task-list">
-                        <Paper style={{ height: 400, width: '100%' }}>
+                    <div className="task-list" style={{marginTop:"2rem"}}>
+                        <EnhancedTable/>
+                        {/* <Paper style={{ height: 500, width: '100%'}}>
                             <DataGrid
                                 rows={rows}
                                 columns={columns}
                                 initialState={{pagination: {paginationModel}}}
-                                pageSize={[5, 10]}
-                                checkBoxSelection
+                                pageSize={[7, 10]}
+                                checkboxSelection 
                                 sx={{border:0}}
                             />
-                        </Paper>
+                        </Paper> */}
                     </div>
                 </div>
-
+                
                 <Modal
+                    className='modalAddTask'
                     open={open}
                     onClose={handleClose}
                     aria-labelledby="Add Task"
                     aria-describedby="Add a new task"
+                    sx={{border:0, borderRadius:"2rem"}}
                 >
                     <Box sx={style}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
+                        <Typography id="modal-modal-title" variant="h4" component="h2">
                             Add Task
                         </Typography>
                         <Typography id="modal-modal-description" sx={{ mt: 2 , display:"flex", flexDirection:"column"}}>
-                            <input
-                                type="text"
-                                placeholder="Task Title"
-                                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Task Description"
-                                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                            />
-                            <input
+                            <TextField
+                                label="Title"
+                                variant="outlined"
+                                value={newTask.title}
+                                onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                                required/>
+                            <TextField
+                                label="Description"
+                                variant="outlined"
+                                value={newTask.description}
+                                onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                                margin='normal'
+                                fullWidth
+                                required/>
+                            <TextField
+                                name="endDate"
+                                label="End Date"
                                 type="date"
-                                placeholder="Due Date"
-                                onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })} // Ensure this matches the backend field name
+                                value={newTask.due_date}
+                                onChange={(e) => setNewTask({...newTask, due_date: e.target.value})}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                margin="normal"
+                                required
                             />
                             <Button
                                 variant="contained"
@@ -252,6 +259,22 @@ const TaskPage = () => {
                         </Typography>
                     </Box>
                 </Modal>
+            </div>
+        </div>
+    );
+};
+
+const TaskDetailsModal = ({ task, onClose }) => {
+    if (!task) return null;
+
+    return (
+        <div className="modal">
+            <div className="modal-content">
+                <span className="close" onClick={onClose}>&times;</span>
+                <h2>{task.title}</h2>
+                <p>{task.description}</p>
+                <p>Completed: {task.completed ? 'Yes' : 'No'}</p>
+                <p>Due Date: {task.due_date}</p>
             </div>
         </div>
     );
