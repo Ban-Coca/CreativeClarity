@@ -24,7 +24,7 @@ const SideBar = () => {
         display: "flex",
         flexDirection: "column",
         width: 240,
-        height: "97vh",
+        height: "95vh",
         bgcolor: "background.paper",
         borderRight: 1,
         borderColor: "divider",

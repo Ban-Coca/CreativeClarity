@@ -49,7 +49,6 @@ public class GradeService {
     }
     
     // Update of CRUD
-    @SuppressWarnings("finally")
     public GradeEntity putGradeDetails (int gradeId, GradeEntity newGradeDetails) {
         GradeEntity grade = grepo.findById(gradeId).orElseThrow(() -> new NoSuchElementException("Grade " + gradeId + " not found"));
         
@@ -57,7 +56,7 @@ public class GradeService {
         grade.setScore(newGradeDetails.getScore());
         grade.setDateRecorded(newGradeDetails.getDateRecorded()); // Renamed from setDate_received
         grade.setCourse(newGradeDetails.getCourse());
-        
+        grade.setAssessment_type(newGradeDetails.getAssessment_type());
         return grepo.save(grade);
     }
     

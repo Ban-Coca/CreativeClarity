@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Service.CourseService;
 

@@ -1,8 +1,25 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Box, 
+  Button, 
+  TextField, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  Snackbar, 
+  Alert, 
+  Menu, 
+  MenuItem, 
+  IconButton,
+  Select,
+  FormControl,
+  InputLabel 
+} from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import axios from 'axios';
 import SideBar from '../components/SideBar';
 import Frame from '../components/Frame';
-import React, { useState, useEffect } from 'react';
-import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from '@mui/material';
-import axios from 'axios';
 import '../components/css/Course.css';
 import { ArrowBack } from '@mui/icons-material';
 import Grades from './Grades'; // Import the Grades component
@@ -18,21 +35,25 @@ function Course() {
   });
   const [courseDetails, setCourseDetails] = useState({
     courseName: '',
-    subject: '',
-    startDate: '',
-    endDate: '',
+    code: '',
+    semester: '',
+    academicYear: '',
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  // Define semester options
+  const semesterOptions = [
+    { value: '1st Semester', label: '1st Semester', period:'August-December' },
+    { value: '2nd Semester', label: '2nd Semester', period:'January-May' },
+    { value: 'Summer', label: 'Summer', period:'June-July' }
+  ];
 
   axios.defaults.baseURL = 'http://localhost:8080';
 
   const showSnackbar = (message, severity = 'success') => {
-    setSnackbar({
-      open: true,
-      message,
-      severity
-    });
+    setSnackbar({ open: true, message, severity });
   };
 
   const handleSnackbarClose = (event, reason) => {
@@ -50,25 +71,23 @@ function Course() {
     }
   };
 
-  const handleOpen = (course) => {
+  const handleOpen = (course = null) => {
     if (course) {
+      setSelectedCourse(course);
       setCourseDetails({
-        courseId: course.courseId,
         courseName: course.courseName,
-        subject: course.subject,
-        startDate: course.startDate?.split('T')[0] || '',
-        endDate: course.endDate?.split('T')[0] || ''
+        code: course.code,
+        semester: course.semester,
+        academicYear: course.academicYear,
       });
-      setSelectedCourse(course.courseId);
     } else {
-      const currentDate = new Date().toISOString().split('T')[0];
+      setSelectedCourse(null);
       setCourseDetails({
         courseName: '',
-        subject: '',
-        startDate: currentDate,
-        endDate: ''
+        code: '',
+        semester: '',
+        academicYear: '',
       });
-      setSelectedCourse(null);
     }
     setModalOpen(true);
   };
@@ -78,9 +97,9 @@ function Course() {
     setSelectedCourse(null);
     setCourseDetails({
       courseName: '',
-      subject: '',
-      startDate: '',
-      endDate: ''
+      code: '',
+      semester: '',
+      academicYear: ''
     });
   };
 
@@ -91,41 +110,32 @@ function Course() {
 
   const handleSubmit = async () => {
     try {
+      const { courseName, code, semester, academicYear } = courseDetails;
+      const courseData = { courseName, code, semester, academicYear };
+
       if (selectedCourse) {
-        const updateData = {
-          courseId: selectedCourse,
-          courseName: courseDetails.courseName,
-          subject: courseDetails.subject,
-          startDate: courseDetails.startDate,
-          endDate: courseDetails.endDate
-        };
-        
-        await axios.put(`/api/course/putcoursedetails/${selectedCourse}`, updateData);
+        // Update existing course
+        await axios.put(`/api/course/putcoursedetails/${selectedCourse.courseId}`, courseData);
         showSnackbar('Course updated successfully');
       } else {
-        await axios.post('/api/course/postcourserecord', courseDetails);
+        // Create new course
+        await axios.post('/api/course/postcourserecord', courseData);
         showSnackbar('Course created successfully');
       }
+
       await fetchCourses();
       handleClose();
     } catch (error) {
-      console.error('Error saving course:', error);
       const errorMessage = error.response?.data || error.message || 'An unknown error occurred';
-      showSnackbar(`Failed to save course: ${errorMessage}`, 'error');
+      showSnackbar(`Failed to ${selectedCourse ? 'update' : 'create'} course: ${errorMessage}`, 'error');
     }
   };
 
-  const handleDeleteConfirmation = (courseId) => {
-    setCourseToDelete(courseId);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDelete = async () => {
+  const handleDeleteCourse = async () => {
     if (!courseToDelete) {
       showSnackbar('Invalid course ID', 'error');
       return;
     }
-  
     try {
       await axios.delete(`/api/course/deletecoursedetails/${courseToDelete}`);
       await fetchCourses();
@@ -133,20 +143,35 @@ function Course() {
       setDeleteDialogOpen(false);
       setCourseToDelete(null);
     } catch (error) {
-      console.error('Error deleting course:', error);
       showSnackbar(`Failed to delete course: ${error.response?.data || error.message}`, 'error');
       setDeleteDialogOpen(false);
     }
   };
 
-  const handleCancelDelete = () => {
-    setDeleteDialogOpen(false);
-    setCourseToDelete(null);
-  };
-
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  const handleMenuClick = (event, course) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedCourse(course);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleEditCourse = () => {
+    handleOpen(selectedCourse);
+    handleMenuClose();
+  };
+
+  const handleDeleteConfirmation = () => {
+    setCourseToDelete(selectedCourse?.courseId);
+    setDeleteDialogOpen(true);
+    handleMenuClose();
+  };
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
@@ -155,31 +180,26 @@ function Course() {
         <Frame />
         <main className="main-content">
           <div className="title-container">
-            <Button
-              startIcon={<ArrowBack />}
-              onClick={() => window.history.back()}
-            >
-              Back
-            </Button>
             <h2>Courses</h2>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleOpen(null)}
-            >
+            <Button variant="contained" color="primary" onClick={() => handleOpen()}>
               Add Course
             </Button>
           </div>
 
           <div className="course-grid">
             {courses.map((course) => (
-              <div key={course.courseId} className="course-card">
+              <div key={course.courseId} className="course-card" style={{ position: 'relative' }}>
                 <h3>{course.courseName}</h3>
-                <p>{course.subject}</p>
-                <p>
-                  {new Date(course.startDate).toLocaleDateString()} -{' '}
-                  {new Date(course.endDate).toLocaleDateString()}
-                </p>
+                <p>{course.code}</p>
+                <p>{course.semester} - {course.academicYear}</p>
+                
+                <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                  <IconButton onClick={(event) => handleMenuClick(event, course)}>
+                    <MoreVertIcon />
+                  </IconButton>
+                  <p>{course.subject}</p>
+                  
+                </Box>
                 <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center' }}>
                   <Button 
                     variant="outlined" 
@@ -201,63 +221,74 @@ function Course() {
             ))}
           </div>
 
-          <Dialog 
-            open={modalOpen}
-            onClose={handleClose}
-            maxWidth="sm"
-            fullWidth
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
           >
-            <DialogTitle>
-              {selectedCourse ? 'Edit Course' : 'Add Course'}
-            </DialogTitle>
+            <MenuItem onClick={handleEditCourse}>Edit</MenuItem>
+            <MenuItem onClick={handleDeleteConfirmation}>Delete</MenuItem>
+          </Menu>
+
+          <Dialog open={modalOpen} onClose={handleClose} maxWidth="sm" fullWidth>
+            <DialogTitle>{selectedCourse ? 'Edit Course' : 'Add Course'}</DialogTitle>
             <DialogContent>
-              <TextField
-                name="courseName"
-                label="Course Name"
-                value={courseDetails.courseName}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-                required
+              <TextField 
+                name="courseName" 
+                label="Course Name" 
+                value={courseDetails.courseName} 
+                onChange={handleChange} 
+                fullWidth 
+                margin="normal" 
+                required 
               />
-              <TextField
-                name="subject"
-                label="Subject"
-                value={courseDetails.subject}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-                required
+              <TextField 
+                name="code" 
+                label="Course Code" 
+                value={courseDetails.code} 
+                onChange={handleChange} 
+                fullWidth 
+                margin="normal" 
+                required 
               />
-              <TextField
-                name="startDate"
-                label="Start Date"
-                type="date"
-                value={courseDetails.startDate}
-                onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
-                fullWidth
-                margin="normal"
-                required
-              />
-              <TextField
-                name="endDate"
-                label="End Date"
-                type="date"
-                value={courseDetails.endDate}
-                onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
-                fullWidth
-                margin="normal"
-                required
-              />
+              <FormControl fullWidth margin="normal" required>
+                <InputLabel id="semester-label">Semester</InputLabel>
+                <Select
+                  labelId="semester-label"
+                  name="semester"
+                  value={courseDetails.semester}
+                  onChange={handleChange}
+                  label="Semester"
+                >
+                  {semesterOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              
+              {/* Replaced TextField with Select for Academic Year */}
+              <FormControl fullWidth margin="normal" required>
+                <InputLabel id="academic-year-label">Academic Year</InputLabel>
+                <Select
+                  labelId="academic-year-label"
+                  name="academicYear"
+                  value={courseDetails.academicYear}
+                  onChange={handleChange}
+                  label="Academic Year"
+                >
+                  {/* Only two academic year options available */}
+                  <MenuItem value="2024-2025">2024-2025</MenuItem>
+                  <MenuItem value="2025-2026">2025-2026</MenuItem>
+                  <MenuItem value="2026-2027">2026-2027</MenuItem>
+                </Select>
+              </FormControl>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose} color="primary">
-                Cancel
-              </Button>
+              <Button onClick={handleClose}>Cancel</Button>
               <Button 
-                onClick={handleSubmit} 
+                onClick={handleSubmit}
                 color="primary" 
                 variant="contained"
               >
@@ -266,30 +297,26 @@ function Course() {
             </DialogActions>
           </Dialog>
 
-          <Dialog 
-            open={deleteDialogOpen}
-            onClose={handleCancelDelete}
-          >
-            <DialogTitle>Are you sure you want to delete this course?</DialogTitle>
+          <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogContent>
+              Are you sure you want to delete this course?
+            </DialogContent>
             <DialogActions>
-              <Button onClick={handleCancelDelete} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={handleDelete} color="error" variant="contained">
-                Delete
-              </Button>
+              <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleDeleteCourse} color="primary">Delete</Button>
             </DialogActions>
           </Dialog>
 
-          <Snackbar 
-            open={snackbar.open} 
-            autoHideDuration={3000}
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
             onClose={handleSnackbarClose}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           >
             <Alert 
               onClose={handleSnackbarClose} 
-              severity={snackbar.severity} 
+              severity={snackbar.severity}
               sx={{ width: '100%' }}
             >
               {snackbar.message}
