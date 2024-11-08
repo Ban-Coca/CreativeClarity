@@ -6,11 +6,11 @@ function Grades({ courseId }) {
   const [grades, setGrades] = useState([]);
   const [gradeModalOpen, setGradeModalOpen] = useState(false);
   const [gradeDetails, setGradeDetails] = useState({
-    score: '',
-    total_points: '', // Changed totalPoints to total_points
+    score: '', 
+    total_points: '',
     assessment_type: '',
     dateRecorded: '',
-     // Added assessment_type
+
   });
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [snackbar, setSnackbar] = useState({
