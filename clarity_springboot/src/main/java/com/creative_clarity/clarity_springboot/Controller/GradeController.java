@@ -3,6 +3,7 @@ package com.creative_clarity.clarity_springboot.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.creative_clarity.clarity_springboot.Entity.GradeEntity;
 import com.creative_clarity.clarity_springboot.Service.GradeService;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/grade")
 public class GradeController {
@@ -33,11 +35,12 @@ public class GradeController {
         return gserv.postGradeRecord(grade);
     }
 
-    // Read of CRUD
-    @GetMapping("/getallgradesbycourse")
-    public List<GradeEntity> getAllGradesByCourse(@RequestParam("courseId") int courseId) {
-        return gserv.getAllGradesByCourse(courseId);
+ // Read of CRUD
+    @GetMapping("/getallgrades")
+    public List<GradeEntity> getAllGrades() {
+        return gserv.getAllGrades();
     }
+    
         
     // Update of CRUD
     @PutMapping("/putgradedetails")

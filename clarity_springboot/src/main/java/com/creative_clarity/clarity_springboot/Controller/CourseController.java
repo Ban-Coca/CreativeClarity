@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Service.CourseService;
 
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/course")
 public class CourseController {

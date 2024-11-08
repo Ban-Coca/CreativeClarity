@@ -28,6 +28,10 @@ public class GradeService {
     public GradeEntity postGradeRecord(GradeEntity grade) {
         return grepo.save(grade);
     }
+
+    public List<GradeEntity> getAllGrades(){
+    	return grepo.findAll();
+    }
     
     // Read of CRUD
     public List<GradeEntity> getAllGradesByCourse(int courseId) {
@@ -51,7 +55,7 @@ public class GradeService {
         
         grade.setTotal_points(newGradeDetails.getTotal_points());
         grade.setScore(newGradeDetails.getScore());
-        grade.setDate_received(newGradeDetails.getDate_received());
+        grade.setDateRecorded(newGradeDetails.getDateRecorded()); // Renamed from setDate_received
         grade.setCourse(newGradeDetails.getCourse());
         
         return grepo.save(grade);

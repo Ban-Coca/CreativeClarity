@@ -18,21 +18,23 @@ public class GradeEntity {
 	
 	private float score;
 	private float total_points;
-	private Date date_received;
+	private String assessment_type;
+	private Date dateRecorded; // Renamed from date_received
 	
 	@ManyToOne
-	@JoinColumn(name = "course_id")
+	@JoinColumn(name = "course")
 	private CourseEntity course;
 	
 	public GradeEntity() {
 		
 	}
 
-	public GradeEntity(float score, float total_points, Date date_received) {
+	public GradeEntity(float score, float total_points, Date dateRecorded, String assessment_type) { // Renamed from date_received
 		super();
 		this.score = score;
 		this.total_points = total_points;
-		this.date_received = date_received;
+		this.dateRecorded = dateRecorded; // Renamed from date_received
+		this.assessment_type = assessment_type;
 	}
 
 	public int getGradeId() {
@@ -55,14 +57,22 @@ public class GradeEntity {
 		this.total_points = total_points;
 	}
 
-	public Date getDate_received() {
-		return date_received;
+	public Date getDateRecorded() { // Renamed from getDate_received
+		return dateRecorded;
 	}
 
-	public void setDate_received(Date date_received) {
-		this.date_received = date_received;
+	public void setDateRecorded(Date dateRecorded) { // Renamed from setDate_received
+		this.dateRecorded = dateRecorded;
 	}
 	
+	public String getAssessment_type() {
+		return assessment_type;
+	}
+
+	public void setAssessment_type(String assessment_type) {
+		this.assessment_type = assessment_type;
+	}
+
 	public CourseEntity getCourse() {
 		return course;
 	}
