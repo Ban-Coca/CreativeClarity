@@ -216,7 +216,7 @@ const ArchivePage = () => {
               </div>
               <div className='modal-button'>
                 <button className='restore-button'>
-                  Restore
+                  Unarchive
                 </button>
                 <button className="close-button" onClick={closeArchiveDetailsModal}>
                   Close
