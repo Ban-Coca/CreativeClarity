@@ -45,7 +45,6 @@ public class GradeService {
     }
     
     // Update of CRUD
-    @SuppressWarnings("finally")
     public GradeEntity putGradeDetails (int gradeId, GradeEntity newGradeDetails) {
         GradeEntity grade = grepo.findById(gradeId).orElseThrow(() -> new NoSuchElementException("Grade " + gradeId + " not found"));
         

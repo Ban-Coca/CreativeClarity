@@ -18,12 +18,9 @@ public class CourseEntity {
 	private int courseId;
 	
 	private String courseName;
-	private String subject;
-	private Date startDate;
-	private Date endDate;
 	private String code;
 	private String semester;
-	private int year;
+	private String academicYear;
 	private Date created_at;
 
 	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -32,52 +29,25 @@ public class CourseEntity {
 	public CourseEntity() {
 	}
 
-	public CourseEntity(String courseName, String subject, Date startDate, Date endDate, String code, String semester, int year, Date created_at) {
+	public CourseEntity(String courseName, String code, String semester, String academicYear, Date created_at) {
 		super();
 		this.courseName = courseName;
-		this.subject = subject;
-		this.startDate = startDate;
-		this.endDate = endDate;
 		this.code = code;
 		this.semester = semester;
-		this.year = year;
+		this.academicYear = academicYear;
 		this.created_at = created_at;
 	}
 
 	public int getCourseId() {
 		return courseId;
 	}
-	
+
 	public String getCourseName() {
 		return courseName;
 	}
 
 	public void setCourseName(String courseName) {
 		this.courseName = courseName;
-	}
-
-	public String getSubject() {
-		return subject;
-	}
-
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-
-	public Date getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
-
-	public Date getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
 	}
 
 	public String getCode() {
@@ -96,12 +66,12 @@ public class CourseEntity {
 		this.semester = semester;
 	}
 
-	public int getYear() {
-		return year;
+	public String getAcademicYear() {
+		return academicYear;
 	}
 
-	public void setYear(int year) {
-		this.year = year;
+	public void setAcademicYear(String academicYear) {
+		this.academicYear = academicYear;
 	}
 
 	public Date getCreated_at() {

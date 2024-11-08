@@ -1,19 +1,17 @@
 /* Reset default margins and ensure full height */
-/* Add Roboto font globally */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
   font-family: 'Roboto', sans-serif;
 }
 
 /* Layout for the entire page */
 .main-content {
   padding: 20px;
-  height: calc(100vh - 64px); /* Adjust based on your header height */
-  overflow-y: auto;
+  height: 85vh; /* Full viewport height */
+  overflow-y: auto; /* Allow scrolling within this container if content overflows */
 }
 
 /* Title and button layout - fixed at top */
@@ -42,6 +40,11 @@ html, body {
   transition: background-color 0.3s ease;
 }
 
+.title-container .add-course-btn:hover {
+  background-color: #1565c0;
+  transform: translateY(-3px);
+}
+
 /* Scrollable content area */
 .course-grid {
   display: grid;
@@ -68,13 +71,25 @@ html, body {
   }
 }
 
-/* Course cards remain the same */
+@media (max-width: 400px) {
+  .course-card {
+    padding: 12px;
+  }
+
+  .title-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Course cards */
 .course-card {
   background-color: white;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 10px rgba(0,0,0,0.1);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  margin: 10px;
 }
 
 .course-card:hover {
@@ -93,18 +108,18 @@ html, body {
   color: #666;
 }
 
-/* Modal styling - fixed position */
+/* Modal styling */
 .modal-container {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #ffffff;
+  background-color: #fff;
   padding: 30px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   border-radius: 8px;
+  max-width: 600px;
   width: 80%;
-  max-width: 500px;
   z-index: 1000;
   display: none;
 }
@@ -134,15 +149,68 @@ html, body {
   cursor: pointer;
 }
 
-.modal-box {
-  position: absolute;
+.modal-container input:focus,
+.modal-container select:focus,
+.modal-container textarea:focus {
+  outline: 2px solid #1976d2;
+}
+
+.modal-container button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.5);
+}
+
+/* Prevent scrolling when modal is active */
+body.modal-open {
+  overflow: hidden; /* Disable scroll when modal is open */
+}
+
+/* Delete confirmation modal */
+.delete-dialog {
+  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 400px;
-  background-color: white;
-  border: 2px solid #000;
-  box-shadow: 24px;
-  padding: 16px;
-  text-align: center;
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  z-index: 1000;
+}
+
+/* Snackbar Styling */
+.MuiSnackbar-root {
+  z-index: 1301 !important;
+}
+
+.MuiAlert-root {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* Add course button and card actions */
+.course-card .MuiButton-root {
+  font-size: 12px;
+  text-transform: none;
+  min-width: 80px;
+  margin-top: 10px;
+}
+
+/* Additional form field styles */
+.MuiTextField-root {
+  margin-bottom: 16px;
+}
+
+.MuiDialogTitle-root {
+  font-weight: 500;
+}
+
+.MuiDialogActions-root {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px;
+}
+
+.MuiDialogActions-root .MuiButton-root {
+  font-weight: 500;
 }
