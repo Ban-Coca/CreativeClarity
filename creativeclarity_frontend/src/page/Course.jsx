@@ -19,7 +19,7 @@ import {
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from 'axios';
 import SideBar from '../components/SideBar';
-import Frame from '../components/Frame';
+import TopBar from '../components/TopBar';
 import '../components/css/Course.css';
 
 function Course() {
@@ -175,7 +175,7 @@ function Course() {
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <SideBar />
       <Box sx={{ flexGrow: 1 }}>
-        <Frame />
+        <TopBar />
         <main className="main-content">
           <div className="title-container">
             <h2>Courses</h2>
@@ -283,7 +283,18 @@ function Course() {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleDeleteCourse} color="primary">Delete</Button>
+              <Button 
+                onClick={handleDeleteCourse} 
+                sx={{ 
+                  backgroundColor: 'red', 
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'darkred',
+                  },
+                }}
+              >
+                Delete
+              </Button>
             </DialogActions>
           </Dialog>
 

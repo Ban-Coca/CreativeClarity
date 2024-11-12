@@ -1,109 +1,102 @@
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import CheckIcon from "@mui/icons-material/Check";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import ScheduleIcon from "@mui/icons-material/Schedule";
+import React from 'react';
 import {
-  Box,
-  Divider,
+  Drawer,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Typography,
-} from "@mui/material";
-import React from "react";
+  Divider,
+  Box,
+  styled
+} from '@mui/material';
+import {
+  Dashboard as DashboardIcon,
+  MenuBook as MenuBookIcon,
+  Assignment as AssignmentIcon,
+  Check as CheckIcon,
+  Schedule as ScheduleIcon,
+  BarChart as BarChartIcon,
+  ArrowForwardIos as ArrowForwardIosIcon,
+  HelpOutline as HelpOutlineIcon,
+  ExitToApp as ExitToAppIcon,
+  Padding
+} from '@mui/icons-material';
+
+const drawerWidth = 280;
+
+const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  width: drawerWidth,
+  flexShrink: 0,
+  '& .MuiDrawer-paper': {
+    width: drawerWidth,
+    boxSizing: 'border-box',
+    backgroundColor: theme.palette.background.paper,
+    borderRight: '1px solid ${theme.palette.divider}',
+    padding: '20px',
+  },
+}));
+
+const Logo = styled(Typography)(({ theme }) => ({
+  fontWeight: 'bold',
+  color: theme.palette.primary.main,
+  marginBottom: theme.spacing(2),
+  textAlign: 'center',
+}));
 
 const SideBar = () => {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        width: 240,
-        height: "95vh",
-        bgcolor: "background.paper",
-        borderRight: 1,
-        borderColor: "divider",
-        p: 2,
-      }}
-    >
-      <Box sx={{ mb: 2, textAlign: "center" }}>
-        <Typography variant="h6" color="primary" fontWeight="bold">
-          CreativeClarity
-        </Typography>
-      </Box>
-
+    <StyledDrawer variant="permanent" anchor="left">
+      <Logo variant="h6">
+        CreativeClarity
+      </Logo>
       <List>
-        <ListItem button={true.toString()}>
-          <ListItemIcon>
-            <DashboardIcon />
-          </ListItemIcon>
-          <ListItemText primary="Overview" />
-        </ListItem>
-
-        <ListItem
-          button={true.toString()}
-          sx={{
-            bgcolor: "primary.main",
-            color: "primary.contrastText",
-            borderRadius: 1,
-          }}
-        >
-          <ListItemIcon>
-            <MenuBookIcon sx={{ color: "primary.contrastText" }} />
-          </ListItemIcon>
-          <ListItemText 
-            primary="Courses" 
-            sx={{ typography: 'h6', fontSize: '1.25rem' }} // Adjust font size here
-          />
-        </ListItem>
-
-        <ListItem button={true.toString()}>
-          <ListItemIcon>
-            <CheckIcon />
-          </ListItemIcon>
-          <ListItemText primary="Tasks" />
-        </ListItem>
-
-        <ListItem button={true.toString()}>
-          <ListItemIcon>
-            <ScheduleIcon />
-          </ListItemIcon>
-          <ListItemText primary="My Schedule" />
-        </ListItem>
-
-        <ListItem button={true.toString()}>
-          <ListItemIcon>
-            <BarChartIcon />
-          </ListItemIcon>
-          <ListItemText primary="Progress" />
-          <ArrowForwardIosIcon fontSize="small" />
-        </ListItem>
+        {[
+          { text: 'Overview', icon: <DashboardIcon /> },
+          { text: 'Courses', icon: <MenuBookIcon />, active: true },
+          { text: 'Assignments', icon: <AssignmentIcon /> },
+          { text: 'Tasks', icon: <CheckIcon />},
+          { text: 'My Schedule', icon: <ScheduleIcon /> },
+          { text: 'Progress', icon: <BarChartIcon />, hasArrow: true },
+        ].map((item, index) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              sx={item.active ? {
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                borderRadius: 1,
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                },
+              } : {}}
+            >
+              <ListItemIcon sx={item.active ? { color: 'inherit' } : {}}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} />
+              {item.hasArrow && <ArrowForwardIosIcon fontSize="small" />}
+            </ListItemButton>
+          </ListItem>
+        ))}
       </List>
-
-      <Box sx={{ mt: "auto" }}>
+      <Box sx={{ mt: 'auto' }}>
         <Divider />
         <List>
-          <ListItem button={true.toString()}>
-            <ListItemIcon>
-              <HelpOutlineIcon />
-            </ListItemIcon>
-            <ListItemText primary="Help" />
-          </ListItem>
-
-          <ListItem button={true.toString()}>
-            <ListItemIcon>
-              <ExitToAppIcon />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItem>
+          {[
+            { text: 'Help', icon: <HelpOutlineIcon /> },
+            { text: 'Logout', icon: <ExitToAppIcon /> },
+          ].map((item) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
         </List>
       </Box>
-    </Box>
+    </StyledDrawer>
   );
 };
 
