@@ -1,44 +1,7 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap');
-.container {
-    display: flex;
-    min-height: 100vh;
-    font-family: 'Roboto', sans-serif;
-}
 
-.sidebar {
-    width: 250px;
-    background-color: white;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-left: 1.40rem;
-}
-
-.topbar {
-    background-color: #0099ff;
-    padding: 10px;
-}
-
-.content-area {
-    padding: 24px;
-    background-color: #f5f5f5;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
-
-.header h1 {
-    font-size: 24px;
-    font-weight: 600;
-}
+/* You can remove all the container, sidebar, main-content, topbar, content-area, 
+   header, task-section, and task-header related styles as they're now handled by MUI Box sx props */
 
 .add-button {
     background-color: #0099ff;
@@ -47,14 +10,6 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-}
-
-.task-section {
-    background-color: white;
-    height: 100%;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 16px;
 }
 
 .task-list {
@@ -77,10 +32,4 @@
     background: none;
     border: none;
     cursor: pointer;
-}
-
-.task-header{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }

@@ -1,7 +1,14 @@
+// React imports
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
+
+// MUI Components
 import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -11,19 +18,24 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
+import Typography from '@mui/material/Typography';
+
+
+// MUI Utilities
+import { alpha } from '@mui/material/styles';
+import { visuallyHidden } from '@mui/utils';
+
+// Icons
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
-import { fetchTasks, deleteTask } from '../service/taskService';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { lineWobble } from 'ldrs'
+
+// Services and Utils
 import axios from 'axios';
 import { toast } from 'sonner';
+import { fetchTasks, deleteTask } from '../service/taskService';
 
 axios.defaults.baseURL = "http://localhost:8080/";
 function descendingComparator(a, b, orderBy) {
@@ -67,8 +79,35 @@ const headCells = [
     disablePadding: false,
     label: 'Due Date',
   },
+  {
+    id: 'priority',
+    numeric: false,
+    disablePadding: false,
+    label: 'Priority',
+  }
 ];
 
+function LoadingComponent({loading}){
+  React.useEffect(() => {
+    lineWobble.register()
+  }, []);
+  if(loading){
+    return (
+        <Box display="flex" justifyContent="center" alignItems="center" height={200}>
+          <l-line-wobble
+            size="80"
+            stroke="5"
+            bg-opacity="0.1"
+            speed="1.75" 
+            color="black" 
+          ></l-line-wobble>
+        </Box>
+    )
+  }else{
+    return null
+  }
+  
+}
 function EnhancedTableHead(props) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
     props;
@@ -126,12 +165,12 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
-  const { numSelected, selected, setSelected, setRows } = props;
+  const { numSelected, selected, setSelected, setTasks } = props;
 
   const handleDelete = async () => {
     try {
       await Promise.all(selected.map(taskId => deleteTask(taskId)));
-      setRows(prevRows => prevRows.filter(row => !selected.includes(row.taskId)));
+      setTasks(prevRows => prevRows.filter(row => !selected.includes(row.taskId)));
       setSelected([]);
       fetchTasks();
     } catch (error) {
@@ -172,11 +211,18 @@ function EnhancedTableToolbar(props) {
         </Typography>
       )}
       {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton onClick={handleDelete}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
+        <>
+          <Tooltip title="Delete">
+            <IconButton onClick={handleDelete}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Mark as completed">
+            <IconButton>
+              <CheckCircleIcon />
+            </IconButton>
+          </Tooltip>
+        </>
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
@@ -192,35 +238,41 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
   selected: PropTypes.array.isRequired,
   setSelected: PropTypes.func.isRequired,
-  setRows: PropTypes.func.isRequired,
+  setTasks: PropTypes.func.isRequired,
 };
 
-export default function EnhancedTable() {
+export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowClick}) {
   const [order, setOrder] = React.useState('asc');
-  const [orderBy, setOrderBy] = React.useState('calories');
+  const [orderBy, setOrderBy] = React.useState('id');
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [rows, setRows] = React.useState([]);
-
-  React.useEffect(() => {
-      const fetchTasks = async () => {
-        try{
-          const response = await axios.get('/api/task/getalltask');
-          setRows(response.data);
-          console.log('Tasks fetched successfully');
-        } catch (error) {
-          toast.error('Error fetching tasks');
-        }
-      }
-      fetchTasks();
-  }, [rows])
+  const [tasks, setTasks] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
   
+  React.useEffect(() => {
+      setTasks(initialTasks);
+      setLoading(false);
+  }, [initialTasks]);
+
   const formatDate = (date) => {
     const dateObj = new Date(date);
     return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
   }
+
+  const rows = React.useMemo(() => 
+    tasks.map(task => ({
+      id: task.taskId,
+      title: task.title,
+      description: task.description,
+      due_date: task.due_date,
+      priority: task.priority
+    })),
+    [tasks]
+  );
+
+  
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -268,23 +320,25 @@ export default function EnhancedTable() {
     setDense(event.target.checked);
   };
 
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  const handleClickedRows = (event, id) => {
+    const selectedTask = tasks.find(task => task.taskId === id);
+    onRowClick(selectedTask);
+  }
 
   const visibleRows = React.useMemo(
     () =>
       [...rows]
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage],
-  );
-
+    [order, orderBy, page, rowsPerPage, rows]
+  )
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} selected={selected} setSelected={setSelected} setRows={setRows} />
+        <EnhancedTableToolbar numSelected={selected.length} selected={selected} setSelected={setSelected} setTasks={setTasks} />
         <TableContainer>
+          <LoadingComponent loading ={loading}/>
+          {!loading && (
           <Table
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
@@ -300,13 +354,13 @@ export default function EnhancedTable() {
             />
             <TableBody>
               {visibleRows.map((row, index) => {
-                const isItemSelected = selected.includes(row.taskId);
+                const isItemSelected = selected.includes(row.id);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.taskId)}
+                    onClick={(event) => handleClickedRows(event, row.id)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -318,31 +372,25 @@ export default function EnhancedTable() {
                       <Checkbox
                         color="primary"
                         checked={isItemSelected}
+                        onClick={(event) => handleClick(event, row.id)}
                         inputProps={{
                           'aria-labelledby': labelId,
                         }}
                       />
                     </TableCell>  
                     <TableCell align="left">
-                      {row.taskId}
+                      {row.id}
                     </TableCell>
                     <TableCell align="left">{row.title}</TableCell>
                     <TableCell align="left">{row.description}</TableCell>
                     <TableCell align="left">{formatDate(row.due_date)}</TableCell>
+                    <TableCell align="left">{row.priority}</TableCell>
                   </TableRow>
                 );
               })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
             </TableBody>
           </Table>
+          )}
         </TableContainer>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}

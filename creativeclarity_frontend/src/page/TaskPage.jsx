@@ -4,8 +4,9 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import EnhancedTable from '../components/TablesTask';
+import { Priority, PriorityColors, PriorityList } from '../utils/Priority';
 import './TaskPage.css';
-import { Button, Modal, Box, Typography, Paper, TextField } from '@mui/material';
+import { Button, Modal, Box, Typography, Paper, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -34,17 +35,21 @@ const TaskPage = () => {
     const [tasks, setTasks] = useState([]);
     const [open, setOpen] = useState(false);
     const [editingTaskId, setEditingTaskId] = useState(null);
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [openDetailsModal, setOpenDetailsModal] = useState(false);
     const [editForm, setEditForm] = useState({
         title: '',
         description: '',
         completed: false,
-        due_date: '' // Ensure this matches the backend
+        due_date: '', // Ensure this matches the backend
+        priority: ''
     });
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
         completed: false,
-        due_date: '' // Ensure this matches the backend field name
+        due_date: '', // Ensure this matches the backend field name
+        priority: ''
     });
 
     useEffect(() => {
@@ -168,47 +173,72 @@ const TaskPage = () => {
         return date.toISOString().split('T')[0];
     };
 
-    const rows = tasks.map(task => ({
-        id: task.taskId,
-        title: task.title,
-        description: task.description,
-        due_date: formatDate(task.due_date)
-    }));
-    const paginationModel = {page: 0, pageSize: 7};
+    // const rows = tasks.map(task => ({
+    //     id: task.taskId,
+    //     title: task.title,
+    //     description: task.description,
+    //     due_date: formatDate(task.due_date)
+    // }));
+    
+    const handleRowClick = (task) => {
+        setSelectedTask(task);
+        setOpenDetailsModal(true);
+    };
 
     return (
-        <div className="container">
-            <div className="sidebar">
+        <Box sx={{
+            display: 'flex',
+            minHeight: '100vh',
+            fontFamily: 'Roboto, sans-serif'
+        }}>
+            <Box sx={{
+                width: '256px',
+                bgcolor: 'white',
+                boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
+            }}>
                 <Sidebar />
-            </div>
-            <Toaster richColors position="bottom-right"/>
-            <div className="main-content">
-                <div className="topbar">
+            </Box>
+            <Toaster richColors position="bottom-right" closeButton/>
+            <Box sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                marginLeft: '1.40rem'
+            }}>
+                <Box
+                    sx={{position: 'fixed',
+                        top: 0,
+                        right: 0,
+                        left: '256px', // Matches sidebar width
+                        zIndex: 1100,
+                        bgcolor: 'white',}}
+                >
                     <Topbar />
-                </div>
+                </Box>
 
-                <div className="task-section">
-                    <div className="task-header">
-                        <Typography variant="h3">Tasks</Typography>
-                        <div className="addTaskButton">
+                <Box sx={{
+                    bgcolor: 'white',
+                    height: '100%',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    maxHeight: 'calc(100vh - 64px)',
+                    marginTop: '64px',
+                    p: '16px'
+                }}>
+                    <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <Typography variant="h4">Tasks</Typography>
+                        <Box>
                             <Button variant="contained" onClick={handleOpen}>Add Task</Button>
-                        </div>
-                    </div>
-                    <div className="task-list" style={{marginTop:"2rem"}}>
-                        <EnhancedTable/>
-                        {/* <Paper style={{ height: 500, width: '100%'}}>
-                            <DataGrid
-                                rows={rows}
-                                columns={columns}
-                                initialState={{pagination: {paginationModel}}}
-                                pageSize={[7, 10]}
-                                checkboxSelection 
-                                sx={{border:0}}
-                            />
-                        </Paper> */}
-                    </div>
-                </div>
-                
+                        </Box>
+                    </Box>
+                    <Box sx={{ marginTop: '2rem' }}>
+                        <EnhancedTable tasks={tasks} onRowClick={handleRowClick}/>
+                    </Box>
+                </Box>
+
                 <Modal
                     className='modalAddTask'
                     open={open}
@@ -228,6 +258,7 @@ const TaskPage = () => {
                                 value={newTask.title}
                                 onChange={(e) => setNewTask({...newTask, title: e.target.value})}
                                 required/>
+
                             <TextField
                                 label="Description"
                                 variant="outlined"
@@ -236,6 +267,21 @@ const TaskPage = () => {
                                 margin='normal'
                                 fullWidth
                                 required/>
+
+                            <FormControl fullWidth margin="normal">
+                                <InputLabel id="priority-select-label">Priority</InputLabel>
+                                <Select
+                                    labelId="priority-select-label"
+                                    id="priority-select"
+                                    label="Priority"
+                                    value={newTask.priority} 
+                                    onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
+                                    {PriorityList.map((priority) => (
+                                        <MenuItem key={priority} value={priority}>{priority}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
                             <TextField
                                 name="endDate"
                                 label="End Date"
@@ -247,6 +293,7 @@ const TaskPage = () => {
                                 margin="normal"
                                 required
                             />
+                            
                             <Button
                                 variant="contained"
                                 onClick={() => {
@@ -259,24 +306,49 @@ const TaskPage = () => {
                         </Typography>
                     </Box>
                 </Modal>
-            </div>
-        </div>
+                <TaskDetailsModal task={selectedTask} onClose={() => setOpenDetailsModal(false)} open={openDetailsModal}/>
+            </Box>
+        </Box>
     );
 };
 
-const TaskDetailsModal = ({ task, onClose }) => {
+const TaskDetailsModal = ({ task, onClose, open }) => {
+    console.log(task)
     if (!task) return null;
-
+    console.log("This is opened!");
     return (
-        <div className="modal">
-            <div className="modal-content">
-                <span className="close" onClick={onClose}>&times;</span>
-                <h2>{task.title}</h2>
-                <p>{task.description}</p>
-                <p>Completed: {task.completed ? 'Yes' : 'No'}</p>
-                <p>Due Date: {task.due_date}</p>
-            </div>
-        </div>
+        <Modal
+            open={open}
+            onClose={onClose}
+            aria-labelledby="task-details-modal"
+            aria-describedby="task-details-description"
+        >
+            <Box sx={{
+                ...style,
+                width: 500
+            }}>
+                <Typography variant="h4" component="h2" gutterBottom>
+                    Task Details
+                </Typography>
+                <Typography variant="h6" gutterBottom>
+                    {task.title}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                    <strong>Description:</strong> {task.description}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                    <strong>Status:</strong> {task.completed ? 'Completed' : 'Pending'}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                    <strong>Due Date:</strong> {task.due_date}
+                </Typography>
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button variant="contained" onClick={onClose}>
+                        Close
+                    </Button>
+                </Box>
+            </Box>
+        </Modal>
     );
 };
 
