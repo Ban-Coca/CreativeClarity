@@ -34,7 +34,9 @@ function Grades({ courseId }) {
 
   const fetchGrades = async () => {
     try {
-      const response = await axios.get(`/api/grade/getallgrades`);
+      console.log(`Fetching grades for courseId: ${courseId}`);
+      const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`);
+      console.log('Grades fetched:', response.data);
       setGrades(response.data);
     } catch (error) {
       console.error('Error fetching grades:', error);
@@ -49,26 +51,39 @@ function Grades({ courseId }) {
 
   const handleGradeSubmit = async () => {
     try {
+      // Validate required fields
+      if (!gradeDetails.score || !gradeDetails.total_points || !gradeDetails.assessment_type || !gradeDetails.dateRecorded) {
+        showSnackbar('Please fill in all required fields', 'error');
+        return;
+      }
+
       const gradeData = {
-        courseId,
-        score: gradeDetails.score,
-        total_points: gradeDetails.total_points, // Changed totalPoints to total_points
+        course: { courseId }, // Ensure courseId is included here
+        score: parseFloat(gradeDetails.score), // Ensure score is a float
+        total_points: parseFloat(gradeDetails.total_points), // Ensure total_points is a float
         dateRecorded: gradeDetails.dateRecorded,
-        assessment_type: gradeDetails.assessment_type // Added assessment_type
+        assessment_type: gradeDetails.assessment_type
       };
+      console.log('Submitting grade data:', gradeData); // Add this line to log the grade data
       if (selectedGrade) {
         await axios.put(`/api/grade/putgradedetails?gradeId=${selectedGrade}`, gradeData);
         showSnackbar('Grade updated successfully');
       } else {
-        await axios.post('/api/grade/postgraderecord', gradeData);
+        await axios.post(`/api/grade/postgraderecord`, gradeData);
         showSnackbar('Grade added successfully');
       }
-      fetchGrades();
+      fetchGrades(); // Fetch grades without appending
       setGradeModalOpen(false);
       setSelectedGrade(null);
+      setGradeDetails({
+        score: '', 
+        total_points: '',
+        assessment_type: '',
+        dateRecorded: '',
+      });
     } catch (error) {
       console.error('Error saving grade:', error);
-      const errorMessage = error.response?.data || error.message || 'An unknown error occurred';
+      const errorMessage = error.response?.data ? JSON.stringify(error.response.data) : error.message || 'An unknown error occurred';
       showSnackbar(`Failed to save grade: ${errorMessage}`, 'error');
     }
   };

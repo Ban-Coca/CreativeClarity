@@ -25,7 +25,7 @@ import { ArrowBack } from '@mui/icons-material';
 import Grades from './Grades'; // Import the Grades component
 
 function Course() {
-  const [courses, setCourses] = useState([]);
+  const [courses, setCourses] = useState([]); // Ensure initial state is an empty array
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -63,13 +63,19 @@ function Course() {
 
   const fetchCourses = async () => {
     try {
+      console.log('Fetching courses...');
       const response = await axios.get('/api/course/getallcourse');
-      setCourses(response.data);
+      console.log('Courses fetched:', response.data);
+      setCourses(Array.isArray(response.data) ? response.data : []); // Ensure response data is an array
     } catch (error) {
       console.error('Error fetching courses:', error);
       showSnackbar('Failed to fetch courses', 'error');
     }
   };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   const handleOpen = (course = null) => {
     if (course) {
@@ -148,10 +154,6 @@ function Course() {
     }
   };
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
-
   const handleMenuClick = (event, course) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -201,20 +203,6 @@ function Course() {
                   
                 </Box>
                 <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center' }}>
-                  <Button 
-                    variant="outlined" 
-                    color="primary" 
-                    onClick={() => handleOpen(course)}
-                  >
-                    Edit
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    color="error" 
-                    onClick={() => handleDeleteConfirmation(course.courseId)}
-                  >
-                    Delete
-                  </Button>
                   <Grades courseId={course.courseId} />
                 </Box>
               </div>

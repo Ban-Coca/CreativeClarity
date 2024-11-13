@@ -35,12 +35,17 @@ public class GradeController {
         return gserv.postGradeRecord(grade);
     }
 
- // Read of CRUD
+    // Read of CRUD
     @GetMapping("/getallgrades")
     public List<GradeEntity> getAllGrades() {
         return gserv.getAllGrades();
     }
     
+    // Read of CRUD
+    @GetMapping("/getallgradesbycourse/{courseId}")
+    public List<GradeEntity> getAllGradesByCourse(@PathVariable int courseId) {
+        return gserv.getAllGradesByCourse(courseId);
+    }
         
     // Update of CRUD
     @PutMapping("/putgradedetails")
