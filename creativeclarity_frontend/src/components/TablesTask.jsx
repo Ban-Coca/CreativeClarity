@@ -360,7 +360,6 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClickedRows(event, row.id)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -378,13 +377,13 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
                         }}
                       />
                     </TableCell>  
-                    <TableCell align="left">
+                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>
                       {row.id}
                     </TableCell>
-                    <TableCell align="left">{row.title}</TableCell>
-                    <TableCell align="left">{row.description}</TableCell>
-                    <TableCell align="left">{formatDate(row.due_date)}</TableCell>
-                    <TableCell align="left">{row.priority}</TableCell>
+                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.title}</TableCell>
+                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.description}</TableCell>
+                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{formatDate(row.due_date)}</TableCell>
+                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.priority}</TableCell>
                   </TableRow>
                 );
               })}
@@ -402,10 +401,6 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
     </Box>
   );
 }

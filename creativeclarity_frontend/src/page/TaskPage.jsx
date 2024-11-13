@@ -6,10 +6,9 @@ import Topbar from '../components/Topbar';
 import EnhancedTable from '../components/TablesTask';
 import { Priority, PriorityColors, PriorityList } from '../utils/Priority';
 import './TaskPage.css';
-import { Button, Modal, Box, Typography, Paper, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { Button, Modal, Box, Typography, Paper, TextField, Select, MenuItem, FormControl, InputLabel, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { fetchTasks, createTask, updateTask, deleteTask } from '../service/taskService';
 // Set the base URL for Axios
 axios.defaults.baseURL = 'http://localhost:8080';
@@ -20,7 +19,6 @@ const style = {
     transform: 'translate(-50%, -50%)',
     width: 400,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
     boxShadow: 24,
     p: 4,
 };
@@ -32,23 +30,29 @@ const columns = [
 ]
 
 const TaskPage = () => {
+
     const [tasks, setTasks] = useState([]);
     const [open, setOpen] = useState(false);
+
     const [editingTaskId, setEditingTaskId] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
-    const [openDetailsModal, setOpenDetailsModal] = useState(false);
+
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [openTaskDetails, setOpenTaskDetails] = useState(false);
+    const [taskToDelete, setTaskToDelete] = useState(null);
+
     const [editForm, setEditForm] = useState({
         title: '',
         description: '',
         completed: false,
-        due_date: '', // Ensure this matches the backend
+        due_date: '',
         priority: ''
     });
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
         completed: false,
-        due_date: '', // Ensure this matches the backend field name
+        due_date: '',
         priority: ''
     });
 
@@ -86,9 +90,11 @@ const TaskPage = () => {
                 title: '',
                 description: '',
                 completed: false,
-                due_date: '' // Ensure this matches the backend field name
+                due_date: '', // Ensure this matches the backend field name
+                priority: ''
             });
             toast.success('Task created successfully');
+            fetchTasks();
         } catch (error) {
             toast.error('Error creating task');
             console.error('Error creating task:', error);
@@ -126,12 +132,6 @@ const TaskPage = () => {
             console.error('Error updating task:', error.response?.data || error.message);
         }
     };
-    
-    const handleDelete = async (taskId) => {
-        await deleteTask(taskId);
-        setTasks(tasks.filter(task => task.taskId !== taskId));
-        fetchTasks();
-    };
 
     const handleEdit = (task) => {
         setEditingTaskId(task.taskId);
@@ -139,7 +139,8 @@ const TaskPage = () => {
             title: task.title,
             description: task.description,
             completed: task.completed,
-            due_date: formatDateForInput(task.due_date)
+            due_date: formatDateForInput(task.due_date),
+            priority: task.priority
         });
     };
     
@@ -162,28 +163,39 @@ const TaskPage = () => {
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
     console.log(tasks);
     const formatDate = (date) => {
         const dateObj = new Date(date);
         return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
     }
+
     const formatDateForInput = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
         return date.toISOString().split('T')[0];
     };
-
-    // const rows = tasks.map(task => ({
-    //     id: task.taskId,
-    //     title: task.title,
-    //     description: task.description,
-    //     due_date: formatDate(task.due_date)
-    // }));
     
     const handleRowClick = (task) => {
         setSelectedTask(task);
-        setOpenDetailsModal(true);
+        setOpenTaskDetails(true);
     };
+
+    const handleDelete = async (taskId) => {
+        setTaskToDelete(taskId);
+        setOpenDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if(taskToDelete) {
+            await deleteTask(taskToDelete);
+            setTasks(tasks.filter(task => task.taskId !== taskToDelete));
+            setOpenDeleteModal(false);
+            setTaskToDelete(null);
+            setOpen(false);
+            fetchTasks();
+        }
+    }
 
     return (
         <Box sx={{
@@ -306,13 +318,27 @@ const TaskPage = () => {
                         </Typography>
                     </Box>
                 </Modal>
-                <TaskDetailsModal task={selectedTask} onClose={() => setOpenDetailsModal(false)} open={openDetailsModal}/>
+                <TaskDetailsModal 
+                    task={selectedTask} 
+                    onClose={() => setOpenTaskDetails(false)} 
+                    open={openTaskDetails} 
+                    onDelete={handleDelete}/>
+                <ModalDelete 
+                    open={openDeleteModal}
+                    onClose={() => setOpenDeleteModal(false)}
+                    onConfirm={confirmDelete}
+                    taskTitle={tasks.find(task => task.taskId === taskToDelete)?.title || ''}
+                />
             </Box>
         </Box>
     );
 };
 
-const TaskDetailsModal = ({ task, onClose, open }) => {
+const TaskDetailsModal = ({ task, onClose, open, onDelete }) => {
+    const formatDate = (date) => {
+        const dateObj = new Date(date);
+        return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
+    }
     console.log(task)
     if (!task) return null;
     console.log("This is opened!");
@@ -325,31 +351,115 @@ const TaskDetailsModal = ({ task, onClose, open }) => {
         >
             <Box sx={{
                 ...style,
-                width: 500
+                width: 800,
+                height: 500,
+                border: 'none',
+                borderRadius: '0.75rem',
+                p: 2    
             }}>
-                <Typography variant="h4" component="h2" gutterBottom>
-                    Task Details
-                </Typography>
-                <Typography variant="h6" gutterBottom>
-                    {task.title}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                    <strong>Description:</strong> {task.description}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                    <strong>Status:</strong> {task.completed ? 'Completed' : 'Pending'}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                    <strong>Due Date:</strong> {task.due_date}
-                </Typography>
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button variant="contained" onClick={onClose}>
-                        Close
-                    </Button>
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'left',
+                    borderBottom: '1px solid #ccc',
+                }}>
+                    <Typography variant="h6" gutterBottom>
+                        Task Details
+                    </Typography>
+                    <Box sx={{
+                        display: 'flex',
+                    }}>
+                        <IconButton onClick={onclick}>
+                            <EditIcon/>
+                        </IconButton>
+
+                        <IconButton onClick={() => onDelete(task.taskId)}>
+                            <DeleteIcon sx={{color:'red'}}/>
+                        </IconButton>
+                    </Box>
                 </Box>
+                
+                <Box sx={{display:"flex", flexDirection:'column'}}>
+                    <Box sx={{marginTop: '2rem', marginLeft: '6rem'}}>
+                        <Typography variant="h4" gutterBottom sx={{marginBottom: '2rem'}}>
+                            {task.title}
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{display: 'flex', justifyContent:'space-between', marginLeft: '6rem', marginRight:'14rem'}}>
+                        <Box>
+                            <Typography variant="body1" gutterBottom>
+                                    <strong>Status:</strong> {task.completed ? 'Completed' : 'Ongoing'}
+                                </Typography>
+                            <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Priority:</strong>
+                                </Typography>
+                                <Box sx={{marginLeft: '1rem', backgroundColor: PriorityColors[task.priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
+                                    {task.priority}
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        <Box>
+                            <Typography variant="body1" gutterBottom>
+                                <strong>Due Date:</strong> {formatDate(task.due_date)}
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Box sx={{margin: '1rem 10rem 0 6rem'}}>
+                        <TextField
+                            fullWidth
+                            multiline
+                            variant='outlined'
+                            label='Description'
+                            value={task.description}
+                            slotProps={{readOnly: true}}
+                            />
+
+                    </Box>
+                    
+                </Box>
+
+                
+                
             </Box>
         </Modal>
     );
 };
+
+const ModalDelete = ({open, onClose, onConfirm, taskTitle}) => {
+    return (
+        <Modal
+            open={open}
+            onClose={onClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+        >
+            <Box sx={{
+                ...style,
+                borderRadius: '0.75rem',
+            }}>
+                <Box>
+                    <Typography id="modal-modal-title" variant="h5" component="h2" sx={{color: 'red'}}>
+                        Delete Task
+                    </Typography>
+                </Box>
+                
+                <Box>
+                    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                        Are you sure you want to delete task "<strong>{taskTitle}</strong>"?
+                    </Typography>
+                </Box>
+                
+                <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 4}}>
+                    <Button variant="contained" onClick={onClose}>Cancel</Button>
+                    <Button variant="contained" color='error' onClick={onConfirm}>Delete</Button>
+                </Box>
+                
+            </Box>
+        </Modal>
+    );
+}
 
 export default TaskPage;
