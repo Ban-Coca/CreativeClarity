@@ -30,6 +30,9 @@ public class GradeService {
     
     // Create of CRUD
     public GradeEntity postGradeRecord(GradeEntity grade) {
+        if (grade.getCourse() == null || courseRepo.findById(grade.getCourse().getCourseId()).isEmpty()) {
+            throw new IllegalArgumentException("Invalid course ID");
+        }
         return grepo.save(grade);
     }
 
@@ -55,6 +58,9 @@ public class GradeService {
     // Update of CRUD
     public GradeEntity putGradeDetails(int gradeId, GradeEntity newGradeDetails) {
         GradeEntity grade = grepo.findById(gradeId).orElseThrow(() -> new NoSuchElementException("Grade " + gradeId + " not found"));
+        if (newGradeDetails.getCourse() == null || courseRepo.findById(newGradeDetails.getCourse().getCourseId()).isEmpty()) {
+            throw new IllegalArgumentException("Invalid course ID");
+        }
         grade.setTotal_points(newGradeDetails.getTotal_points());
         grade.setScore(newGradeDetails.getScore());
         grade.setDateRecorded(newGradeDetails.getDateRecorded());

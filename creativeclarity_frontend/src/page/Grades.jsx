@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert, Paper, Typography, Grid, Container } from '@mui/material';
 import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 
-function Grades({ courseId }) {
-  const [grades, setGrades] = useState([]);
+axios.defaults.baseURL = 'http://localhost:8080'; // Add this line to set the base URL for axios
+
+function Grades({ fetchCourses }) {
+  const { courseId } = useParams();
+  const navigate = useNavigate();
+  const [grades, setGrades] = useState(() => {
+    const savedGrades = localStorage.getItem('grades');
+    return savedGrades ? JSON.parse(savedGrades) : [];
+  });
   const [gradeModalOpen, setGradeModalOpen] = useState(false);
   const [gradeDetails, setGradeDetails] = useState({
     score: '', 
     total_points: '',
     assessment_type: '',
     dateRecorded: '',
-
   });
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [snackbar, setSnackbar] = useState({
@@ -38,11 +45,17 @@ function Grades({ courseId }) {
       const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`);
       console.log('Grades fetched:', response.data);
       setGrades(response.data);
+      localStorage.setItem('grades', JSON.stringify(response.data));
     } catch (error) {
       console.error('Error fetching grades:', error);
+      console.error('Error details:', error.response?.data || error.message);
       showSnackbar('Failed to fetch grades', 'error');
     }
   };
+
+  useEffect(() => {
+    fetchGrades();
+  }, [courseId]);
 
   const handleGradeChange = (e) => {
     const { name, value } = e.target;
@@ -65,14 +78,23 @@ function Grades({ courseId }) {
         assessment_type: gradeDetails.assessment_type
       };
       console.log('Submitting grade data:', gradeData); // Add this line to log the grade data
+      let response;
       if (selectedGrade) {
-        await axios.put(`/api/grade/putgradedetails?gradeId=${selectedGrade}`, gradeData);
+        response = await axios.put(`/api/grade/putgradedetails?gradeId=${selectedGrade}`, gradeData);
         showSnackbar('Grade updated successfully');
       } else {
-        await axios.post(`/api/grade/postgraderecord`, gradeData);
+        response = await axios.post(`/api/grade/postgraderecord`, gradeData);
         showSnackbar('Grade added successfully');
       }
-      fetchGrades(); // Fetch grades without appending
+      setGrades(prev => {
+        const updatedGrades = selectedGrade
+          ? prev.map(grade => grade.gradeId === selectedGrade ? response.data : grade)
+          : [...prev, response.data];
+        localStorage.setItem('grades', JSON.stringify(updatedGrades));
+        return updatedGrades;
+      });
+      console.log('Fetching courses after grade submit');
+      await fetchCourses(); // Ensure fetchCourses is awaited
       setGradeModalOpen(false);
       setSelectedGrade(null);
       setGradeDetails({
@@ -103,38 +125,64 @@ function Grades({ courseId }) {
     try {
       await axios.delete(`/api/grade/deletegradedetails/${gradeId}`);
       showSnackbar('Grade deleted successfully');
-      fetchGrades();
+      setGrades(prev => {
+        const updatedGrades = prev.filter(grade => grade.gradeId !== gradeId);
+        localStorage.setItem('grades', JSON.stringify(updatedGrades));
+        return updatedGrades;
+      });
+      await fetchGrades(); // Ensure fetchGrades is awaited
+      await fetchCourses(); // Ensure fetchCourses is awaited
     } catch (error) {
       console.error('Error deleting grade:', error);
       showSnackbar(`Failed to delete grade: ${error.response?.data || error.message}`, 'error');
     }
   };
 
-  useEffect(() => {
-    fetchGrades();
-  }, [courseId]);
-
   return (
-    <div>
-      <Button
-        variant="outlined"
-        color="secondary"
-        onClick={() => setGradeModalOpen(true)}
-      >
-        Add Grade
-      </Button>
-      <div className="grade-list">
-        {grades.map((grade) => (
-          <div key={grade.gradeId} className="grade-item">
-            <p>Score: {grade.score}</p>
-            <p>Total Points: {grade.total_points}</p> {/* Changed totalPoints to total_points */}
-            <p>Assessment Type: {grade.assessment_type}</p> {/* Added assessment_type */}
-            <p>Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}</p>
-            <Button variant="outlined" color="primary" onClick={() => handleGradeEdit(grade)}>Edit</Button>
-            <Button variant="outlined" color="error" onClick={() => handleGradeDelete(grade.gradeId)}>Delete</Button>
-          </div>
-        ))}
-      </div>
+    <Container>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', m: 3 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate('/')}
+        >
+          Back to Courses
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setGradeModalOpen(true)}
+        >
+          Add Grade
+        </Button>
+      </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Paper elevation={3} sx={{ padding: 2, maxHeight: '70vh', overflowY: 'auto', width: '350px' }}>
+          <Typography variant="h5" gutterBottom>
+            Grade List
+          </Typography>
+          {grades.map((grade) => (
+            <Paper key={grade.gradeId} elevation={3} sx={{ padding: 3, mb: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Assessment Type: {grade.assessment_type}
+              </Typography>
+              <Typography variant="body1">
+                Score: {grade.score}
+              </Typography>
+              <Typography variant="body1">
+                Total Points: {grade.total_points}
+              </Typography>
+              <Typography variant="body1">
+                Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                <Button variant="outlined" color="primary" onClick={() => handleGradeEdit(grade)}>Edit</Button>
+                <Button variant="outlined" color="error" onClick={() => handleGradeDelete(grade.gradeId)}>Delete</Button>
+              </Box>
+            </Paper>
+          ))}
+        </Paper>
+      </Box>
 
       <Dialog
         open={gradeModalOpen}
@@ -211,7 +259,7 @@ function Grades({ courseId }) {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </div>
+    </Container>
   );
 }
 

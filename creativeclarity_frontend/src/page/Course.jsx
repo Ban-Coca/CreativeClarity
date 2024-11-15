@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Box, 
   Button, 
@@ -23,6 +23,9 @@ import Frame from '../components/Frame';
 import '../components/css/Course.css';
 import { ArrowBack } from '@mui/icons-material';
 import Grades from './Grades'; // Import the Grades component
+import { Link, useLocation } from 'react-router-dom';
+
+axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
 
 function Course() {
   const [courses, setCourses] = useState([]); // Ensure initial state is an empty array
@@ -42,6 +45,8 @@ function Course() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [courseGridVisible, setCourseGridVisible] = useState(true); // New state for course grid visibility
+  const location = useLocation();
 
   // Define semester options
   const semesterOptions = [
@@ -49,8 +54,6 @@ function Course() {
     { value: '2nd Semester', label: '2nd Semester', period:'January-May' },
     { value: 'Summer', label: 'Summer', period:'June-July' }
   ];
-
-  axios.defaults.baseURL = 'http://localhost:8080';
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
@@ -61,21 +64,22 @@ function Course() {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       console.log('Fetching courses...');
       const response = await axios.get('/api/course/getallcourse');
       console.log('Courses fetched:', response.data);
       setCourses(Array.isArray(response.data) ? response.data : []); // Ensure response data is an array
+      setCourseGridVisible(true); // Ensure course grid is visible after fetching courses
     } catch (error) {
       console.error('Error fetching courses:', error);
       showSnackbar('Failed to fetch courses', 'error');
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [fetchCourses, location]);
 
   const handleOpen = (course = null) => {
     if (course) {
@@ -129,7 +133,8 @@ function Course() {
         showSnackbar('Course created successfully');
       }
 
-      await fetchCourses();
+      console.log('Fetching courses after course submit');
+      await fetchCourses(); // Fetch courses after creating or updating
       handleClose();
     } catch (error) {
       const errorMessage = error.response?.data || error.message || 'An unknown error occurred';
@@ -188,26 +193,35 @@ function Course() {
             </Button>
           </div>
 
-          <div className="course-grid">
-            {courses.map((course) => (
-              <div key={course.courseId} className="course-card" style={{ position: 'relative' }}>
-                <h3>{course.courseName}</h3>
-                <p>{course.code}</p>
-                <p>{course.semester} - {course.academicYear}</p>
-                
-                <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                  <IconButton onClick={(event) => handleMenuClick(event, course)}>
-                    <MoreVertIcon />
-                  </IconButton>
-                  <p>{course.subject}</p>
+          {courseGridVisible && ( // Conditionally render course grid
+            <div className="course-grid">
+              {courses.map((course) => (
+                <div key={course.courseId} className="course-card" style={{ position: 'relative' }}>
+                  <h3>{course.courseName}</h3>
+                  <p>{course.code}</p>
+                  <p>{course.semester} - {course.academicYear}</p>
                   
-                </Box>
-                <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center' }}>
-                  <Grades courseId={course.courseId} />
-                </Box>
-              </div>
-            ))}
-          </div>
+                  <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                    <IconButton onClick={(event) => handleMenuClick(event, course)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <p>{course.subject}</p>
+                    
+                  </Box>
+                  <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center' }}>
+                    <Button
+                      component={Link}
+                      to={`/grades/${course.courseId}`}
+                      variant="outlined"
+                      color="primary"
+                    >
+                      View Grades
+                    </Button>
+                  </Box>
+                </div>
+              ))}
+            </div>
+          )}
 
           <Menu
             anchorEl={anchorEl}
