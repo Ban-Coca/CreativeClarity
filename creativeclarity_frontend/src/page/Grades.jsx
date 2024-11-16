@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert, Paper, Typography, Grid, Container } from '@mui/material';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import SideBar from '../components/SideBar'; // Import SideBar component
+import Frame from '../components/Frame'; // Import Frame component
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Add this line to set the base URL for axios
 
@@ -139,127 +141,133 @@ function Grades({ fetchCourses }) {
   };
 
   return (
-    <Container>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', m: 3 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate('/')}
-        >
-          Back to Courses
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => setGradeModalOpen(true)}
-        >
-          Add Grade
-        </Button>
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Paper elevation={3} sx={{ padding: 2, maxHeight: '70vh', overflowY: 'auto', width: '350px' }}>
-          <Typography variant="h5" gutterBottom>
-            Grade List
-          </Typography>
-          {grades.map((grade) => (
-            <Paper key={grade.gradeId} elevation={3} sx={{ padding: 3, mb: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Assessment Type: {grade.assessment_type}
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      <SideBar /> {/* Add SideBar component */}
+      <Box sx={{ flexGrow: 1 }}>
+        <Frame /> {/* Add Frame component */}
+        <Container>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', m: 3 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate('/')}
+            >
+              Back to Courses
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setGradeModalOpen(true)}
+            >
+              Add Grade
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Paper elevation={3} sx={{ padding: 2, maxHeight: '70vh', overflowY: 'auto', width: '350px' }}>
+              <Typography variant="h5" gutterBottom>
+                Grade List
               </Typography>
-              <Typography variant="body1">
-                Score: {grade.score}
-              </Typography>
-              <Typography variant="body1">
-                Total Points: {grade.total_points}
-              </Typography>
-              <Typography variant="body1">
-                Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                <Button variant="outlined" color="primary" onClick={() => handleGradeEdit(grade)}>Edit</Button>
-                <Button variant="outlined" color="error" onClick={() => handleGradeDelete(grade.gradeId)}>Delete</Button>
-              </Box>
+              {grades.map((grade) => (
+                <Paper key={grade.gradeId} elevation={3} sx={{ padding: 3, mb: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Assessment Type: {grade.assessment_type}
+                  </Typography>
+                  <Typography variant="body1">
+                    Score: {grade.score}
+                  </Typography>
+                  <Typography variant="body1">
+                    Total Points: {grade.total_points}
+                  </Typography>
+                  <Typography variant="body1">
+                    Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                    <Button variant="outlined" color="primary" onClick={() => handleGradeEdit(grade)}>Edit</Button>
+                    <Button variant="outlined" color="error" onClick={() => handleGradeDelete(grade.gradeId)}>Delete</Button>
+                  </Box>
+                </Paper>
+              ))}
             </Paper>
-          ))}
-        </Paper>
-      </Box>
+          </Box>
 
-      <Dialog
-        open={gradeModalOpen}
-        onClose={() => setGradeModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>{selectedGrade ? 'Edit Grade' : 'Add Grade'}</DialogTitle>
-        <DialogContent>
-          <TextField
-            name="score"
-            label="Score"
-            value={gradeDetails.score}
-            onChange={handleGradeChange}
+          <Dialog
+            open={gradeModalOpen}
+            onClose={() => setGradeModalOpen(false)}
+            maxWidth="sm"
             fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            name="total_points"
-            label="Total Points"
-            value={gradeDetails.total_points} // Changed totalPoints to total_points
-            onChange={handleGradeChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            name="assessment_type"
-            label="Assessment Type"
-            value={gradeDetails.assessment_type}
-            onChange={handleGradeChange}
-            fullWidth
-            margin="normal"
-            required
-          /> {/* Added assessment_type */}
-          <TextField
-            name="dateRecorded"
-            label="Date Recorded"
-            type="date"
-            value={gradeDetails.dateRecorded}
-            onChange={handleGradeChange}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-            margin="normal"
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setGradeModalOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleGradeSubmit} 
-            color="primary" 
-            variant="contained"
           >
-            {selectedGrade ? 'Update Grade' : 'Add Grade'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <DialogTitle>{selectedGrade ? 'Edit Grade' : 'Add Grade'}</DialogTitle>
+            <DialogContent>
+              <TextField
+                name="score"
+                label="Score"
+                value={gradeDetails.score}
+                onChange={handleGradeChange}
+                fullWidth
+                margin="normal"
+                required
+              />
+              <TextField
+                name="total_points"
+                label="Total Points"
+                value={gradeDetails.total_points} // Changed totalPoints to total_points
+                onChange={handleGradeChange}
+                fullWidth
+                margin="normal"
+                required
+              />
+              <TextField
+                name="assessment_type"
+                label="Assessment Type"
+                value={gradeDetails.assessment_type}
+                onChange={handleGradeChange}
+                fullWidth
+                margin="normal"
+                required
+              /> {/* Added assessment_type */}
+              <TextField
+                name="dateRecorded"
+                label="Date Recorded"
+                type="date"
+                value={gradeDetails.dateRecorded}
+                onChange={handleGradeChange}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                margin="normal"
+                required
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setGradeModalOpen(false)} color="primary">
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleGradeSubmit} 
+                color="primary" 
+                variant="contained"
+              >
+                {selectedGrade ? 'Update Grade' : 'Add Grade'}
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={handleSnackbarClose} 
-          severity={snackbar.severity} 
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+          <Snackbar 
+            open={snackbar.open} 
+            autoHideDuration={3000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          >
+            <Alert 
+              onClose={handleSnackbarClose} 
+              severity={snackbar.severity} 
+              sx={{ width: '100%' }}
+            >
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
+        </Container>
+      </Box>
+    </Box>
   );
 }
 
