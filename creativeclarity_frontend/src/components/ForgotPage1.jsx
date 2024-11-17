@@ -25,7 +25,7 @@ const ForgotPage1 = () => {
     try {
       console.log('Sending request to /api/forgot1 with email:', formData.email);
       
-      const response = await fetch('http://localhost:3001/api/user/forgot1', {
+      const response = await fetch('http://localhost:8080/api/user/forgot1', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

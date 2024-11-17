@@ -8,7 +8,7 @@ const OAuth2RedirectHandler = () => {
     const handleOAuthResponse = async () => {
       try {
         // Get user info after OAuth2 login
-        const response = await fetch('http://localhost:3001/api/user/oauth2/user', {
+        const response = await fetch('http://localhost:8080/api/user/oauth2/user', {
           method: 'GET',
           credentials: 'include',
           headers: {

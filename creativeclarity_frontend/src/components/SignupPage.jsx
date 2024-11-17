@@ -58,7 +58,7 @@ const SignupPage = ({ onSignupSuccess }) => {
     };
     
     try {
-      const response = await fetch('http://localhost:3001/api/user/postuserrecord', {
+      const response = await fetch('http://localhost:8080/api/user/postuserrecord', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

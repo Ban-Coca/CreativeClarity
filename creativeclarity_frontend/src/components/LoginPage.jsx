@@ -11,13 +11,13 @@ const LoginPage = ({ onLoginSuccess }) => {
   const [errorMessages, setErrorMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3001/oauth2/authorization/google';
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
   const handleGithubLogin = () => {
-    window.location.href = 'http://localhost:3001/oauth2/authorization/github';
+    window.location.href = 'http://localhost:8080/oauth2/authorization/github';
   };
   const handleFacebookLogin = () => {
-    window.location.href = 'http://localhost:3001/oauth2/authorization/facebook';
+    window.location.href = 'http://localhost:8080/oauth2/authorization/facebook';
   };
 
   const handleInputChange = (e) => {
@@ -34,7 +34,7 @@ const LoginPage = ({ onLoginSuccess }) => {
     setErrorMessages([]);
 
     try {
-      const response = await fetch('http://localhost:3001/api/user/login', {
+      const response = await fetch('http://localhost:8080/api/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
