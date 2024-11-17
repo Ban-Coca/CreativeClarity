@@ -1,16 +1,16 @@
 import { useState, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import LoginPage from './components/LoginPage';
-import SignupPage from './components/SignupPage';
-import SuccessPage from './components/SuccessPage';
-import ForgotPage1 from './components/ForgotPage1';
-import ForgotPage2 from './components/ForgotPage2';
-import ForgotSuccess from './components/ForgotSuccess';
-import DashboardPage from './components/DashboardPage';
-import ProfileSetupPage from './components/ProfileSetupPage';
-import ProfileSuccessPage from './components/ProfileSuccessPage';
-import OAuth2RedirectHandler from './components/OAuth2RedirectHandler';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import SuccessPage from './pages/SuccessPage';
+import ForgotPage1 from './pages/ForgotPage1';
+import ForgotPage2 from './pages/ForgotPage2';
+import ForgotSuccess from './pages/ForgotSuccess';
+import DashboardPage from './pages/DashboardPage';
+import ProfileSetupPage from './pages/ProfileSetupPage';
+import ProfileSuccessPage from './pages/ProfileSuccessPage';
+import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 
 
 // Custom 404 component
