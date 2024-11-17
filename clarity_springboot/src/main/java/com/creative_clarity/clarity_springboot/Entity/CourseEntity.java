@@ -14,57 +14,57 @@ public class CourseEntity {
 	private int courseId;
 	
 	private String courseName;
-	private String subject;
-	private Date startDate;
-	private Date endDate;
+	private String code;
+	private String semester;
+	private int year;
+	private Date created_at;
 	
 	public CourseEntity() {
 		
 	}
-
-	public CourseEntity( String courseName, String subject, Date startDate, Date endDate) {
+	
+	public CourseEntity(String courseName, String code, String semester, int year, Date created_at) {
 		super();
 		this.courseName = courseName;
-		this.subject = subject;
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.code = code;
+		this.semester = semester;
+		this.year = year;
+		this.created_at = created_at;
 	}
-
+	
 	public int getCourseId() {
 		return courseId;
 	}
-	
 	public String getCourseName() {
 		return courseName;
 	}
-
 	public void setCourseName(String courseName) {
 		this.courseName = courseName;
 	}
-
-	public String getSubject() {
-		return subject;
+	public String getCode() {
+		return code;
+	}
+	public void setCode(String code) {
+		this.code = code;
+	}
+	public String getSemester() {
+		return semester;
+	}
+	public void setSemester(String semester) {
+		this.semester = semester;
+	}
+	public int getYear() {
+		return year;
+	}
+	public void setYear(int year) {
+		this.year = year;
+	}
+	public Date getCreated_at() {
+		return created_at;
+	}
+	public void setCreated_at(Date created_at) {
+		this.created_at = created_at;
 	}
 
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-
-	public Date getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
-
-	public Date getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
-	}
-	
 	
 }
