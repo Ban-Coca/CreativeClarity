@@ -14,9 +14,18 @@ const SignupPage = ({ onSignupSuccess }) => {
 
   const [errorMessages, setErrorMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'phoneNumber') {
+      // Check if input contains only numbers
+      if (!/^\d*$/.test(value)) {
+        setPhoneError('Please enter numbers only');
+      } else {
+        setPhoneError('');
+      }
+    }
     setFormData(prevState => ({
       ...prevState,
       [name]: value
@@ -27,6 +36,12 @@ const SignupPage = ({ onSignupSuccess }) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessages([]);
+
+    if (!/^\d+$/.test(formData.phoneNumber)) {
+      setErrorMessages(['Phone number must contain only numbers']);
+      setIsLoading(false);
+      return;
+    }
     
     if (formData.password !== formData.confirmPassword) {
       setErrorMessages(['Passwords do not match']);
@@ -49,7 +64,7 @@ const SignupPage = ({ onSignupSuccess }) => {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(requestBody), 
       });
 
       // Get response text first

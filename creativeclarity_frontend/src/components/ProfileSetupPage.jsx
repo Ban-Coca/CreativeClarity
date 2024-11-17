@@ -32,10 +32,13 @@ const ProfileSetupPage = () => {
     console.log('Sending form data:', formData);
     
     try {
+      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+
       const response = await fetch('http://localhost:3001/api/user/setup-profile', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Include the Authorization header
         },
         body: JSON.stringify(formData)
       });

@@ -10,6 +10,8 @@ import ForgotSuccess from './components/ForgotSuccess';
 import DashboardPage from './components/DashboardPage';
 import ProfileSetupPage from './components/ProfileSetupPage';
 import ProfileSuccessPage from './components/ProfileSuccessPage';
+import OAuth2RedirectHandler from './components/OAuth2RedirectHandler';
+
 
 // Custom 404 component
 const NotFound = () => {
@@ -93,6 +95,14 @@ const App = () => {
               <PublicRoute>
                   <SignupPage onSignupSuccess={handleLoginSuccess} />
                 </PublicRoute>
+            }
+          />
+
+          <Route 
+            path="/oauth2/redirect" 
+            element={
+              <OAuth2RedirectHandler 
+              />
             }
           />
 

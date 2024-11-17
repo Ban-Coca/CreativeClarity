@@ -10,6 +10,15 @@ const LoginPage = ({ onLoginSuccess }) => {
   });
   const [errorMessages, setErrorMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:3001/oauth2/authorization/google';
+  };
+  const handleGithubLogin = () => {
+    window.location.href = 'http://localhost:3001/oauth2/authorization/github';
+  };
+  const handleFacebookLogin = () => {
+    window.location.href = 'http://localhost:3001/oauth2/authorization/facebook';
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -201,21 +210,30 @@ const LoginPage = ({ onLoginSuccess }) => {
               </div>
 
               <div className="mt-6 grid grid-cols-3 gap-3">
-                <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50">
+              <button 
+                onClick={handleFacebookLogin}
+                className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50"
+              >
+                <img
+                  src="/src/assets/images/facebookIcon2.png"
+                  alt="Facebook"
+                  className="h-7 w-7"
+                />
+              </button>
+                <button 
+                  onClick={handleGithubLogin}
+                  className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50"
+                >
                   <img
-                    src="/src/assets/images/facebookIcon2.png"
-                    alt="Facebook"
+                    src="/src/assets/images/github.png"
+                    alt="Github"
                     className="h-7 w-7"
                   />
                 </button>
-                <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50">
-                  <img
-                    src="/src/assets/images/appleIcon2.png"
-                    alt="Apple"
-                    className="h-7 w-7"
-                  />
-                </button>
-                <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50">
+                <button 
+                  onClick={handleGoogleLogin}
+                  className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50"
+                >
                   <img
                     src="/src/assets/images/googleIcon2.png"
                     alt="Google"

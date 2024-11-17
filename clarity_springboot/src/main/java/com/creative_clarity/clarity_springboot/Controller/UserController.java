@@ -1,8 +1,12 @@
 package com.creative_clarity.clarity_springboot.Controller;
 
 import java.util.List;
+import java.security.Principal;
 import java.util.Date;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +54,11 @@ public class UserController {
 	public String print() {
 		return "Hello, User";
 	}
+
+    @GetMapping("/")
+    public ResponseEntity<String> home() {
+        return ResponseEntity.ok("API is running on port 3001.");
+    }
 
 	@PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
@@ -112,6 +121,51 @@ public class UserController {
             .setExpiration(expiryDate)
             .signWith(SignatureAlgorithm.HS512, jwtSecret)
             .compact();
+    }
+
+    // OAuth2 login
+    @GetMapping("/oauth2/user")
+    public ResponseEntity<?> getOAuth2User(Principal principal) {
+        try {
+            if (principal == null) {
+                return ResponseEntity.status(401)
+                    .body(Map.of("error", "Not authenticated"));
+            }
+
+            OAuth2User oauth2User = ((OAuth2AuthenticationToken) principal).getPrincipal();
+            String email = oauth2User.getAttribute("email");
+            
+            UserEntity user = userv.findByEmail(email);
+            if (user == null) {
+                return ResponseEntity.status(404)
+                    .body(Map.of("error", "User not found"));
+            }
+
+            // Generate JWT token
+            String token = generateToken(user);
+
+            // Create response
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("user", Map.of(
+                "userId", user.getUserId(),
+                "email", user.getEmail(),
+                "username", user.getUsername(),
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "institution", user.getInstitution(),
+                "role", user.getRole(),
+                "academicLevel", user.getAcademicLevel(),
+                "majorField", user.getMajorField()
+            ));
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            logger.error("OAuth2 user info error: ", e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Failed to get user info: " + e.getMessage()));
+        }
     }
 	
 	//Create of CRUD
