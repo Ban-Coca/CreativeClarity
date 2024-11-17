@@ -241,7 +241,7 @@ EnhancedTableToolbar.propTypes = {
   setTasks: PropTypes.func.isRequired,
 };
 
-export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowClick}) {
+export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowClick, loading: externalLoading}) {
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('id');
   const [selected, setSelected] = React.useState([]);
@@ -249,11 +249,9 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [tasks, setTasks] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
   
   React.useEffect(() => {
       setTasks(initialTasks);
-      setLoading(false);
   }, [initialTasks]);
 
   const formatDate = (date) => {
@@ -337,58 +335,64 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} selected={selected} setSelected={setSelected} setTasks={setTasks} />
         <TableContainer>
-          <LoadingComponent loading ={loading}/>
-          {!loading && (
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
-          >
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = selected.includes(row.id);
-                const labelId = `enhanced-table-checkbox-${index}`;
+          <LoadingComponent loading={externalLoading} />
+          {!externalLoading && tasks.length === 0 ? (
+            <Box display="flex" justifyContent="center" alignItems="center" height={200}>
+              <Typography variant="h6" color="textSecondary">
+                No Tasks Available
+              </Typography>
+            </Box>
+          ) : !externalLoading && (
+            <Table
+              sx={{ minWidth: 750 }}
+              aria-labelledby="tableTitle"
+              size={dense ? 'small' : 'medium'}
+            >
+              <EnhancedTableHead
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy}
+                onSelectAllClick={handleSelectAllClick}
+                onRequestSort={handleRequestSort}
+                rowCount={rows.length}
+              />
+              <TableBody>
+                {visibleRows.map((row, index) => {
+                  const isItemSelected = selected.includes(row.id);
+                  const labelId = `enhanced-table-checkbox-${index}`;
 
-                return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        onClick={(event) => handleClick(event, row.id)}
-                        inputProps={{
-                          'aria-labelledby': labelId,
-                        }}
-                      />
-                    </TableCell>  
-                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>
-                      {row.id}
-                    </TableCell>
-                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.title}</TableCell>
-                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.description}</TableCell>
-                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{formatDate(row.due_date)}</TableCell>
-                    <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.priority}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                  return (
+                    <TableRow
+                      hover
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.id}
+                      selected={isItemSelected}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          color="primary"
+                          checked={isItemSelected}
+                          onClick={(event) => handleClick(event, row.id)}
+                          inputProps={{
+                            'aria-labelledby': labelId,
+                          }}
+                        />
+                      </TableCell>  
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>
+                        {row.id}
+                      </TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.title}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.description}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{formatDate(row.due_date)}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.priority}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           )}
         </TableContainer>
         <TablePagination

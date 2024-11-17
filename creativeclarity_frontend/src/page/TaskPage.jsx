@@ -40,6 +40,7 @@ const TaskPage = () => {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openTaskDetails, setOpenTaskDetails] = useState(false);
     const [taskToDelete, setTaskToDelete] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const [editForm, setEditForm] = useState({
         title: '',
@@ -61,6 +62,7 @@ const TaskPage = () => {
     }, []);
 
     const fetchTasks = async () => {
+        setLoading(true);
         try {
             const API_URL = '/api/task/getalltask';
             const response = await axios.get(API_URL, {
@@ -74,6 +76,8 @@ const TaskPage = () => {
         } catch (error) {
             toast.error('Error fetching tasks');
             console.error('Error fetching tasks:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -201,7 +205,7 @@ const TaskPage = () => {
         <Box sx={{
             display: 'flex',
             minHeight: '100vh',
-            fontFamily: 'Roboto, sans-serif'
+            fontFamily: 'Roboto, sans-serif',
         }}>
             <Box sx={{
                 width: '256px',
@@ -215,7 +219,7 @@ const TaskPage = () => {
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                marginLeft: '1.40rem'
+                marginLeft: '1.40rem',
             }}>
                 <Box
                     sx={{position: 'fixed',
@@ -229,7 +233,7 @@ const TaskPage = () => {
                 </Box>
 
                 <Box sx={{
-                    bgcolor: 'white',
+                    bgcolor: '#f9fafb',
                     height: '100%',
                     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                     maxHeight: 'calc(100vh - 64px)',
@@ -239,7 +243,9 @@ const TaskPage = () => {
                     <Box sx={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        mt: '1rem',
+                        ml: '1rem',
                     }}>
                         <Typography variant="h4">Tasks</Typography>
                         <Box>
@@ -247,7 +253,7 @@ const TaskPage = () => {
                         </Box>
                     </Box>
                     <Box sx={{ marginTop: '2rem' }}>
-                        <EnhancedTable tasks={tasks} onRowClick={handleRowClick}/>
+                        <EnhancedTable tasks={tasks} onRowClick={handleRowClick} loading={loading}/>
                     </Box>
                 </Box>
 
@@ -390,8 +396,8 @@ const TaskDetailsModal = ({ task, onClose, open, onDelete }) => {
                         <Box>
                             <Typography variant="body1" gutterBottom>
                                     <strong>Status:</strong> {task.completed ? 'Completed' : 'Ongoing'}
-                                </Typography>
-                            <Box sx={{display: 'flex', alignItems: 'center'}}>
+                            </Typography>
+                            <Box sx={{display: 'flex', alignItems: 'center', mt:'20px'}}>
                                 <Typography variant="body1" gutterBottom>
                                     <strong>Priority:</strong>
                                 </Typography>
