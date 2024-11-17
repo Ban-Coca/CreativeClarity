@@ -2,10 +2,11 @@ package com.creative_clarity.clarity_springboot.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Repository.CourseRepository;
@@ -27,7 +28,11 @@ public class CourseService {
 	
 	//Read of CRUD
 	public List<CourseEntity> getAllCourses(){
-		return crepo.findAll();
+		List<CourseEntity> courses = crepo.findAll();
+		return courses.stream().map(course -> {
+			course.getGrades().forEach(grade -> grade.setCourse(null));
+			return course;
+		}).collect(Collectors.toList());
 	}
 	
 	//Update of CRUD

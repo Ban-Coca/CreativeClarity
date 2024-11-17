@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert, Paper, Typography, Grid, Container } from '@mui/material';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useBeforeUnload } from 'react-router-dom';
 import SideBar from '../components/SideBar'; // Import SideBar component
 import Frame from '../components/Frame'; // Import Frame component
 
@@ -58,6 +58,17 @@ function Grades({ fetchCourses }) {
   useEffect(() => {
     fetchGrades();
   }, [courseId]);
+
+  useEffect(() => {
+    const saveGradesBeforeUnload = () => {
+      localStorage.setItem('grades', JSON.stringify(grades));
+    };
+
+    window.addEventListener('beforeunload', saveGradesBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', saveGradesBeforeUnload);
+    };
+  }, [grades]);
 
   const handleGradeChange = (e) => {
     const { name, value } = e.target;
@@ -133,11 +144,17 @@ function Grades({ fetchCourses }) {
         return updatedGrades;
       });
       await fetchGrades(); // Ensure fetchGrades is awaited
+      console.log('Fetching courses after grade delete');
       await fetchCourses(); // Ensure fetchCourses is awaited
     } catch (error) {
       console.error('Error deleting grade:', error);
       showSnackbar(`Failed to delete grade: ${error.response?.data || error.message}`, 'error');
     }
+  };
+
+  const handleNavigateBack = () => {
+    localStorage.setItem('grades', JSON.stringify(grades));
+    navigate('/');
   };
 
   return (
@@ -150,7 +167,7 @@ function Grades({ fetchCourses }) {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate('/')}
+              onClick={handleNavigateBack}
             >
               Back to Courses
             </Button>
