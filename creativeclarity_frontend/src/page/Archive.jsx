@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import Sidebar from '../Components/Sidebar';
 import '../Components/css/Archive.css';
 import Frame from '../Components/Topbar';
@@ -11,9 +12,9 @@ const ArchivePage = () => {
   const [archives, setArchives] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
-  const [openMenuId, setOpenMenuId] = useState(null); // Track open menu for archive cards
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [archiveToDelete, setArchiveToDelete] = useState(null);
-  const [selectedArchive, setSelectedArchive] = useState(null); // Track selected archive for modal
+  const [selectedArchive, setSelectedArchive] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -32,7 +33,6 @@ const ArchivePage = () => {
     });
   };
 
-  // Show Snackbar function
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({
       open: true,
@@ -49,10 +49,8 @@ const ArchivePage = () => {
   useEffect(() => {
     const fetchArchives = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/archive/getallarchives');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        setArchives(data);
+        const response = await axios.get('http://localhost:8080/api/archive/getallarchives');
+        setArchives(response.data);
       } catch (error) {
         console.error('Error fetching archives:', error);
         showSnackbar('Failed to fetch archives', 'error');
@@ -61,10 +59,8 @@ const ArchivePage = () => {
 
     const fetchCourses = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/course/getallcourse');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        setCourses(data);
+        const response = await axios.get('http://localhost:8080/api/course/getallcourse');
+        setCourses(response.data);
       } catch (error) {
         console.error('Error fetching courses:', error);
         showSnackbar('Failed to fetch courses', 'error');
@@ -77,11 +73,10 @@ const ArchivePage = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/archive/deletearchivedetails/${archiveToDelete}`,
-        { method: 'DELETE' }
+      const response = await axios.delete(
+        `http://localhost:8080/api/archive/deletearchivedetails/${archiveToDelete}`
       );
-      if (response.ok) {
+      if (response.status === 200) {
         setArchives((prevArchives) =>
           prevArchives.filter((a) => a.archiveId !== archiveToDelete)
         );
@@ -98,7 +93,7 @@ const ArchivePage = () => {
   };
 
   const toggleMenu = (id) => {
-      setOpenMenuId(openMenuId === id ? null : id);
+    setOpenMenuId(openMenuId === id ? null : id);
   };
 
   useEffect(() => {
@@ -156,11 +151,11 @@ const ArchivePage = () => {
                   </div>
                   <button
                     className="menu-button"
-                    onClick={() => toggleMenu(archive.archiveId)} // Toggle menu for archive cards
+                    onClick={() => toggleMenu(archive.archiveId)}
                   >
                     ⋮
                   </button>
-                  {openMenuId === archive.archiveId && !selectedArchive && ( // Only show menu if modal isn't open
+                  {openMenuId === archive.archiveId && !selectedArchive && (
                     <div className="dropdown-menu" ref={menuRef}>
                       <button
                         onClick={() => {
@@ -184,18 +179,18 @@ const ArchivePage = () => {
         {selectedArchive && (
           <div className="modal-overlay" onClick={closeArchiveDetailsModal}>
             <div
-              className="modal-content"
+              className="modal-content-archive"
               onClick={(e) => e.stopPropagation()}
             >
               <div className='modal-header'>
                 <h2>{selectedArchive.title}</h2>
                 <button
                   className="menu-button"
-                  onClick={() => toggleMenu(selectedArchive.archiveId)} // Toggle menu for selected archive
+                  onClick={() => toggleMenu(selectedArchive.archiveId)}
                 >
                   ⋮
                 </button>
-                {openMenuId === selectedArchive.archiveId && ( // Show menu for selected archive
+                {openMenuId === selectedArchive.archiveId && (
                   <div className="selected-dropdown-menu" ref={menuRef}>
                     <button
                       onClick={() => {

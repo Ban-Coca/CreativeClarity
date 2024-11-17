@@ -1,54 +1,84 @@
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import SearchIcon from "@mui/icons-material/Search";
-import SettingsIcon from "@mui/icons-material/Settings";
-import { Badge, Box, IconButton, InputBase, Paper } from "@mui/material";
-import React from "react";
+import React from 'react';
+import {
+  AppBar,
+  Toolbar,
+  InputBase,
+  IconButton,
+  Badge,
+  styled,
+  alpha,
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import SettingsIcon from '@mui/icons-material/Settings';
 
-export const Frame = () => {
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
+
+
+export default function TopBar() {
   return (
-    <Box
-      sx={{
-        maxWidth: 1260,
-        height: 64,
-        backgroundColor: "#0aa5ec",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 20px",
-      }}
-    >
-      <Paper
-        component="form"
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          width: 537,
-          padding: "2px 4px",
-          backgroundColor: "#f8fafb",
-          borderRadius: 1,
-          border: "1px solid #e0e0e0",
-        }}
-      >
-        <SearchIcon sx={{ margin: "0 8px" }} />
-        <InputBase
-          sx={{ flex: 1 }}
-          placeholder="Search"
-          inputProps={{ "aria-label": "search" }}
-        />
-      </Paper>
-
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <IconButton aria-label="notifications">
+    <AppBar position="static" sx={{ backgroundColor: '#0aa5ec' }}>
+      <Toolbar>
+        <Search>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="Search…"
+            inputProps={{ 'aria-label': 'search' }}
+          />
+        </Search>
+        <div style={{ flexGrow: 1 }} />
+        <IconButton size="large" aria-label="show 3 new notifications" color="inherit">
           <Badge badgeContent={3} color="error">
             <NotificationsIcon />
           </Badge>
         </IconButton>
-        <IconButton aria-label="settings">
+        <IconButton
+          size="large"
+          aria-label="settings"
+          color="inherit"
+        >
           <SettingsIcon />
         </IconButton>
-      </Box>
-    </Box>
+      </Toolbar>
+    </AppBar>
   );
-};
-
-export default Frame;
+}

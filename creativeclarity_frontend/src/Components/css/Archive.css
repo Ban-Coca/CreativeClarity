@@ -160,7 +160,7 @@ body {
 }
 
 /* Archive Details Modal */
-.modal-content {
+.modal-content-archive {
   max-width: 600px; /* Adjust width */
   width: 40%; /* Ensure it scales to 100% up to the max-width */
   height: auto; /* Allow height to adjust based on content */
@@ -182,12 +182,12 @@ body {
   color: white;
   margin-right: 20px;
 }
-.modal-content h2{
+.modal-content-archive h2{
   margin: 0;
   padding: 20px 0 20px 20px;
   color: #ffffff;
 }
-.modal-content p{
+.modal-content-archive p{
   margin-left: 40px;
   margin-top: 30px;
   margin-right: 40px;
