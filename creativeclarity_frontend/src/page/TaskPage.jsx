@@ -192,7 +192,7 @@ const TaskPage = () => {
             setTasks(tasks.filter(task => task.taskId !== taskToDelete));
             setOpenDeleteModal(false);
             setTaskToDelete(null);
-            setOpen(false);
+            setOpenTaskDetails(false);
             fetchTasks();
         }
     }
