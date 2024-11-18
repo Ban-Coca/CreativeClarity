@@ -39,6 +39,7 @@ public class ArchiveService {
 			archive = arepo.findById(archiveId).get();
 			
 			archive.setTitle(newArchiveDetails.getTitle());
+			archive.setDescription(newArchiveDetails.getDescription());
 			archive.setType(newArchiveDetails.getType());
 			archive.setArchive_date(newArchiveDetails.getArchive_date());
 			archive.setTags(newArchiveDetails.getTags());

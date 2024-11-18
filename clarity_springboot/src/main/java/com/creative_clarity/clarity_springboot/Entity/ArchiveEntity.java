@@ -14,6 +14,7 @@ public class ArchiveEntity {
 	private int archiveId;
 	
 	private String title;
+	private String description;
 	private String type;
 	private Date archive_date;
 	private String tags;
@@ -22,9 +23,10 @@ public class ArchiveEntity {
 		
 	}
 
-	public ArchiveEntity(String title, String type, Date archive_date, String tags) {
+	public ArchiveEntity(String title, String description, String type, Date archive_date, String tags) {
 		super();
 		this.title = title;
+		this.description = description;
 		this.type = type;
 		this.archive_date = archive_date;
 		this.tags = tags;
@@ -42,6 +44,16 @@ public class ArchiveEntity {
 		this.title = title;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Date getArchive_date() {
+		return archive_date;
 	public String getType() {
 		return type;
 	}
@@ -65,6 +77,6 @@ public class ArchiveEntity {
 	public void setTags(String tags) {
 		this.tags = tags;
 	}
-
+	
 	
 }
