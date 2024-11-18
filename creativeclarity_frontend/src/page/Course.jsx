@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from 'axios';
-import SideBar from '../components/SideBar';
+import SideBar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import '../components/css/Course.css';
 
@@ -117,6 +117,7 @@ function Course() {
         showSnackbar('Course updated successfully');
       } else {
         // Create new course
+        console.log(courseData);
         await axios.post('/api/course/postcourserecord', courseData);
         showSnackbar('Course created successfully');
       }
@@ -173,9 +174,9 @@ function Course() {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
-      <SideBar />
-      <Box sx={{ flexGrow: 1 }}>
-        <main className="main-content">
+      <SideBar onLogout={onclick}/>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px' }}>
+        <Box sx={{ marginTop: '64px' }}>
           <div className="title-container">
             <h2>Courses</h2>
             <Button variant="contained" color="primary" onClick={() => handleOpen()}>
@@ -200,120 +201,120 @@ function Course() {
               </div>
             ))}
           </div>
+        </Box>
 
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem onClick={handleEditCourse}>Edit</MenuItem>
-            <MenuItem onClick={handleDeleteConfirmation}>Delete</MenuItem>
-          </Menu>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={handleEditCourse}>Edit</MenuItem>
+          <MenuItem onClick={handleDeleteConfirmation}>Delete</MenuItem>
+        </Menu>
 
-          <Dialog open={modalOpen} onClose={handleClose} maxWidth="sm" fullWidth>
-            <DialogTitle>{selectedCourse ? 'Edit Course' : 'Add Course'}</DialogTitle>
-            <DialogContent>
-              <TextField 
-                name="courseName" 
-                label="Course Name" 
-                value={courseDetails.courseName} 
-                onChange={handleChange} 
-                fullWidth 
-                margin="normal" 
-                required 
-              />
-              <TextField 
-                name="code" 
-                label="Course Code" 
-                value={courseDetails.code} 
-                onChange={handleChange} 
-                fullWidth 
-                margin="normal" 
-                required 
-              />
-              <FormControl fullWidth margin="normal" required>
-                <InputLabel id="semester-label">Semester</InputLabel>
-                <Select
-                  labelId="semester-label"
-                  name="semester"
-                  value={courseDetails.semester}
-                  onChange={handleChange}
-                  label="Semester"
-                >
-                  {semesterOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              
-              {/* Replaced TextField with Select for Academic Year */}
-              <FormControl fullWidth margin="normal" required>
-                <InputLabel id="academic-year-label">Academic Year</InputLabel>
-                <Select
-                  labelId="academic-year-label"
-                  name="academicYear"
-                  value={courseDetails.academicYear}
-                  onChange={handleChange}
-                  label="Academic Year"
-                >
-                  {/* Only two academic year options available */}
-                  <MenuItem value="2024-2025">2024-2025</MenuItem>
-                  <MenuItem value="2025-2026">2025-2026</MenuItem>
-                  <MenuItem value="2026-2027">2026-2027</MenuItem>
-                </Select>
-              </FormControl>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>Cancel</Button>
-              <Button 
-                onClick={handleSubmit}
-                color="primary" 
-                variant="contained"
+        <Dialog open={modalOpen} onClose={handleClose} maxWidth="sm" fullWidth>
+          <DialogTitle>{selectedCourse ? 'Edit Course' : 'Add Course'}</DialogTitle>
+          <DialogContent>
+            <TextField 
+              name="courseName" 
+              label="Course Name" 
+              value={courseDetails.courseName} 
+              onChange={handleChange} 
+              fullWidth 
+              margin="normal" 
+              required 
+            />
+            <TextField 
+              name="code" 
+              label="Course Code" 
+              value={courseDetails.code} 
+              onChange={handleChange} 
+              fullWidth 
+              margin="normal" 
+              required 
+            />
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel id="semester-label">Semester</InputLabel>
+              <Select
+                labelId="semester-label"
+                name="semester"
+                value={courseDetails.semester}
+                onChange={handleChange}
+                label="Semester"
               >
-                {selectedCourse ? 'Update' : 'Create'}
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogContent>
-              Are you sure you want to delete this course?
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-              <Button 
-                onClick={handleDeleteCourse} 
-                sx={{ 
-                  backgroundColor: 'red', 
-                  color: 'white',
-                  '&:hover': {
-                    backgroundColor: 'darkred',
-                  },
-                }}
+                {semesterOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            {/* Replaced TextField with Select for Academic Year */}
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel id="academic-year-label">Academic Year</InputLabel>
+              <Select
+                labelId="academic-year-label"
+                name="academicYear"
+                value={courseDetails.academicYear}
+                onChange={handleChange}
+                label="Academic Year"
               >
-                Delete
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          <Snackbar
-            open={snackbar.open}
-            autoHideDuration={6000}
-            onClose={handleSnackbarClose}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          >
-            <Alert 
-              onClose={handleSnackbarClose} 
-              severity={snackbar.severity}
-              sx={{ width: '100%' }}
+                {/* Only two academic year options available */}
+                <MenuItem value="2024-2025">2024-2025</MenuItem>
+                <MenuItem value="2025-2026">2025-2026</MenuItem>
+                <MenuItem value="2026-2027">2026-2027</MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button 
+              onClick={handleSubmit}
+              color="primary" 
+              variant="contained"
             >
-              {snackbar.message}
-            </Alert>
-          </Snackbar>
-        </main>
+              {selectedCourse ? 'Update' : 'Create'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogContent>
+            Are you sure you want to delete this course?
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={handleDeleteCourse} 
+              sx={{ 
+                backgroundColor: 'red', 
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'darkred',
+                },
+              }}
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert 
+            onClose={handleSnackbarClose} 
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );

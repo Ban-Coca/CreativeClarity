@@ -49,9 +49,9 @@ html, body {
 /* Scrollable content area */
 .course-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
-  padding: 16px;
+  padding: 20px 0;
 }
 
 @media (max-width: 900px) {
@@ -88,7 +88,7 @@ html, body {
   background-color: white;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 8px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   margin: 10px;
   height: 120px; /* Fixed height for consistency */
@@ -103,7 +103,7 @@ html, body {
 }
 
 .course-card h3 {
-  margin: 0 0 10px 0;
+  margin: 0 0 0 0;
   font-size: 18px;
   color: #1976d2;
   /* Allow text to wrap while maintaining layout */

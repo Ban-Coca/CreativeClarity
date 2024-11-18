@@ -3,6 +3,7 @@ package com.creative_clarity.clarity_springboot.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,15 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Service.CourseService;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
-@RequestMapping(method = RequestMethod.GET,path="/api/course")
+@RequestMapping("/api/course")
 public class CourseController {
 	@Autowired
 	CourseService cserv;
@@ -39,10 +38,10 @@ public class CourseController {
 	public List<CourseEntity> getAllCourses(){
 		return cserv.getAllCourses();
 	}
-		
+			
 	//Update of CRUD
-	@PutMapping("/putcoursedetails")
-	public CourseEntity putCourseDetails(@RequestParam int courseId, @RequestBody CourseEntity newCourseDetails) {
+	@PutMapping("/putcoursedetails/{courseId}")
+	public CourseEntity putCourseDetails(@PathVariable int courseId, @RequestBody CourseEntity newCourseDetails) {
 		return cserv.putCourseDetails(courseId, newCourseDetails);
 	}
 		

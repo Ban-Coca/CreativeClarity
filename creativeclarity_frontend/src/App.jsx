@@ -10,6 +10,7 @@ import ForgotSuccess from './pages/ForgotSuccess';
 import DashboardPage from './pages/DashboardPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import ProfileSuccessPage from './pages/ProfileSuccessPage';
+import Course from './page/Course';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 
 
@@ -166,7 +167,14 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/courses"
+            element={
+              <ProtectedRoute>
+                <Course />
+              </ProtectedRoute>
+            }
+            />
           {/* Root route */}
           <Route
             path="/"
