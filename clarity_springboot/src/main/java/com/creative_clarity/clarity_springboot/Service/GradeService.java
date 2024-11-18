@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.creative_clarity.clarity_springboot.Entity.GradeEntity;
+import com.creative_clarity.clarity_springboot.Repository.CourseRepository;
 import com.creative_clarity.clarity_springboot.Repository.GradeRepository;
 
 @Service
@@ -20,13 +21,23 @@ public class GradeService {
     @Autowired
     GradeRepository grepo;
     
+    @Autowired
+    CourseRepository courseRepo; // Add this line to inject CourseRepository
+    
     public GradeService() {
         super();
     }
     
     // Create of CRUD
     public GradeEntity postGradeRecord(GradeEntity grade) {
+        if (grade.getCourse() == null || courseRepo.findById(grade.getCourse().getCourseId()).isEmpty()) {
+            throw new IllegalArgumentException("Invalid course ID");
+        }
         return grepo.save(grade);
+    }
+
+    public List<GradeEntity> getAllGrades(){
+    	return grepo.findAll();
     }
     
     // Read of CRUD
@@ -45,14 +56,16 @@ public class GradeService {
     }
     
     // Update of CRUD
-    public GradeEntity putGradeDetails (int gradeId, GradeEntity newGradeDetails) {
+    public GradeEntity putGradeDetails(int gradeId, GradeEntity newGradeDetails) {
         GradeEntity grade = grepo.findById(gradeId).orElseThrow(() -> new NoSuchElementException("Grade " + gradeId + " not found"));
-        
+        if (newGradeDetails.getCourse() == null || courseRepo.findById(newGradeDetails.getCourse().getCourseId()).isEmpty()) {
+            throw new IllegalArgumentException("Invalid course ID");
+        }
         grade.setTotal_points(newGradeDetails.getTotal_points());
         grade.setScore(newGradeDetails.getScore());
-        grade.setDate_received(newGradeDetails.getDate_received());
+        grade.setDateRecorded(newGradeDetails.getDateRecorded());
         grade.setCourse(newGradeDetails.getCourse());
-        
+        grade.setAssessment_type(newGradeDetails.getAssessment_type());
         return grepo.save(grade);
     }
     
