@@ -51,6 +51,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+
 export default function TopBar() {
   return (
     <AppBar position="static" sx={{ backgroundColor: '#0aa5ec' }}>

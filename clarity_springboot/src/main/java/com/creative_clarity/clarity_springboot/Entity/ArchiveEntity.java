@@ -54,16 +54,10 @@ public class ArchiveEntity {
 
 	public Date getArchive_date() {
 		return archive_date;
-	public String getType() {
-		return type;
 	}
 
 	public void setType(String type) {
 		this.type = type;
-	}
-
-	public Date getArchive_date() {
-		return archive_date;
 	}
 
 	public void setArchive_date(Date archive_date) {
@@ -77,6 +71,8 @@ public class ArchiveEntity {
 	public void setTags(String tags) {
 		this.tags = tags;
 	}
-	
-	
+
+	public String getDescription() {
+		return description;
+	}
 }

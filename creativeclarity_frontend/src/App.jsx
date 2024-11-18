@@ -14,6 +14,7 @@ import Course from './page/Course';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import TaskPage from './pages/TaskPage';
 import ErrorPage from './pages/ErrorPage';
+import ArchivePage from './page/Archive';
 
 // Custom 404 component
 const NotFound = () => {
@@ -189,6 +190,15 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/archive"
+            element={
+              <ProtectedRoute>
+                <ArchivePage/>
+              </ProtectedRoute>
+            }
+          />
+          
           {/* Root route */}
           <Route
             path="/"

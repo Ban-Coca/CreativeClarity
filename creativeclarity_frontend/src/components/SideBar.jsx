@@ -1,30 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  Divider,
-  Box,
-  styled
-} from '@mui/material';
-import {
-  Dashboard as DashboardIcon,
-  MenuBook as MenuBookIcon,
-  Assignment as AssignmentIcon,
-  Check as CheckIcon,
-  Schedule as ScheduleIcon,
-  BarChart as BarChartIcon,
-  ArrowForwardIos as ArrowForwardIosIcon,
-  HelpOutline as HelpOutlineIcon,
-  ExitToApp as ExitToAppIcon,
-  Padding
-} from '@mui/icons-material';
 import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, School } from 'lucide-react';
 
 const SideBar = ( {onLogout}) => {
