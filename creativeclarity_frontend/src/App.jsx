@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -15,16 +15,25 @@ import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import TaskPage from './pages/TaskPage';
 import ErrorPage from './pages/ErrorPage';
 import ArchivePage from './page/Archive';
+import Grades from './page/Grades';
 
 // Custom 404 component
 const NotFound = () => {
   const navigate = useNavigate();
-  
+  const location = useLocation();
+  const error = location.state?.error || {
+    type: 'Not Found',
+    status: 404,
+    message: 'The requested page could not be found.'
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
-        <p className="text-gray-600 mb-4">Page not found</p>
+        <img src="/src/assets/images/ff5f832e40cf3ec7787d1c539bf02ce7.gif" alt="404" className="h-48 w-48 mx-auto mb-8" />
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Error {error.status}</h1>
+        <p className="text-gray-600 mb-2">{error.type}</p>
+        <p className="text-gray-600 mb-4">{error.message}</p>
         <button
           onClick={() => navigate('/')}
           className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
@@ -198,7 +207,14 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          
+          <Route
+            path="/grades/*"
+            element={
+              <ProtectedRoute>
+                <Grades />
+              </ProtectedRoute>
+            }
+            />
           {/* Root route */}
           <Route
             path="/"

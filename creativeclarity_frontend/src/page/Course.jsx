@@ -193,7 +193,7 @@ function Course() {
             </Button>
           </div>
 
-          {courseGridVisible && ( // Conditionally render course grid
+          {courseGridVisible && (
             <div className="course-grid">
               {courses.map((course) => (
                 <div key={course.courseId} className="course-card" style={{ position: 'relative' }}>
@@ -222,6 +222,7 @@ function Course() {
               ))}
             </div>
           )}
+        </Box>
 
         <Menu
           anchorEl={anchorEl}
