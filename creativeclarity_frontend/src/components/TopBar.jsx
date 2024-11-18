@@ -26,8 +26,6 @@ const Search = styled('div')(({ theme }) => ({
     marginLeft: theme.spacing(3),
     width: 'auto',
   },
-  display: 'flex', // Add this line
-  alignItems: 'center', // Add this line
 }));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
@@ -38,12 +36,10 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  left: 0, // Add this line
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: 'inherit',
-  width: '100%', // Add this line
   '& .MuiInputBase-input': {
     padding: theme.spacing(1, 1, 1, 0),
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
@@ -84,4 +80,4 @@ export default function TopBar() {
       </Toolbar>
     </AppBar>
   );
-};
+}

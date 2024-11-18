@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Drawer,
   List,
@@ -24,10 +25,11 @@ import {
   ExitToApp as ExitToAppIcon,
   Padding
 } from '@mui/icons-material';
-import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, School  } from 'lucide-react';
+import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, School } from 'lucide-react';
 
-const SideBar = ({onLogout}) => {
-  const [activeTab, setActiveTab] = React.useState('overview');
+const SideBar = ( {onLogout}) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
   return (
     <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
         <div className="p-6">
@@ -39,7 +41,10 @@ const SideBar = ({onLogout}) => {
           
           <nav className="space-y-2">
             <button 
-              onClick={() => setActiveTab('overview')}
+              onClick={() => {
+                setActiveTab('overview')
+                navigate('/dashboard')
+              }}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                 activeTab === 'overview' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
               }`}
@@ -49,7 +54,10 @@ const SideBar = ({onLogout}) => {
             </button>
 
             <button 
-              onClick={() => setActiveTab('courses')}
+              onClick={() =>{
+                setActiveTab('courses')
+                navigate('/courses')
+              }}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                 activeTab === 'courses' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
               }`}
@@ -57,7 +65,7 @@ const SideBar = ({onLogout}) => {
               <School className="h-5 w-5" />
               <span>Courses</span>
             </button>
-            
+
             <button 
               onClick={() => setActiveTab('calendar')}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
@@ -69,7 +77,10 @@ const SideBar = ({onLogout}) => {
             </button>
             
             <button 
-              onClick={() => setActiveTab('tasks')}
+              onClick={() =>{
+                setActiveTab('tasks')
+                navigate('/tasks')
+              }}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                 activeTab === 'tasks' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
               }`}
@@ -101,4 +112,4 @@ const SideBar = ({onLogout}) => {
   );
 };
 
-export default SideBar;
+export default SideBar; 

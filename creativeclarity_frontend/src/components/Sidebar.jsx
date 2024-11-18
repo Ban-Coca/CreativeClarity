@@ -25,7 +25,7 @@ import {
   ExitToApp as ExitToAppIcon,
   Padding
 } from '@mui/icons-material';
-import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut } from 'lucide-react';
+import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, School } from 'lucide-react';
 
 const SideBar = ( {onLogout}) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -52,7 +52,20 @@ const SideBar = ( {onLogout}) => {
               <BookOpen className="h-5 w-5" />
               <span>Overview</span>
             </button>
-            
+
+            <button 
+              onClick={() =>{
+                setActiveTab('courses')
+                navigate('/courses')
+              }}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                activeTab === 'courses' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
+              }`}
+            >
+              <School className="h-5 w-5" />
+              <span>Courses</span>
+            </button>
+
             <button 
               onClick={() => setActiveTab('calendar')}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
