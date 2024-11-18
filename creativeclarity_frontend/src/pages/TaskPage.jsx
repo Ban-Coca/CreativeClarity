@@ -5,10 +5,10 @@ import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import EnhancedTable from '../components/TablesTask';
 import { Priority, PriorityColors, PriorityList } from '../utils/Priority';
-import './TaskPage.css';
 import { Button, Modal, Box, Typography, Paper, TextField, Select, MenuItem, FormControl, InputLabel, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import PropTypes from 'prop-types';
 import { fetchTasks, createTask, updateTask, deleteTask } from '../service/taskService';
 // Set the base URL for Axios
 axios.defaults.baseURL = 'http://localhost:8080';
@@ -22,14 +22,8 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
-const columns = [
-    { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'title', headerName: 'Title', width: 150 , editable: true},
-    { field: 'description', headerName: 'Description', width: 250 },
-    { field: 'due_date', headerName: 'Due Date', width: 150 }
-]
 
-const TaskPage = () => {
+const TaskPage = ({onLogout}) => {
 
     const [tasks, setTasks] = useState([]);
     const [open, setOpen] = useState(false);
@@ -202,60 +196,23 @@ const TaskPage = () => {
     }
 
     return (
-        <Box sx={{
-            display: 'flex',
-            minHeight: '100vh',
-            fontFamily: 'Roboto, sans-serif',
-        }}>
-            <Box sx={{
-                width: '256px',
-                bgcolor: 'white',
-                boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
-            }}>
-                <Sidebar />
-            </Box>
+        <div className="flex min-h-screen">
+            <div className="w-64 bg-white shadow-md">
+                <Sidebar onLogout={onLogout}/>
+            </div>
             <Toaster richColors position="bottom-right" closeButton/>
-            <Box sx={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                marginLeft: '1.40rem',
-            }}>
-                <Box
-                    sx={{position: 'fixed',
-                        top: 0,
-                        right: 0,
-                        left: '256px', // Matches sidebar width
-                        zIndex: 1100,
-                        bgcolor: 'white',}}
-                >
-                    <Topbar />
-                </Box>
-
-                <Box sx={{
-                    bgcolor: '#f9fafb',
-                    height: '100%',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                    maxHeight: 'calc(100vh - 64px)',
-                    marginTop: '64px',
-                    p: '16px'
-                }}>
-                    <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        mt: '1rem',
-                        ml: '1rem',
-                    }}>
-                        <Typography variant="h4">Tasks</Typography>
-                        <Box>
+            <div className="flex-1 flex flex-col">
+                <div className="bg-[#f9fafb] h-full shadow-sm max-h-full p-4 w-100">
+                    <div className="flex justify-between items-center mt-4 ml-4">
+                        {tasks.length === 0 ? <h1 className="text-2xl font-bold text-gray-900">Ready to start tracking tasks?</h1> : <h1 className="text-2xl font-bold text-gray-900">My Tasks</h1>}
+                        <div>
                             <Button variant="contained" onClick={handleOpen}>Add Task</Button>
-                        </Box>
-                    </Box>
-                    <Box sx={{ marginTop: '2rem' }}>
-                        <EnhancedTable tasks={tasks} onRowClick={handleRowClick} loading={loading}/>
-                    </Box>
-                </Box>
+                        </div>
+                    </div>
+                    <div className="mt-8">
+                        <EnhancedTable tasks={tasks} onRowClick={handleRowClick} loading={loading} open={handleOpen}/>
+                    </div>
+                </div>
 
                 <Modal
                     className='modalAddTask'
@@ -266,10 +223,8 @@ const TaskPage = () => {
                     sx={{border:0, borderRadius:"2rem"}}
                 >
                     <Box sx={style}>
-                        <Typography id="modal-modal-title" variant="h4" component="h2">
-                            Add Task
-                        </Typography>
-                        <Typography id="modal-modal-description" sx={{ mt: 2 , display:"flex", flexDirection:"column"}}>
+                        <h2 className="text-2xl font-semibold">Add Task</h2>
+                        <div className="mt-2 flex flex-col">
                             <TextField
                                 label="Title"
                                 variant="outlined"
@@ -321,7 +276,7 @@ const TaskPage = () => {
                             >
                                 Add Task
                             </Button>
-                        </Typography>
+                        </div>
                     </Box>
                 </Modal>
                 <TaskDetailsModal 
@@ -335,8 +290,8 @@ const TaskPage = () => {
                     onConfirm={confirmDelete}
                     taskTitle={tasks.find(task => task.taskId === taskToDelete)?.title || ''}
                 />
-            </Box>
-        </Box>
+            </div>
+        </div>
     );
 };
 
@@ -355,64 +310,46 @@ const TaskDetailsModal = ({ task, onClose, open, onDelete }) => {
             aria-labelledby="task-details-modal"
             aria-describedby="task-details-description"
         >
-            <Box sx={{
-                ...style,
-                width: 800,
-                height: 500,
-                border: 'none',
-                borderRadius: '0.75rem',
-                p: 2    
-            }}>
-                <Box sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'left',
-                    borderBottom: '1px solid #ccc',
-                }}>
-                    <Typography variant="h6" gutterBottom>
-                        Task Details
-                    </Typography>
-                    <Box sx={{
-                        display: 'flex',
-                    }}>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-white rounded-xl p-2">
+                <div className="flex justify-between items-left border-b border-gray-300">
+                    <h2 className="text-xl font-semibold mb-2">Task Details</h2>
+                    <div className="flex">
                         <IconButton onClick={onclick}>
                             <EditIcon/>
                         </IconButton>
 
                         <IconButton onClick={() => onDelete(task.taskId)}>
-                            <DeleteIcon sx={{color:'red'}}/>
+                            <DeleteIcon className="text-red-500"/>
                         </IconButton>
-                    </Box>
-                </Box>
+                    </div>
+                </div>
                 
-                <Box sx={{display:"flex", flexDirection:'column'}}>
-                    <Box sx={{marginTop: '2rem', marginLeft: '6rem'}}>
-                        <Typography variant="h4" gutterBottom sx={{marginBottom: '2rem'}}>
-                            {task.title}
-                        </Typography>
-                    </Box>
+                <div className="flex flex-col">
+                    <div className="mt-8 ml-24">
+                        <h1 className="text-2xl font-semibold mb-8">{task.title}</h1>
+                    </div>
 
-                    <Box sx={{display: 'flex', justifyContent:'space-between', marginLeft: '6rem', marginRight:'14rem'}}>
-                        <Box>
-                            <Typography variant="body1" gutterBottom>
-                                    <strong>Status:</strong> {task.completed ? 'Completed' : 'Ongoing'}
-                            </Typography>
-                            <Box sx={{display: 'flex', alignItems: 'center', mt:'20px'}}>
-                                <Typography variant="body1" gutterBottom>
+                    <div className="flex justify-between ml-24 mr-56">
+                        <div>
+                            <p className="mb-2">
+                                <strong>Status:</strong> {task.completed ? 'Completed' : 'Ongoing'}
+                            </p>
+                            <div className="flex items-center mt-5">
+                                <p className="mb-2">
                                     <strong>Priority:</strong>
-                                </Typography>
-                                <Box sx={{marginLeft: '1rem', backgroundColor: PriorityColors[task.priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
+                                </p>
+                                <div className="ml-4" style={{backgroundColor: PriorityColors[task.priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
                                     {task.priority}
-                                </Box>
-                            </Box>
-                        </Box>
+                                </div>
+                            </div>
+                        </div>
 
-                        <Box>
-                            <Typography variant="body1" gutterBottom>
+                        <div>
+                            <p className="mb-2">
                                 <strong>Due Date:</strong> {formatDate(task.due_date)}
-                            </Typography>
-                        </Box>
-                    </Box>
+                            </p>
+                        </div>
+                    </div>
                     <Box sx={{margin: '1rem 10rem 0 6rem'}}>
                         <TextField
                             fullWidth
@@ -425,11 +362,8 @@ const TaskDetailsModal = ({ task, onClose, open, onDelete }) => {
 
                     </Box>
                     
-                </Box>
-
-                
-                
-            </Box>
+                </div>
+            </div>
         </Modal>
     );
 };
@@ -442,30 +376,27 @@ const ModalDelete = ({open, onClose, onConfirm, taskTitle}) => {
             aria-labelledby="modal-modal-title"
             aria-describedby="modal-modal-description"
         >
-            <Box sx={{
-                ...style,
-                borderRadius: '0.75rem',
-            }}>
-                <Box>
-                    <Typography id="modal-modal-title" variant="h5" component="h2" sx={{color: 'red'}}>
-                        Delete Task
-                    </Typography>
-                </Box>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] bg-white p-4 rounded-xl">
+                <div>
+                    <h2 className="text-xl font-semibold text-red-500">Delete Task</h2>
+                </div>
                 
-                <Box>
-                    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                <div>
+                    <p className="mt-2">
                         Are you sure you want to delete task "<strong>{taskTitle}</strong>"?
-                    </Typography>
-                </Box>
+                    </p>
+                </div>
                 
-                <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 4}}>
+                <div className="flex justify-between mt-4">
                     <Button variant="contained" onClick={onClose}>Cancel</Button>
                     <Button variant="contained" color='error' onClick={onConfirm}>Delete</Button>
-                </Box>
+                </div>
                 
-            </Box>
+            </div>
         </Modal>
     );
 }
-
+TaskPage.propTypes = {
+    onLogout: PropTypes.func.isRequired
+  };
 export default TaskPage;

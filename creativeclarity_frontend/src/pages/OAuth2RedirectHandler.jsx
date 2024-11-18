@@ -27,6 +27,7 @@ const OAuth2RedirectHandler = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('isAuthenticated', 'true');
         
+        console.log('OAuth2 redirect successful:', data);
         // Store additional profile info if available
         if (data.user.picture) {
           localStorage.setItem('userPicture', data.user.picture);

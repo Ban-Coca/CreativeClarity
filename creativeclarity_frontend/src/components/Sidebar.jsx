@@ -1,4 +1,6 @@
 import React from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Drawer,
   List,
@@ -23,81 +25,78 @@ import {
   ExitToApp as ExitToAppIcon,
   Padding
 } from '@mui/icons-material';
+import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut } from 'lucide-react';
 
-const drawerWidth = 280;
-
-const StyledDrawer = styled(Drawer)(({ theme }) => ({
-  width: drawerWidth,
-  flexShrink: 0,
-  '& .MuiDrawer-paper': {
-    width: drawerWidth,
-    boxSizing: 'border-box',
-    backgroundColor: theme.palette.background.paper,
-    borderRight: `1px solid ${theme.palette.divider}`,
-    padding: '20px',
-  },
-}));
-
-const Logo = styled(Typography)(({ theme }) => ({
-  fontWeight: 'bold',
-  color: theme.palette.primary.main,
-  marginBottom: theme.spacing(2),
-  textAlign: 'center',
-}));
-
-const SideBar = () => {
+const SideBar = ( {onLogout}) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
   return (
-    <StyledDrawer variant="permanent" anchor="left">
-      <Logo variant="h6">
-        CreativeClarity
-      </Logo>
-      <List>
-        {[
-          { text: 'Overview', icon: <DashboardIcon /> },
-          { text: 'Courses', icon: <MenuBookIcon /> },
-          { text: 'Assignments', icon: <AssignmentIcon /> },
-          { text: 'Tasks', icon: <CheckIcon />, active: true },
-          { text: 'My Schedule', icon: <ScheduleIcon /> },
-          { text: 'Progress', icon: <BarChartIcon />, hasArrow: true },
-        ].map((item, index) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              sx={item.active ? {
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                borderRadius: 1,
-                '&:hover': {
-                  bgcolor: 'primary.dark',
-                },
-              } : {}}
+    <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
+        <div className="p-6">
+          <img
+            src="/src/assets/images/logoCreativeClarity.png"
+            alt="Logo"
+            className="h-12 mb-8"
+          />
+          
+          <nav className="space-y-2">
+            <button 
+              onClick={() => {
+                setActiveTab('overview')
+                navigate('/dashboard')
+              }}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                activeTab === 'overview' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
+              }`}
             >
-              <ListItemIcon sx={item.active ? { color: 'inherit' } : {}}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-              {item.hasArrow && <ArrowForwardIosIcon fontSize="small" />}
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Box sx={{ mt: 'auto' }}>
-        <Divider />
-        <List>
-          {[
-            { text: 'Help', icon: <HelpOutlineIcon /> },
-            { text: 'Logout', icon: <ExitToAppIcon /> },
-          ].map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-    </StyledDrawer>
+              <BookOpen className="h-5 w-5" />
+              <span>Overview</span>
+            </button>
+            
+            <button 
+              onClick={() => setActiveTab('calendar')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                activeTab === 'calendar' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
+              }`}
+            >
+              <Calendar className="h-5 w-5" />
+              <span>Calendar</span>
+            </button>
+            
+            <button 
+              onClick={() =>{
+                setActiveTab('tasks')
+                navigate('/tasks')
+              }}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                activeTab === 'tasks' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
+              }`}
+            >
+              <CheckSquare className="h-5 w-5" />
+              <span>Tasks</span>
+            </button>
+            
+            <button 
+              onClick={() => setActiveTab('profile')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                activeTab === 'profile' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
+              }`}
+            >
+              <User className="h-5 w-5" />
+              <span>Profile</span>
+            </button>
+          </nav>
+        </div>
+        
+        <button 
+          onClick={onLogout}
+          className="absolute bottom-6 left-6 flex items-center space-x-2 text-gray-600 hover:text-red-600 transition"
+        >
+          <LogOut className="h-5 w-5" />
+          <span>Logout</span>
+        </button>
+      </div>
   );
 };
 
-export default SideBar;
+export default SideBar; 

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut } from 'lucide-react';
+import SideBar from '../components/Sidebar';
 
 const DashboardPage = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  // const [activeTab, setActiveTab] = useState('overview');
 
   // Sample data - in a real app, this would come from your backend
   const upcomingAssignments = [
@@ -21,7 +22,7 @@ const DashboardPage = ({ onLogout }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
+      {/* <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
         <div className="p-6">
           <img
             src="/src/assets/images/logoCreativeClarity.png"
@@ -79,8 +80,8 @@ const DashboardPage = ({ onLogout }) => {
           <LogOut className="h-5 w-5" />
           <span>Logout</span>
         </button>
-      </div>
-
+      </div> */}
+      <SideBar onLogout={onLogout} />
       {/* Main Content */}
       <div className="ml-64 p-8">
         {/* Header */}

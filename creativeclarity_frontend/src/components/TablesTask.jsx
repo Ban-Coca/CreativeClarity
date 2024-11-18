@@ -31,6 +31,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { lineWobble } from 'ldrs'
+import { Plus, BookCheck } from 'lucide-react';
 
 // Services and Utils
 import axios from 'axios';
@@ -241,7 +242,7 @@ EnhancedTableToolbar.propTypes = {
   setTasks: PropTypes.func.isRequired,
 };
 
-export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowClick, loading: externalLoading}) {
+export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowClick, loading: externalLoading, open: open}) {
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('id');
   const [selected, setSelected] = React.useState([]);
@@ -337,10 +338,21 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
         <TableContainer>
           <LoadingComponent loading={externalLoading} />
           {!externalLoading && tasks.length === 0 ? (
-            <Box display="flex" justifyContent="center" alignItems="center" height={200}>
-              <Typography variant="h6" color="textSecondary">
-                No Tasks Available
-              </Typography>
+            <Box display="flex" flexDirection='column' justifyContent="center" alignItems="center" padding={16} height={200}>
+              <div className='rounded-full bg-blue-50 p-3 mb-4'>
+                <BookCheck className="w-8 h-8 text-blue-500" />
+              </div>
+              <p className='text-sm text-gray-500 text-center mb-4 max-w-sm'>
+                Create your first task to get started with organizing your work. 
+                Track deadlines, set priorities, and stay productive!
+              </p>
+              <button 
+                onClick={open}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create your first task
+              </button>
             </Box>
           ) : !externalLoading && (
             <Table
@@ -395,15 +407,17 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
             </Table>
           )}
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        {rows.length > 0 && (
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        )}
       </Paper>
     </Box>
   );
