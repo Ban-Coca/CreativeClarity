@@ -175,7 +175,6 @@ function Course() {
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <SideBar />
       <Box sx={{ flexGrow: 1 }}>
-        <TopBar />
         <main className="main-content">
           <div className="title-container">
             <h2>Courses</h2>
@@ -186,10 +185,12 @@ function Course() {
 
           <div className="course-grid">
             {courses.map((course) => (
-              <div key={course.courseId} className="course-card" style={{ position: 'relative' }}>
+              <div key={course.courseId} className="course-card">
                 <h3>{course.courseName}</h3>
-                <p>{course.code}</p>
-                <p>{course.semester} - {course.academicYear}</p>
+                <div className="course-details">
+                  <p>{course.code}</p>
+                  <p>{course.semester} - {course.academicYear}</p>
+                </div>
                 
                 <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                   <IconButton onClick={(event) => handleMenuClick(event, course)}>
