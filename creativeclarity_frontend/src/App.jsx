@@ -12,7 +12,8 @@ import ProfileSetupPage from './pages/ProfileSetupPage';
 import ProfileSuccessPage from './pages/ProfileSuccessPage';
 import Course from './page/Course';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
-
+import TaskPage from './pages/TaskPage';
+import ErrorPage from './pages/ErrorPage';
 
 // Custom 404 component
 const NotFound = () => {
@@ -107,10 +108,14 @@ const App = () => {
             }
           />
 
-          {/* Make success page always accessible */}
+          
           <Route 
             path="/success" 
-            element={<SuccessPage />} 
+            element={
+              <ProtectedRoute>
+                <SuccessPage />
+              </ProtectedRoute>
+              } 
           />
 
           <Route
@@ -175,11 +180,23 @@ const App = () => {
               </ProtectedRoute>
             }
             />
+          
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <TaskPage onLogout={handleLogout}/>
+              </ProtectedRoute>
+            }
+          />
           {/* Root route */}
           <Route
             path="/"
             element={<Navigate to="/login" replace />}  // Always redirect to login
           />
+
+          {/* Error route */}
+          <Route path="/error" element={<ErrorPage />} />
 
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />

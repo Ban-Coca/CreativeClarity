@@ -2,8 +2,9 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut } from 'lucide-react';
 import SideBar from '../components/Sidebar';
+
 const DashboardPage = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  // const [activeTab, setActiveTab] = useState('overview');
 
   // Sample data - in a real app, this would come from your backend
   const upcomingAssignments = [
