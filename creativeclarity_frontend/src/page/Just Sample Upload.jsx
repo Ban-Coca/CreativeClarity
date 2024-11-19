@@ -59,24 +59,25 @@ const Picture = () => {
     const formData = new FormData();
     formData.append("file", selectedFile);
     formData.append("caption", "My file caption");
-
+    formData.append("userId", loggedInUserId); // Replace with the actual user ID
+  
     try {
       const response = await fetch("http://localhost:8080/api/media/upload", {
         method: "POST",
         body: formData,
       });
-
+  
       if (response.ok) {
         const message = await response.text();
         setUploadedMessage(message);
         fetchMedia();
         showSnackbar("File uploaded successfully.");
       } else {
-        showSnackbar("Failed to upload media.", 'error');
+        showSnackbar("Failed to upload media.", "error");
       }
     } catch (error) {
       console.error("Error uploading media:", error);
-      showSnackbar("An error occurred during upload.", 'error');
+      showSnackbar("An error occurred during upload.", "error");
     }
   };
 
