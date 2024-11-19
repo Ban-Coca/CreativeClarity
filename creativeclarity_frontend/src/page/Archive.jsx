@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import Sidebar from '../Components/Sidebar';
-import '../Components/css/Archive.css';
-import Frame from '../Components/Topbar';
+import Sidebar from '../components/Sidebar';
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import { Snackbar, Alert } from '@mui/material';
 
@@ -112,20 +110,20 @@ const ArchivePage = () => {
   );
 
   return (
-    <div className="app-container">
-      <Sidebar />
-      <main className="main-content">
-        <header className="top-bar">
-          <Frame />
-        </header>
-        <section className="archives-section">
-          <div className="section-header">
-            <ArrowBack />
-            <h2 className="section-title">Archives</h2>
+    <div className="flex h-screen bg-gray-100">
+      <div className="w-64 bg-white shadow-md">
+        <Sidebar />
+      </div>
+      
+      <main className="flex-1 p-6 overflow-auto">
+        <section className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center gap-4 mb-6">
+            <ArrowBack className="cursor-pointer" />
+            <h2 className="text-2xl font-semibold">Archives</h2>
             <select
               value={selectedCourse}
               onChange={(e) => setSelectedCourse(e.target.value)}
-              className="course-filter"
+              className="ml-auto px-4 py-2 border rounded-md"
             >
               <option value="">All Courses</option>
               {courses.map((course) => (
@@ -136,30 +134,68 @@ const ArchivePage = () => {
             </select>
           </div>
 
-          <div className="archive-list">
+          <div className="grid gap-4">
             {filteredArchives.length > 0 ? (
               filteredArchives.map((archive) => (
-                <div key={archive.archiveId} className="archive-card">
+                <div key={archive.archiveId} className="bg-white border rounded-lg p-4 flex justify-between items-center">
                   <div
-                    className="archive-content"
+                    className="flex-1 cursor-pointer"
                     onClick={() => openArchiveDetailsModal(archive)}
                   >
-                    <div className="archive-info">
-                      <h3>{archive.title}</h3>
-                      <p>Archived: {formatDate(archive.archive_date)}</p>
-                    </div>
+                    <h3 className="font-semibold">{archive.title}</h3>
+                    <p className="text-gray-600">Archived: {formatDate(archive.archive_date)}</p>
                   </div>
+                  <div className="relative">
+                    <button
+                      className="p-2 hover:bg-gray-100 rounded-full"
+                      onClick={() => toggleMenu(archive.archiveId)}
+                    >
+                      ⋮
+                    </button>
+                    {openMenuId === archive.archiveId && !selectedArchive && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border" ref={menuRef}>
+                        <button
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                          onClick={() => {
+                            setArchiveToDelete(archive.archiveId);
+                            toggleDeleteModal();
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">No archives available.</p>
+            )}
+          </div>
+        </section>
+
+        {/* Archive Details Modal */}
+        {selectedArchive && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeArchiveDetailsModal}>
+            <div
+              className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className='flex justify-between items-center mb-4'>
+                <h2 className="text-2xl font-semibold">{selectedArchive.title}</h2>
+                <div className="relative">
                   <button
-                    className="menu-button"
-                    onClick={() => toggleMenu(archive.archiveId)}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                    onClick={() => toggleMenu(selectedArchive.archiveId)}
                   >
                     ⋮
                   </button>
-                  {openMenuId === archive.archiveId && !selectedArchive && (
-                    <div className="dropdown-menu" ref={menuRef}>
+                  {openMenuId === selectedArchive.archiveId && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border" ref={menuRef}>
                       <button
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
                         onClick={() => {
-                          setArchiveToDelete(archive.archiveId);
+                          setArchiveToDelete(selectedArchive.archiveId);
                           toggleDeleteModal();
                         }}
                       >
@@ -168,52 +204,18 @@ const ArchivePage = () => {
                     </div>
                   )}
                 </div>
-              ))
-            ) : (
-              <p>No archives available.</p>
-            )}
-          </div>
-        </section>
-
-        {/* Archive Details Modal */}
-        {selectedArchive && (
-          <div className="modal-overlay" onClick={closeArchiveDetailsModal}>
-            <div
-              className="modal-content-archive"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className='modal-header'>
-                <h2>{selectedArchive.title}</h2>
-                <button
-                  className="menu-button"
-                  onClick={() => toggleMenu(selectedArchive.archiveId)}
-                >
-                  ⋮
-                </button>
-                {openMenuId === selectedArchive.archiveId && (
-                  <div className="selected-dropdown-menu" ref={menuRef}>
-                    <button
-                      onClick={() => {
-                        setArchiveToDelete(selectedArchive.archiveId);
-                        toggleDeleteModal();
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
               </div>
-              <div className='modal-details'>
-                <p className='modal-description'>{selectedArchive.description}</p>
+              <div className='space-y-4'>
+                <p className='text-gray-700'>{selectedArchive.description}</p>
                 <p><strong>Type:</strong> {selectedArchive.type}</p>
                 <p><strong>Tags:</strong> {selectedArchive.tags}</p>
                 <p><strong>Archived:</strong> {formatDate(selectedArchive.archive_date)}</p>
               </div>
-              <div className='modal-button'>
-                <button className='restore-button'>
+              <div className='flex justify-end gap-4 mt-6'>
+                <button className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600'>
                   Unarchive
                 </button>
-                <button className="close-button" onClick={closeArchiveDetailsModal}>
+                <button className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300" onClick={closeArchiveDetailsModal}>
                   Close
                 </button>
               </div>
@@ -223,16 +225,18 @@ const ArchivePage = () => {
 
         {/* Delete Confirmation Modal */}
         {isDeleteModalOpen && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <h2>Delete Archive</h2>
-              <p>Are you sure you want to delete this archive?</p>
-              <button className="confirm-delete-button" onClick={handleDelete}>
-                Delete
-              </button>
-              <button className="cancel-delete-button" onClick={toggleDeleteModal}>
-                Cancel
-              </button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+              <h2 className="text-xl font-semibold mb-4">Delete Archive</h2>
+              <p className="mb-6">Are you sure you want to delete this archive?</p>
+              <div className="flex justify-end gap-4">
+                <button className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600" onClick={handleDelete}>
+                  Delete
+                </button>
+                <button className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300" onClick={toggleDeleteModal}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}

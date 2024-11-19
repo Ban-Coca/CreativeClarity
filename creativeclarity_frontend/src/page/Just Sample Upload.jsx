@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
-import SideBar from "../Components/Sidebar";
-import Frame from "../Components/Topbar";
+import SideBar from "../components/Sidebar";
 import { Snackbar, Alert, Menu, MenuItem, IconButton } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
@@ -141,9 +140,7 @@ const Picture = () => {
     <div style={{ display: 'flex', fontFamily: 'Arial, sans-serif' }}>
       <SideBar />
       <main style={{ margin: 0, width: '100%' }}>
-        <header className="top-bar">
-          <Frame />
-        </header>
+        
 
         <button
           onClick={openModal}

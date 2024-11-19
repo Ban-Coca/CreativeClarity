@@ -17,17 +17,19 @@ public class TaskEntity {
 	private String description;
 	private Date due_date;
 	private boolean completed;
+	private String priority;  // new field
 	
 	public TaskEntity() {
 		
 	}
 
-	public TaskEntity(String title, String description, Date due_date, boolean completed) {
+	public TaskEntity(String title, String description, Date due_date, boolean completed, String priority) {
 		super();
 		this.title = title;
 		this.description = description;
 		this.due_date = due_date;
 		this.completed = completed;
+		this.priority = priority;
 	}
 
 	public int getTaskId() {
@@ -66,5 +68,11 @@ public class TaskEntity {
 		this.completed = completed;
 	}
 	
-	
+	public String getPriority() {
+		return priority;
+	}
+
+	public void setPriority(String priority) {
+		this.priority = priority;
+	}
 }

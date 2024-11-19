@@ -43,6 +43,7 @@ public class TaskService {
 			task.setTitle(newTaskDetails.getTitle());
 			task.setDue_date(newTaskDetails.getDue_date());
 			task.setCompleted(newTaskDetails.getIsCompleted());
+			task.setPriority(newTaskDetails.getPriority());
 		}catch(NoSuchElementException nex){
 			throw new NameNotFoundException("User "+ taskId +"not found");
 		}finally {
