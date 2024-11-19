@@ -407,7 +407,7 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
             </Table>
           )}
         </TableContainer>
-        {rows.length > 0 && (
+        {rows.length > 5 && (
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"

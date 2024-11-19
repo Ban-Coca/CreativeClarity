@@ -30,7 +30,7 @@ public class GradeController {
     }
     
     // Create of CRUD
-    @PostMapping("/postgraderecord")
+    @PostMapping(value = "/postgraderecord", consumes = {"application/json"})
     public GradeEntity postGradeRecord(@RequestBody GradeEntity grade) {
         return gserv.postGradeRecord(grade);
     }

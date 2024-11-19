@@ -27,8 +27,9 @@ import { Link, useLocation } from 'react-router-dom';
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
 
-function Course() {
+function Course({onLogout}) {
   const [courses, setCourses] = useState([]); // Ensure initial state is an empty array
+  const [activeTab, setActiveTab] = useState('courses');
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -183,7 +184,11 @@ function Course() {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
-      <SideBar onLogout={onclick}/>
+      <SideBar
+        onLogout={onLogout}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        />
       <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px' }}>
         <Box sx={{ marginTop: '64px' }}>
           <div className="title-container">
@@ -196,7 +201,7 @@ function Course() {
           {courseGridVisible && (
             <div className="course-grid">
               {courses.map((course) => (
-                <div key={course.courseId} className="course-card" style={{ position: 'relative' }}>
+                <div key={course.courseId} className="course-card" style={{ position: 'relative', height:'180px'}}>
                   <h3>{course.courseName}</h3>
                   <p>{course.code}</p>
                   <p>{course.semester} - {course.academicYear}</p>
@@ -208,12 +213,13 @@ function Course() {
                     <p>{course.subject}</p>
                     
                   </Box>
-                  <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center' }}>
+                  <Box sx={{ mt: 1, display: 'flex', gap: 1, justifyContent: 'center' }}>
                     <Button
                       component={Link}
                       to={`/grades/${course.courseId}`}
                       variant="outlined"
                       color="primary"
+                      state={{ course }}
                     >
                       View Grades
                     </Button>

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert, Paper, Typography, Grid, Container } from '@mui/material';
 import axios from 'axios';
-import { useParams, useNavigate, useBeforeUnload } from 'react-router-dom';
+import { useParams, useNavigate, useBeforeUnload, useLocation } from 'react-router-dom';
 import SideBar from '../components/Sidebar';// Import Frame component
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Add this line to set the base URL for axios
 
-function Grades({ fetchCourses }) {
+function Grades() {
+  const location = useLocation();
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const [courses, SetCourses] = useState(location.state?.courses || []); // Add this line to initialize courses state
   const [grades, setGrades] = useState(() => {
     const savedGrades = localStorage.getItem('grades');
     return savedGrades ? JSON.parse(savedGrades) : [];
@@ -40,10 +42,41 @@ function Grades({ fetchCourses }) {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
+  const getAuthToken = () => {
+    return localStorage.getItem('token');
+  };
+
+  const getHeaders = () => {
+    const token = getAuthToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
+
+  const fetchCourses = async () => {
+    if(!courses){
+      try {
+        console.log('Fetching courses');
+        const response = await axios.get('/api/course/getallcourses', {
+          headers: getHeaders()
+        });
+        console.log('Courses fetched:', response.data);
+        SetCourses(response.data);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+        console.error('Error details:', error.response?.data || error.message);
+        showSnackbar('Failed to fetch courses', 'error');
+      }
+    }
+  }
+
   const fetchGrades = async () => {
     try {
       console.log(`Fetching grades for courseId: ${courseId}`);
-      const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`);
+      const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`, {
+        headers: getHeaders()
+      });
       console.log('Grades fetched:', response.data);
       setGrades(response.data);
       localStorage.setItem('grades', JSON.stringify(response.data));
@@ -83,7 +116,7 @@ function Grades({ fetchCourses }) {
       }
 
       const gradeData = {
-        course: { courseId }, // Ensure courseId is included here
+        course: { courseId: parseInt(courseId) }, // Ensure courseId is included here
         score: parseFloat(gradeDetails.score), // Ensure score is a float
         total_points: parseFloat(gradeDetails.total_points), // Ensure total_points is a float
         dateRecorded: gradeDetails.dateRecorded,
@@ -92,7 +125,9 @@ function Grades({ fetchCourses }) {
       console.log('Submitting grade data:', gradeData); // Add this line to log the grade data
       let response;
       if (selectedGrade) {
-        response = await axios.put(`/api/grade/putgradedetails?gradeId=${selectedGrade}`, gradeData);
+        response = await axios.put(`/api/grade/putgradedetails?gradeId=${selectedGrade}`, gradeData, {
+          headers: getHeaders()
+        });
         showSnackbar('Grade updated successfully');
       } else {
         response = await axios.post(`/api/grade/postgraderecord`, gradeData);
@@ -135,7 +170,9 @@ function Grades({ fetchCourses }) {
 
   const handleGradeDelete = async (gradeId) => {
     try {
-      await axios.delete(`/api/grade/deletegradedetails/${gradeId}`);
+      await axios.delete(`/api/grade/deletegradedetails/${gradeId}`, {
+        headers: getHeaders()
+      });
       showSnackbar('Grade deleted successfully');
       setGrades(prev => {
         const updatedGrades = prev.filter(grade => grade.gradeId !== gradeId);

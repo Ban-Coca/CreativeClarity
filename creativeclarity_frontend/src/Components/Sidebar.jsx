@@ -1,10 +1,10 @@
 import React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, School } from 'lucide-react';
+import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, School, PanelsTopLeft } from 'lucide-react';
 
-const SideBar = ( {onLogout}) => {
-  const [activeTab, setActiveTab] = useState('overview');
+const SideBar = ( {onLogout, activeTab, setActiveTab}) => {
+  //const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
   return (
     <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
@@ -13,6 +13,7 @@ const SideBar = ( {onLogout}) => {
             src="/src/assets/images/logoCreativeClarity.png"
             alt="Logo"
             className="h-12 mb-8"
+            onClick={ () => navigate('/dashboard')}
           />
           
           <nav className="space-y-2">
@@ -25,7 +26,7 @@ const SideBar = ( {onLogout}) => {
                 activeTab === 'overview' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
               }`}
             >
-              <BookOpen className="h-5 w-5" />
+              <PanelsTopLeft className="h-5 w-5" />
               <span>Overview</span>
             </button>
 
@@ -38,7 +39,7 @@ const SideBar = ( {onLogout}) => {
                 activeTab === 'courses' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
               }`}
             >
-              <School className="h-5 w-5" />
+              <BookOpen className="h-5 w-5" />
               <span>Courses</span>
             </button>
 

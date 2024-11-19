@@ -23,7 +23,7 @@ const style = {
 };
 
 const TaskPage = ({onLogout}) => {
-
+    const [activeTab, setActiveTab] = useState('tasks');
     const [tasks, setTasks] = useState([]);
     const [open, setOpen] = useState(false);
 
@@ -197,7 +197,10 @@ const TaskPage = ({onLogout}) => {
     return (
         <div className="flex min-h-screen">
             <div className="w-64 bg-white shadow-md">
-                <Sidebar onLogout={onLogout}/>
+                <Sidebar 
+                    onLogout={onLogout}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}/>
             </div>
             <Toaster richColors position="bottom-right" closeButton/>
             <div className="flex-1 flex flex-col">

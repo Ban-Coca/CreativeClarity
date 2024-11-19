@@ -4,7 +4,7 @@ import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut } from 'luci
 import SideBar from '../components/Sidebar';
 
 const DashboardPage = ({ onLogout }) => {
-  // const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Sample data - in a real app, this would come from your backend
   const upcomingAssignments = [
@@ -23,7 +23,10 @@ const DashboardPage = ({ onLogout }) => {
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
 
-      <SideBar onLogout={onLogout} />
+      <SideBar 
+        onLogout={onLogout}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab} />
 
       {/* Main Content */}
       <div className="ml-64 p-8">
