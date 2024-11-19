@@ -1,4 +1,4 @@
-package com.creative_clarity.clarity_springboot.config;
+package com.creative_clarity.clarity_springboot.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
