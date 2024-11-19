@@ -1,10 +1,10 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import java.util.List;
+
+import jakarta.persistence.*;
+
 
 @Entity
 public class UserEntity {
@@ -18,10 +18,13 @@ public class UserEntity {
 	private String password;
 	private Date created_at;
 	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PhotoEntity> photos;
+	
 	public UserEntity() {
 		
 	}
-
+	
 	public UserEntity(String username, String email, String password, Date created_at) {
 		super();
 		this.username = username;
@@ -66,4 +69,11 @@ public class UserEntity {
 		this.created_at = created_at;
 	}
 	
+	public List<PhotoEntity> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(List<PhotoEntity> photos) {
+        this.photos = photos;
+    }
 }

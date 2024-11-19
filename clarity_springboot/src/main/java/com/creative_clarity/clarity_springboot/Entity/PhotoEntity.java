@@ -1,70 +1,92 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class PhotoEntity {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int photoId;
-	
-	private String filename;
-	private String file_path;
-	private Date upload_date;
-	private String caption;
-	
-	public PhotoEntity() {
-		
-	}
 
-	public PhotoEntity(String filename, String file_path, Date upload_date, String caption) {
-		super();
-		this.filename = filename;
-		this.file_path = file_path;
-		this.upload_date = upload_date;
-		this.caption = caption;
-	}
-	
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
-	public String getFilename() {
-		return filename;
-	}
+    private String filename;
+    private String type;
+    private String filePath;
+    private Date uploadDate;
+    private String caption;
 
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
+    // Many-to-One relationship with UserEntity
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-	public int getPhotoId() {
-		return photoId;
-	}
+    public PhotoEntity() {}
 
-	public String getFile_path() {
-		return file_path;
-	}
+    public PhotoEntity(String filename, String type, String filePath, Date uploadDate, String caption, UserEntity user) {
+        this.filename = filename;
+        this.type = type;
+        this.filePath = filePath;
+        this.uploadDate = uploadDate;
+        this.caption = caption;
+        this.user = user;
+    }
 
-	public void setFile_path(String file_path) {
-		this.file_path = file_path;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public Date getUpload_date() {
-		return upload_date;
-	}
+    public String getFilename() {
+        return filename;
+    }
 
-	public void setUpload_date(Date upload_date) {
-		this.upload_date = upload_date;
-	}
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
 
-	public String getCaption() {
-		return caption;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setCaption(String caption) {
-		this.caption = caption;
-	}
-	
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public Date getUploadDate() {
+        return uploadDate;
+    }
+
+    public void setUploadDate(Date uploadDate) {
+        this.uploadDate = uploadDate;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
 }

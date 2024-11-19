@@ -3,53 +3,51 @@ package com.creative_clarity.clarity_springboot.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.creative_clarity.clarity_springboot.Entity.PhotoEntity;
 import com.creative_clarity.clarity_springboot.Service.PhotoService;
 
 @RestController
-@RequestMapping(method = RequestMethod.GET,path="/api/photo")
+@RequestMapping("/api/media")
 public class PhotoController {
-	
-	@Autowired
-	PhotoService pserv;
-	
-	@GetMapping("/print")
-	public String print() {
-		return "Hello, Course";
-	}
-	
-	//Create of CRUD
-	@PostMapping("/postphotorecord")
-	public PhotoEntity postPhotoRecord(@RequestBody PhotoEntity photo) {
-		return pserv.postPhotoRecord(photo);
-	}
 
-	//Read of CRUD
-	@GetMapping("/getallphoto")
-	public List<PhotoEntity> getAllPhotos(){
-		return pserv.getAllPhotos();
-	}
-		
-	//Update of CRUD
-	@PutMapping("/putphotodetails")
-	public PhotoEntity putPhotoDetails(@RequestParam int photoId, @RequestBody PhotoEntity newPhotoDetails) {
-		return pserv.putPhotoDetails(photoId, newPhotoDetails);
-	}
-		
-	//Delete of CRUD
-	@DeleteMapping("/deletephotodetails/{photoId}")
-	public String deletePhoto(@PathVariable int photoId) {
-		return pserv.deletePhoto(photoId);
-	}
+    @Autowired
+    private PhotoService photoService;
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("caption") String caption,
+            @RequestParam("userId") int userId) {
+        try {
+            PhotoEntity uploadedPhoto = photoService.uploadFile(file, caption, userId);
+            return ResponseEntity.ok("File uploaded successfully. ID: " + uploadedPhoto.getId());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file: " + e.getMessage());
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PhotoEntity>> getAllMedia() {
+        try {
+            List<PhotoEntity> photos = photoService.getAllPhotos();
+            return ResponseEntity.ok(photos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PhotoEntity>> getMediaByUser(@PathVariable int userId) {
+        try {
+            List<PhotoEntity> userPhotos = photoService.getPhotosByUser(userId);
+            return ResponseEntity.ok(userPhotos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
