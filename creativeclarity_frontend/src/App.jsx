@@ -211,7 +211,7 @@ const App = () => {
             path="/grades/:courseId"
             element={
               <ProtectedRoute>
-                <Grades />
+                <Grades onLogout={handleLogout}/>
               </ProtectedRoute>
             }
             />
