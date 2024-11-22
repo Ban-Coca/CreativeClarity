@@ -16,6 +16,7 @@ import TaskPage from './pages/TaskPage';
 import ErrorPage from './pages/ErrorPage';
 import ArchivePage from './page/Archive';
 import Grades from './page/Grades';
+import Picture from './page/Just Sample Upload';
 
 // Custom 404 component
 const NotFound = () => {
@@ -203,7 +204,7 @@ const App = () => {
             path="/archive"
             element={
               <ProtectedRoute>
-                <ArchivePage/>
+                <ArchivePage onLogout={handleLogout}/>
               </ProtectedRoute>
             }
           />
@@ -219,6 +220,13 @@ const App = () => {
           <Route
             path="/"
             element={<Navigate to="/login" replace />}  // Always redirect to login
+          />
+          <Route
+            path="/uploads"
+            element={
+            <ProtectedRoute>
+              <Picture />
+            </ProtectedRoute>}
           />
 
           {/* Error route */}

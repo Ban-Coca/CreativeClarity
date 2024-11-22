@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import SideBar from "../components/Sidebar";
+import Sidebar from "../components/Sidebar";
 import { Snackbar, Alert, Menu, MenuItem, IconButton } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
@@ -7,18 +7,7 @@ const Picture = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [uploadedMessage, setUploadedMessage] = useState("");
-  const [media, setMedia] = useState([
-    {
-      type: 'image',
-      media: 'base64StringHere',
-      filename: 'dummy.jpg',
-    },
-    {
-      type: 'video',
-      media: 'base64VideoStringHere',
-      filename: 'dummy.mp4',
-    },
-  ]);
+  const [media, setMedia] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -58,10 +47,9 @@ const Picture = () => {
     const formData = new FormData();
     formData.append("file", selectedFile);
     formData.append("caption", "My file caption");
-    formData.append("userId", loggedInUserId); // Replace with the actual user ID
   
     try {
-      const response = await fetch("http://localhost:8080/api/media/upload", {
+      const response = await fetch("http://localhost:8080/api/photos/upload", {
         method: "POST",
         body: formData,
       });
@@ -78,11 +66,11 @@ const Picture = () => {
       console.error("Error uploading media:", error);
       showSnackbar("An error occurred during upload.", "error");
     }
-  };
+  };  
 
   const fetchMedia = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/media");
+      const response = await fetch("http://localhost:8080/api/photos");
       if (response.ok) {
         const data = await response.json();
         setMedia(data);
@@ -118,7 +106,7 @@ const Picture = () => {
     if (!selectedMedia) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/media/delete/${selectedMedia.id}`, {
+      const response = await fetch(`http://localhost:8080/api/photo/delete/${selectedMedia.id}`, {
         method: "DELETE",
       });
 
@@ -138,7 +126,9 @@ const Picture = () => {
 
   return (
     <div style={{ display: 'flex', fontFamily: 'Arial, sans-serif' }}>
-      <SideBar />
+      <div className="w-64 bg-white shadow-md">
+      <Sidebar/>
+      </div>
       <main style={{ margin: 0, width: '100%' }}>
         
 
@@ -241,71 +231,71 @@ const Picture = () => {
                   }}
                 >
                   {media.length > 0 ? (
-                    media.map((item, index) => (
+                  media.map((item, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        border: '2px solid #ccc',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        width: '8rem',
+                        margin: '0.5rem',
+                        textAlign: 'center',
+                        position: 'relative',
+                      }}
+                    >
                       <div
-                        key={index}
                         style={{
+                          height: '6rem',
+                          width: '6rem',
+                          marginBottom: '0.5rem',
                           display: 'flex',
-                          flexDirection: 'column',
                           alignItems: 'center',
-                          border: '2px solid #ccc',
-                          padding: '1rem',
-                          borderRadius: '0.5rem',
-                          width: '8rem',
-                          margin: '0.5rem',
-                          textAlign: 'center',
-                          position: 'relative',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
                         }}
                       >
-                        <div
+                        {item.type.startsWith("image") && item.media && (
+                          <img
+                            src={`data:${item.type};base64,${item.media}`}
+                            alt={`Uploaded ${index + 1}`}
+                            style={{
+                              maxHeight: '100%',
+                              maxWidth: '100%',
+                              objectFit: 'contain',
+                            }}
+                          />
+                        )}
+                      </div>
+
+                      {item.filename && (
+                        <p
                           style={{
-                            height: '6rem',
-                            width: '6rem',
-                            marginBottom: '0.5rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden',
+                            fontSize: '0.8rem',
+                            textAlign: 'center',
+                            width: '100%',
+                            whiteSpace: 'wrap',
+                            padding: '0.25rem',
                           }}
                         >
-                          {item.type.startsWith("image") && item.media && (
-                            <img
-                              src={`data:${item.type};base64,${item.media}`}
-                              alt={`Uploaded ${index + 1}`}
-                              style={{
-                                maxHeight: '100%',
-                                maxWidth: '100%',
-                                objectFit: 'contain',
-                              }}
-                            />
-                          )}
-                        </div>
+                          {item.filename}
+                        </p>
+                      )}
 
-                        {item.filename && (
-                          <p
-                            style={{
-                              fontSize: '0.8rem',
-                              textAlign: 'center',
-                              width: '100%',
-                              whiteSpace: 'wrap',
-                              padding: '0.25rem',
-                            }}
-                          >
-                            {item.filename}
-                          </p>
-                        )}
-
-                        <IconButton
-                          onClick={(e) => openMenu(e, item)}
-                          style={{ position: 'absolute', top: '5px', right: '5px' }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      </div>
-                    ))
-                  ) : (
-                    <p>No media found</p>
-                  )}
+                      <IconButton
+                        onClick={(e) => openMenu(e, item)}
+                        style={{ position: 'absolute', top: '5px', right: '5px' }}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </div>
+                  ))
+                ) : (
+                  <p>No media found</p>
+                )}
                 </div>
               </div>
               {/* File Input Centered Button */}

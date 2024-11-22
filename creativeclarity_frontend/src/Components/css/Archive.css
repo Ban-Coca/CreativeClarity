@@ -202,12 +202,13 @@ body {
 .modal h2 {
   margin-top: 0;
 }
+
 .modal-description{
   width: auto;
-  max-width: 100%; /* Limit to the width of the modal */
-  overflow-wrap: break-word; /* Ensure long words break to fit within the container */
-  word-wrap: break-word; /* Fallback for older browsers */
-  white-space: normal; /* Allow text to wrap */
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: normal;
 }
 
 .confirm-delete-button,

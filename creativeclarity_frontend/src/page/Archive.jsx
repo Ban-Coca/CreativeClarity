@@ -2,16 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import ArrowBack from "@mui/icons-material/ArrowBack";
-import { Snackbar, Alert } from '@mui/material';
+import { Snackbar, Alert, Menu, MenuItem, RadioGroup, FormControlLabel, Radio, Button} from '@mui/material';
 
-const ArchivePage = () => {
+function ArchivePage ({onLogout}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('archive');
   const [archives, setArchives] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [openMenuId, setOpenMenuId] = useState(null);
   const [archiveToDelete, setArchiveToDelete] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
   const [selectedArchive, setSelectedArchive] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -37,6 +39,19 @@ const ArchivePage = () => {
       message,
       severity
     });
+  };
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleChange = (event) => {
+    setSelectedCourse(event.target.value);
+    handleMenuClose(); // Close the menu after selection
   };
 
   const handleSnackbarClose = (event, reason) => {
@@ -112,32 +127,75 @@ const ArchivePage = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       <div className="w-64 bg-white shadow-md">
-        <Sidebar />
+      <Sidebar
+        onLogout={onLogout}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        />
       </div>
       
       <main className="flex-1 p-6 overflow-auto">
         <section className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <ArrowBack className="cursor-pointer" />
+          <div className="flex gap-4 mb-6">
+          <ArrowBack className="cursor-pointer mt-[5px]" />
             <h2 className="text-2xl font-semibold">Archives</h2>
-            <select
-              value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              className="ml-auto px-4 py-2 border rounded-md"
-            >
-              <option value="">All Courses</option>
-              {courses.map((course) => (
-                <option key={course.courseId} value={course.courseId}>
-                  {course.courseName}
-                </option>
-              ))}
-            </select>
+            <div>
+              {/* Button to trigger the filter menu */}
+              <Button
+                aria-controls="filter-menu"
+                aria-haspopup="true"
+                onClick={handleMenuOpen}
+                sx={{ fontSize: '14px', marginLeft:'950px', color: '#1976d2' }} 
+              >
+                Filter by
+              </Button>
+
+              {/* Menu with radio buttons */}
+              <Menu
+                id="filter-menu"
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
+                <MenuItem sx={{display:'flex'}}>
+                  <RadioGroup
+                    value={selectedCourse}
+                    onChange={handleChange}
+                  >
+                    <FormControlLabel
+                      value="course"
+                      control={<Radio />}
+                      label="Course"
+                    />
+                    <FormControlLabel
+                      value="assignments"
+                      control={<Radio />}
+                      label="Assignments"
+                    />
+                    <FormControlLabel
+                      value="notes"
+                      control={<Radio />}
+                      label="Notes"
+                    />
+                  
+                  <Button 
+                    onClick={() => setSelectedCourse('')} 
+                    variant="text" 
+                    color="secondary"
+                    sx={{ fontSize: '12px', color: '#1976d2', alignContent:'start'}}
+                  >
+                    Reset Filter
+                  </Button>
+                  </RadioGroup>
+                </MenuItem>
+              </Menu>
+            </div>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-4 mt-7">
             {filteredArchives.length > 0 ? (
               filteredArchives.map((archive) => (
-                <div key={archive.archiveId} className="bg-white border rounded-lg p-4 flex justify-between items-center">
+                <div key={archive.archiveId} className="bg-white border rounded-lg p-7 flex justify-between items-center ">
                   <div
                     className="flex-1 cursor-pointer"
                     onClick={() => openArchiveDetailsModal(archive)}
@@ -206,7 +264,9 @@ const ArchivePage = () => {
                 </div>
               </div>
               <div className='space-y-4'>
-                <p className='text-gray-700'>{selectedArchive.description}</p>
+                <p className="text-gray-700 w-auto max-w-full break-words whitespace-normal m-[10px]">
+                  {selectedArchive.description}
+                </p>
                 <p><strong>Type:</strong> {selectedArchive.type}</p>
                 <p><strong>Tags:</strong> {selectedArchive.tags}</p>
                 <p><strong>Archived:</strong> {formatDate(selectedArchive.archive_date)}</p>

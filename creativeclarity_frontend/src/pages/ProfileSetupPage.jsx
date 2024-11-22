@@ -34,7 +34,7 @@ const ProfileSetupPage = () => {
     try {
       const token = localStorage.getItem('token'); // Retrieve the token from localStorage
 
-      const response = await fetch('http://localhost:3001/api/user/setup-profile', {
+      const response = await fetch('http://localhost:8080/api/user/setup-profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

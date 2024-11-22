@@ -19,7 +19,6 @@ import {
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from 'axios';
 import SideBar from '../components/Sidebar';
-import TopBar from '../components/TopBar';
 import '../components/css/Course.css';
 import { ArrowBack } from '@mui/icons-material';
 import Grades from './Grades'; // Import the Grades component

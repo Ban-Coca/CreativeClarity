@@ -1,45 +1,29 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
-import java.util.Date;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 @Entity
 public class PhotoEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String filename;
+    private String caption;
     private String type;
     private String filePath;
-    private Date uploadDate;
-    private String caption;
 
-    // Many-to-One relationship with UserEntity
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    @Lob
+    private byte[] media; // Store the media as byte array
 
-    public PhotoEntity() {}
-
-    public PhotoEntity(String filename, String type, String filePath, Date uploadDate, String caption, UserEntity user) {
-        this.filename = filename;
-        this.type = type;
-        this.filePath = filePath;
-        this.uploadDate = uploadDate;
-        this.caption = caption;
-        this.user = user;
+    // Getters and setters
+    public Long getId() {
+        return id;
     }
 
-    public int getId() {
-        return id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFilename() {
@@ -48,6 +32,14 @@ public class PhotoEntity {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
     }
 
     public String getType() {
@@ -66,27 +58,11 @@ public class PhotoEntity {
         this.filePath = filePath;
     }
 
-    public Date getUploadDate() {
-        return uploadDate;
+    public byte[] getMedia() {
+        return media;
     }
 
-    public void setUploadDate(Date uploadDate) {
-        this.uploadDate = uploadDate;
-    }
-
-    public String getCaption() {
-        return caption;
-    }
-
-    public void setCaption(String caption) {
-        this.caption = caption;
-    }
-
-    public UserEntity getUser() {
-        return user;
-    }
-
-    public void setUser(UserEntity user) {
-        this.user = user;
+    public void setMedia(byte[] media) {
+        this.media = media;
     }
 }
