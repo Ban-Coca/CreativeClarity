@@ -198,35 +198,57 @@ function Course({onLogout}) {
           </div>
 
           {courseGridVisible && (
-            <div className="course-grid">
-              {courses.map((course) => (
-                <div key={course.courseId} className="course-card" style={{ position: 'relative', height:'180px'}}>
+          <div className="course-grid">
+            {courses.map((course) => (
+              <Link
+                key={course.courseId}
+                to={`/course/${course.courseId}`}
+                style={{ textDecoration: 'none', color: 'inherit' }} // Ensures it looks like a card, not a traditional link
+              >
+                <div 
+                  className="course-card" 
+                  style={{
+                    position: 'relative',
+                    height: '200px',
+                    padding: '20px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    margin: '8px',
+                    cursor: 'pointer', // Makes it feel like a clickable card
+                    transition: 'transform 0.2s', // Adds a hover effect
+                  }}
+                >
+                  {/* Course Details */}
                   <h3>{course.courseName}</h3>
                   <p>{course.code}</p>
                   <p>{course.semester} - {course.academicYear}</p>
-                  
+                  <p>{course.subject}</p>
+
+                  {/* Menu Icon */}
                   <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                     <IconButton onClick={(event) => handleMenuClick(event, course)}>
                       <MoreVertIcon />
                     </IconButton>
-                    <p>{course.subject}</p>
-                    
                   </Box>
-                  <Box sx={{ mt: 1, display: 'flex', gap: 1, justifyContent: 'center' }}>
+
+                  {/* View Grades Button */}
+                  <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
                     <Button
                       component={Link}
                       to={`/grades/${course.courseId}`}
                       variant="outlined"
                       color="primary"
                       state={{ course }}
+                      onClick={(e) => e.stopPropagation()} // Prevents navigating to the card link
                     >
                       View Grades
                     </Button>
                   </Box>
                 </div>
-              ))}
-            </div>
-          )}
+              </Link>
+            ))}
+          </div>
+        )}
         </Box>
 
         <Menu

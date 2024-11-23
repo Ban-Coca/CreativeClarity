@@ -1,10 +1,16 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 
 @Entity
 public class PhotoEntity {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,6 +22,8 @@ public class PhotoEntity {
 
     @Lob
     private byte[] media; // Store the media as byte array
+
+    private LocalDateTime uploadDate;
 
     // Getters and setters
     public Long getId() {
@@ -64,5 +72,13 @@ public class PhotoEntity {
 
     public void setMedia(byte[] media) {
         this.media = media;
+    }
+
+    public LocalDateTime getUploadDate() {
+        return uploadDate;
+    }
+
+    public void setUploadDate(LocalDateTime uploadDate) {
+        this.uploadDate = uploadDate;
     }
 }

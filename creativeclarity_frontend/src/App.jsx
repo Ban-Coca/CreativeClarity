@@ -16,7 +16,8 @@ import TaskPage from './pages/TaskPage';
 import ErrorPage from './pages/ErrorPage';
 import ArchivePage from './page/Archive';
 import Grades from './page/Grades';
-import Picture from './page/Just Sample Upload';
+import Picture from './page/Gallery';
+import CourseDetail from './page/CourseDetail';
 
 // Custom 404 component
 const NotFound = () => {
@@ -227,6 +228,15 @@ const App = () => {
             <ProtectedRoute>
               <Picture />
             </ProtectedRoute>}
+          />
+
+          <Route
+            path="/course/:courseId/*"
+            element={
+              <ProtectedRoute>
+                <CourseDetail />
+              </ProtectedRoute>
+            }
           />
 
           {/* Error route */}

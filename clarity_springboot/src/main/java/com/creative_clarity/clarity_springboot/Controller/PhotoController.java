@@ -1,22 +1,35 @@
 package com.creative_clarity.clarity_springboot.Controller;
 
-import com.creative_clarity.clarity_springboot.Entity.PhotoEntity;
-import com.creative_clarity.clarity_springboot.Service.PhotoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.core.io.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.creative_clarity.clarity_springboot.Entity.PhotoEntity;
+import com.creative_clarity.clarity_springboot.Service.PhotoService;
 
 @RestController
 @RequestMapping("/api/photos")
 public class PhotoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(PhotoController.class);
 
     @Autowired
     private PhotoService photoService;
@@ -29,6 +42,7 @@ public class PhotoController {
             PhotoEntity photo = photoService.uploadPhoto(file, caption);
             return new ResponseEntity<>("File uploaded successfully: " + photo.getFilename(), HttpStatus.CREATED);
         } catch (IOException e) {
+            logger.error("Error uploading photo.", e);
             return new ResponseEntity<>("Failed to upload file.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -43,9 +57,12 @@ public class PhotoController {
     // Get a photo by ID
     @GetMapping("/{id}")
     public ResponseEntity<PhotoEntity> getPhotoById(@PathVariable Long id) {
-        Optional<PhotoEntity> photo = photoService.getPhotoById(id);
-        return photo.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        PhotoEntity photo = photoService.getPhotoById(id);
+        if (photo != null) {
+            return new ResponseEntity<>(photo, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     // Delete a photo
@@ -55,6 +72,7 @@ public class PhotoController {
             photoService.deletePhoto(id);
             return new ResponseEntity<>("Photo deleted successfully.", HttpStatus.OK);
         } catch (Exception e) {
+            logger.error("Error deleting photo with ID " + id, e);
             return new ResponseEntity<>("Failed to delete photo.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -62,9 +80,8 @@ public class PhotoController {
     // Download the photo (based on file path)
     @GetMapping("/download/{id}")
     public ResponseEntity<Resource> downloadPhoto(@PathVariable Long id) throws IOException {
-        Optional<PhotoEntity> photoOptional = photoService.getPhotoById(id);
-        if (photoOptional.isPresent()) {
-            PhotoEntity photo = photoOptional.get();
+        PhotoEntity photo = photoService.getPhotoById(id);
+        if (photo != null) {
             Path path = Paths.get(photo.getFilePath());
             Resource resource = new UrlResource(path.toUri());
             return ResponseEntity.ok()

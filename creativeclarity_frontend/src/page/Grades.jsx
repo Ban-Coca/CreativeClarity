@@ -6,9 +6,10 @@ import SideBar from '../components/Sidebar';// Import Frame component
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Add this line to set the base URL for axios
 
-function Grades() {
+function Grades({onLogout}) {
   const location = useLocation();
   const { courseId } = useParams();
+  const [activeTab, setActiveTab] = useState('courses');
   const navigate = useNavigate();
   const [courses, SetCourses] = useState(location.state?.courses || []); // Add this line to initialize courses state
   const [grades, setGrades] = useState(() => {
@@ -195,7 +196,11 @@ function Grades() {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
-        <SideBar /> {/* Add SideBar component */}
+        <SideBar
+        onLogout={onLogout}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        />
         <Box sx={{ 
           flexGrow: 1,
           p: 3,

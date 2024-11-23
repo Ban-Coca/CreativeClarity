@@ -7,7 +7,7 @@ import { Snackbar, Alert, Menu, MenuItem, RadioGroup, FormControlLabel, Radio, B
 function ArchivePage ({onLogout}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('archive');
+  const [activeTab, setActiveTab] = useState('courses');
   const [archives, setArchives] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
@@ -126,73 +126,9 @@ function ArchivePage ({onLogout}) {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="w-64 bg-white shadow-md">
-      <Sidebar
-        onLogout={onLogout}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        />
-      </div>
-      
-      <main className="flex-1 p-6 overflow-auto">
+      <main className="flex-1 p-2.5 overflow-auto">
         <section className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex gap-4 mb-6">
-          <ArrowBack className="cursor-pointer mt-[5px]" />
-            <h2 className="text-2xl font-semibold">Archives</h2>
-            <div>
-              {/* Button to trigger the filter menu */}
-              <Button
-                aria-controls="filter-menu"
-                aria-haspopup="true"
-                onClick={handleMenuOpen}
-                sx={{ fontSize: '14px', marginLeft:'950px', color: '#1976d2' }} 
-              >
-                Filter by
-              </Button>
-
-              {/* Menu with radio buttons */}
-              <Menu
-                id="filter-menu"
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem sx={{display:'flex'}}>
-                  <RadioGroup
-                    value={selectedCourse}
-                    onChange={handleChange}
-                  >
-                    <FormControlLabel
-                      value="course"
-                      control={<Radio />}
-                      label="Course"
-                    />
-                    <FormControlLabel
-                      value="assignments"
-                      control={<Radio />}
-                      label="Assignments"
-                    />
-                    <FormControlLabel
-                      value="notes"
-                      control={<Radio />}
-                      label="Notes"
-                    />
-                  
-                  <Button 
-                    onClick={() => setSelectedCourse('')} 
-                    variant="text" 
-                    color="secondary"
-                    sx={{ fontSize: '12px', color: '#1976d2', alignContent:'start'}}
-                  >
-                    Reset Filter
-                  </Button>
-                  </RadioGroup>
-                </MenuItem>
-              </Menu>
-            </div>
-          </div>
-
-          <div className="grid gap-4 mt-7">
+          <div className="grid gap-4">
             {filteredArchives.length > 0 ? (
               filteredArchives.map((archive) => (
                 <div key={archive.archiveId} className="bg-white border rounded-lg p-7 flex justify-between items-center ">
@@ -211,7 +147,7 @@ function ArchivePage ({onLogout}) {
                       ⋮
                     </button>
                     {openMenuId === archive.archiveId && !selectedArchive && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border" ref={menuRef}>
+                      <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg z-50 border" ref={menuRef}>
                         <button
                           className="w-full text-left px-4 py-2 hover:bg-gray-100"
                           onClick={() => {
@@ -221,13 +157,16 @@ function ArchivePage ({onLogout}) {
                         >
                           Delete
                         </button>
+                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100">
+                          Unarchive
+                        </button>
                       </div>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-500">No archives available.</p>
+              <p className="text-center text-gray-500 mb-5">No archives available.</p>
             )}
           </div>
         </section>
