@@ -185,11 +185,11 @@ const Picture = () => {
             Image List
           </Typography>
           <Box display="flex" gap={1} width="auto">
-            {selectedFiles.length > 0 && (
+            {selectedFiles.length > 0 && media.length > 0 && (
               <Tooltip title="Delete">
-               <IconButton onClick={deleteSelectedFiles}>
-                 <DeleteIcon />
-               </IconButton>
+                <IconButton onClick={deleteSelectedFiles}>
+                  <DeleteIcon />
+                </IconButton>
               </Tooltip>
             )}
             <Tooltip title="Upload File">
@@ -210,16 +210,16 @@ const Picture = () => {
           </Box>
         </Box>
 
-        <TableContainer component={Paper} sx={{height:"70vh"}}>
+        <TableContainer component={Paper} sx={{maxheight:"70vh"}}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>
-                  <Checkbox
-                    checked={selectedFiles.length === media.length}
-                    onChange={handleSelectAllChange}
-                    disabled={media.length === 0}
-                  />
+                <Checkbox
+                  checked={selectedFiles.length === media.length && media.length > 0}
+                  onChange={handleSelectAllChange}
+                  disabled={media.length === 0}
+                />
                 </TableCell>
                 <TableCell>Filename</TableCell>
                 <TableCell>Type</TableCell>
