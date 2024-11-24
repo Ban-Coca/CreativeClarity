@@ -33,7 +33,7 @@ public class UserEntity {
 	private String academicLevel;
 	@Column(name = "major_field")
 	private String majorField;
-	
+  
 	public UserEntity() {
 		
 	}

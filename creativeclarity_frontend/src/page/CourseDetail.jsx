@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -7,9 +5,7 @@ import { Snackbar, Alert, Tabs, Tab, Box, Typography } from '@mui/material';
 import ArchivePage from './Archive';
 import Grades from './Grades';
 import Gallery from './Gallery';
-import axios from 'axios';
 
-axios.defaults.baseURL = 'http://localhost:8080';
 function CourseDetail({ onLogout }) {
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -43,32 +39,37 @@ function CourseDetail({ onLogout }) {
     navigate(`/course/${courseId}/${newValue}`);
   };
 
-  const fetchCourseDetails = async () => {
-    try {
-      const response = await axios.get(`/api/course/${courseId}`);
-      if (response.status !== 200) {
-        showSnackbar('Failed to load course details.', 'error');
-        return;
-      }
-
-      const course = response.data; // Directly parse the JSON response
-      console.log(course);
-      setCourseName(course.courseName);
-      setCourseCode(course.code);
-    } catch (error) {
-      console.error('Error fetching course details:', error);
-      showSnackbar('An error occurred while loading course details.', 'error');
-    }
-  };
-
-  const fetchAllData = async () => {
-    await fetchCourseDetails();
-    // Add other fetch functions here if needed
-  };
-
   useEffect(() => {
+    const fetchCourseDetails = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/course/${courseId}`);
+        if (!response.ok) {
+          showSnackbar('Failed to load course details.', 'error');
+          return;
+        }
+
+        const text = await response.text(); // Get the raw response as text
+        console.log('Raw response:', text);  // Log the raw response for inspection
+
+        try {
+          // Clean up the response if needed (e.g., remove trailing closing brackets or other issues)
+          const cleanedText = text.replace(/]\s*$/, ''); // Remove trailing closing brackets
+          const course = JSON.parse(cleanedText); // Try parsing the cleaned response
+          console.log(response);
+          setCourseName(course.courseName);
+          setCourseCode(course.code);
+        } catch (jsonError) {
+          console.error('Invalid JSON response:', jsonError);
+          showSnackbar('Invalid response format from server.', 'error');
+        }
+      } catch (error) {
+        console.error('Error fetching course details:', error);
+        showSnackbar('An error occurred while loading course details.', 'error');
+      }
+    };
+
     fetchCourseDetails();
-  }, [courseId, activeTab, location.pathname]); // Fetch course details whenever courseId, activeTab, or pathname changes
+  }, [courseId]);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -105,7 +106,7 @@ function CourseDetail({ onLogout }) {
         {/* Tab Content */}
         <Box mt={1.5}>
           {activeTab === 'archive' && <ArchivePage />}
-          {activeTab === 'grades' && <Grades courseId={courseId} onLogout={onLogout} fetchAllData={fetchAllData} />} 
+          {activeTab === 'grades' && <Grades />}
           {activeTab === 'gallery' && <Gallery />}
         </Box>
       </main>
@@ -126,4 +127,3 @@ function CourseDetail({ onLogout }) {
 }
 
 export default CourseDetail;
->>>>>>> Stashed changes

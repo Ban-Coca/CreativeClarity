@@ -19,7 +19,6 @@ import {
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from 'axios';
 import SideBar from '../components/Sidebar';
-import TopBar from '../components/TopBar';
 import '../components/css/Course.css';
 import { ArrowBack } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
@@ -200,13 +199,6 @@ function Course({onLogout}) {
           {courseGridVisible && (
             <div className="course-grid">
               {courses.map((course) => (
-<<<<<<< Updated upstream
-                <div key={course.courseId} className="course-card" style={{ position: 'relative', height:'180px'}}>
-                  <h3>{course.courseName}</h3>
-                  <p>{course.code}</p>
-                  <p>{course.semester} - {course.academicYear}</p>
-                  
-=======
                 <div 
                   key={course.courseId}
                   className="course-card" 
@@ -221,7 +213,7 @@ function Course({onLogout}) {
                 >
                   {/* Wrap most of the card content in Link, excluding the menu */}
                   <Link
-                    to={`/course/${course.courseId}`} // Ensure the path includes 'details'
+                    to={`/course/${course.courseId}`}
                     style={{ 
                       textDecoration: 'none', 
                       color: 'inherit',
@@ -241,24 +233,12 @@ function Course({onLogout}) {
                   </Link>
 
                   {/* Menu Icon outside of Link */}
->>>>>>> Stashed changes
                   <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                    <IconButton onClick={(event) => handleMenuClick(event, course)}>
+                    <IconButton 
+                      onClick={(event) => handleMenuClick(event, course)}
+                    >
                       <MoreVertIcon />
                     </IconButton>
-                    <p>{course.subject}</p>
-                    
-                  </Box>
-                  <Box sx={{ mt: 1, display: 'flex', gap: 1, justifyContent: 'center' }}>
-                    <Button
-                      component={Link}
-                      to={`/grades/${course.courseId}`}
-                      variant="outlined"
-                      color="primary"
-                      state={{ course }}
-                    >
-                      View Grades
-                    </Button>
                   </Box>
                 </div>
               ))}
