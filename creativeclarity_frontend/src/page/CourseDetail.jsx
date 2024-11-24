@@ -12,12 +12,14 @@ function CourseDetail({ onLogout }) {
     message: '',
     severity: 'success',
   });
+  const validTabs = ['notes', 'archive', 'grades', 'gallery'];
   const [courseName, setCourseName] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const { courseId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState(location.pathname.split('/').pop() || 'notes');
+  const tabFromPath = location.pathname.split('/').pop();
+  const [activeTab, setActiveTab] = useState(validTabs.includes(tabFromPath) ? tabFromPath : 'notes');
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({
@@ -41,12 +43,24 @@ function CourseDetail({ onLogout }) {
     const fetchCourseDetails = async () => {
       try {
         const response = await fetch(`http://localhost:8080/api/course/${courseId}`);
-        if (response.ok) {
-          const course = await response.json();
+        if (!response.ok) {
+          showSnackbar('Failed to load course details.', 'error');
+          return;
+        }
+
+        const text = await response.text(); // Get the raw response as text
+        console.log('Raw response:', text);  // Log the raw response for inspection
+
+        try {
+          // Clean up the response if needed (e.g., remove trailing closing brackets or other issues)
+          const cleanedText = text.replace(/]\s*$/, ''); // Remove trailing closing brackets
+          const course = JSON.parse(cleanedText); // Try parsing the cleaned response
+          console.log(response);
           setCourseName(course.courseName);
           setCourseCode(course.code);
-        } else {
-          showSnackbar('Failed to load course details.', 'error');
+        } catch (jsonError) {
+          console.error('Invalid JSON response:', jsonError);
+          showSnackbar('Invalid response format from server.', 'error');
         }
       } catch (error) {
         console.error('Error fetching course details:', error);
@@ -91,10 +105,9 @@ function CourseDetail({ onLogout }) {
 
         {/* Tab Content */}
         <Box mt={1.5}>
-          {activeTab === 'notes' && <Typography>Notes Content</Typography>}
           {activeTab === 'archive' && <ArchivePage />}
-          {activeTab === 'grades' && <Grades courseId={courseId} />}
-          {activeTab === 'gallery' && <Gallery courseId={courseId} />}
+          {activeTab === 'grades' && <Grades />}
+          {activeTab === 'gallery' && <Gallery />}
         </Box>
       </main>
 

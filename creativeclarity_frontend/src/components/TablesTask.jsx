@@ -179,6 +179,47 @@ function EnhancedTableToolbar(props) {
     }
   };
 
+  // New Function for submitting tasks that are completed to archive
+  const submitArchive = async () => {
+    try {
+      // Archive the selected tasks and set them as completed (true) first
+      const archivePromises = selected.map(async (taskId) => {
+        // Update the task to set completed to true
+        await axios.put(`/api/task/updateCompleted/${taskId}?completed=true`, {}, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
+  
+        // Then archive the task
+        await axios.put(`/api/task/archive/${taskId}`, {}, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
+      });
+  
+      // Wait for all archive requests to finish
+      await Promise.all(archivePromises);
+  
+      // Show success message
+      toast.success('Tasks archived successfully');
+  
+      // Remove archived tasks from the state
+      setTasks((prevTasks) => prevTasks.filter((task) => !selected.includes(task.taskId)));
+  
+      // Clear selected tasks
+      setSelected([]);
+    } catch (error) {
+      // Show error message in case of failure
+      toast.error('Error archiving tasks');
+      console.error('Error archiving tasks:', error);
+    }
+  };
+  
+
   return (
     <Toolbar
       sx={[
@@ -219,7 +260,7 @@ function EnhancedTableToolbar(props) {
             </IconButton>
           </Tooltip>
           <Tooltip title="Mark as completed">
-            <IconButton>
+            <IconButton onClick={submitArchive}> {/*Added a onclick for Completed Tasks*/}
               <CheckCircleIcon />
             </IconButton>
           </Tooltip>
@@ -261,13 +302,15 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
   }
 
   const rows = React.useMemo(() => 
-    tasks.map(task => ({
-      id: task.taskId,
-      title: task.title,
-      description: task.description,
-      due_date: task.due_date,
-      priority: task.priority
-    })),
+    tasks
+      .filter(task => !task.isArchived)  // Filter out archived tasks -Jeric
+      .map(task => ({
+        id: task.taskId,
+        title: task.title,
+        description: task.description,
+        due_date: task.due_date,
+        priority: task.priority
+      })),
     [tasks]
   );
 

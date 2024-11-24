@@ -27,6 +27,10 @@ public class CourseEntity {
 	@OneToMany(fetch = FetchType.EAGER,mappedBy = "course", cascade = CascadeType.ALL)
 	private List<GradeEntity> grades;
 	
+	//Added Archive -Jeric
+	@OneToMany(fetch = FetchType.EAGER,mappedBy = "course", cascade = CascadeType.ALL)
+    private List<ArchiveEntity> archives;
+
 	public CourseEntity() {
 	}
 
@@ -90,4 +94,14 @@ public class CourseEntity {
 	public void setGrades(List<GradeEntity> grades) {
 		this.grades = grades;
 	}
+	
+	//Added Archive -Jeric
+	public List<ArchiveEntity> getArchives() {
+        return archives;
+    }
+
+	//Added Archive -Jeric
+    public void setArchives(List<ArchiveEntity> archives) {
+        this.archives = archives;
+    }
 }

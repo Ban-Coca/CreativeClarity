@@ -234,7 +234,7 @@ const App = () => {
             path="/course/:courseId/*"
             element={
               <ProtectedRoute>
-                <CourseDetail />
+                <CourseDetail onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />
