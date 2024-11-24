@@ -14,6 +14,7 @@ const SignupPage = ({ onSignupSuccess }) => {
 
   const [errorMessages, setErrorMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [phoneError, setPhoneError] = useState('');
 
   const handleInputChange = (e) => {
@@ -279,8 +280,8 @@ const SignupPage = ({ onSignupSuccess }) => {
                 </button>
                 <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50">
                   <img
-                    src="/src/assets/images/appleIcon2.png"
-                    alt="Apple"
+                    src="/src/assets/images/github.png"
+                    alt="Github"
                     className="h-7 w-7"
                   />
                 </button>

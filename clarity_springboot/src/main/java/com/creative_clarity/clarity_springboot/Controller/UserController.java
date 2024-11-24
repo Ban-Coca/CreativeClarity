@@ -1,21 +1,30 @@
 package com.creative_clarity.clarity_springboot.Controller;
 
 import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.Date;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.util.StringUtils;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,9 +36,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.creative_clarity.clarity_springboot.Entity.UserEntity;
 import com.creative_clarity.clarity_springboot.Service.UserService;
+import com.creative_clarity.clarity_springboot.config.FileStorageConfig;
 
 @RestController
 @RequestMapping("api/user")
@@ -47,8 +58,11 @@ public class UserController {
 	@Value("${jwt.expiration}")
 	private Long jwtExpiration;
 
-	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private FileStorageConfig fileStorageConfig;
 	
 	@GetMapping("/print")
 	public String print() {
@@ -57,7 +71,7 @@ public class UserController {
 
     @GetMapping("/")
     public ResponseEntity<String> home() {
-        return ResponseEntity.ok("API is running on port 3001.");
+        return ResponseEntity.ok("API is running on port 8080.");
     }
 
 	@PostMapping("/login")
@@ -90,17 +104,7 @@ public class UserController {
             // Create response
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
-            response.put("user", Map.of(
-                "userId", user.getUserId(),
-                "email", user.getEmail(),
-                "username", user.getUsername(),
-                "firstName", user.getFirstName() != null ? user.getFirstName() : "",
-                "lastName", user.getLastName() != null ? user.getLastName() : "",
-                "institution", user.getInstitution() != null ? user.getInstitution() : "",
-                "role", user.getRole() != null ? user.getRole() : "",
-                "academicLevel", user.getAcademicLevel() != null ? user.getAcademicLevel() : "",
-                "majorField", user.getMajorField() != null ? user.getMajorField() : ""
-            ));
+            response.put("user", getUserResponseMap(user));
 
             return ResponseEntity.ok(response);
 
@@ -109,6 +113,33 @@ public class UserController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", "Login failed: " + e.getMessage()));
         }
+    }
+
+    private Map<String, Object> getUserResponseMap(UserEntity user) {
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("userId", user.getUserId());
+        userMap.put("email", user.getEmail());
+        userMap.put("username", user.getUsername());
+        userMap.put("firstName", user.getFirstName() != null ? user.getFirstName() : "");
+        userMap.put("lastName", user.getLastName() != null ? user.getLastName() : "");
+        userMap.put("institution", user.getInstitution() != null ? user.getInstitution() : "");
+        userMap.put("role", user.getRole() != null ? user.getRole() : "");
+        userMap.put("academicLevel", user.getAcademicLevel() != null ? user.getAcademicLevel() : "");
+        userMap.put("majorField", user.getMajorField() != null ? user.getMajorField() : "");
+        
+        // Add the full URL for the profile picture
+        String profilePicturePath = user.getProfilePicturePath();
+        if (profilePicturePath != null && !profilePicturePath.isEmpty()) {
+            // Ensure the path starts with a forward slash
+            if (!profilePicturePath.startsWith("/")) {
+                profilePicturePath = "/" + profilePicturePath;
+            }
+            userMap.put("profilePicture", "http://localhost:8080" + profilePicturePath);
+        } else {
+            userMap.put("profilePicture", ""); // or your default profile picture URL
+        }
+        
+        return userMap;
     }
 
     private String generateToken(UserEntity user) {
@@ -128,45 +159,161 @@ public class UserController {
     public ResponseEntity<?> getOAuth2User(Principal principal) {
         try {
             if (principal == null) {
+                logger.error("Principal is null in OAuth2 authentication");
                 return ResponseEntity.status(401)
-                    .body(Map.of("error", "Not authenticated"));
+                    .body(Collections.singletonMap("error", "Not authenticated"));
             }
 
-            OAuth2User oauth2User = ((OAuth2AuthenticationToken) principal).getPrincipal();
-            String email = oauth2User.getAttribute("email");
+            if (!(principal instanceof OAuth2AuthenticationToken)) {
+                logger.error("Principal is not an OAuth2AuthenticationToken");
+                return ResponseEntity.status(401)
+                    .body(Collections.singletonMap("error", "Invalid authentication type"));
+            }
+
+            OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) principal;
+            OAuth2User oauth2User = token.getPrincipal();
+            String email;
+            String name;
             
+            // Handle different OAuth2 providers
+            if ("github".equals(token.getAuthorizedClientRegistrationId())) {
+                // For GitHub: try to get email, fallback to login@github.com if not available
+                email = oauth2User.getAttribute("email");
+                if (email == null || email.isEmpty()) {
+                    String login = oauth2User.getAttribute("login");
+                    email = login + "@github.com";
+                    logger.info("Using generated email for GitHub user: {}", email);
+                }
+                
+                // Get name or use login as fallback
+                name = oauth2User.getAttribute("name");
+                if (name == null || name.isEmpty()) {
+                    name = oauth2User.getAttribute("login");
+                }
+            } else {
+                // For other providers (Google, Facebook)
+                email = oauth2User.getAttribute("email");
+                name = oauth2User.getAttribute("name");
+                
+                if (email == null) {
+                    logger.error("Email not provided by OAuth2 provider: {}", 
+                        token.getAuthorizedClientRegistrationId());
+                    return ResponseEntity.status(400)
+                        .body(Collections.singletonMap("error", 
+                            "Email not provided by OAuth2 provider"));
+                }
+            }
+
+            // Find or create user
             UserEntity user = userv.findByEmail(email);
             if (user == null) {
-                return ResponseEntity.status(404)
-                    .body(Map.of("error", "User not found"));
+                logger.info("Creating new user from OAuth2 login: {}", email);
+                
+                user = new UserEntity();
+                user.setEmail(email);
+                user.setUsername(email);
+                user.setPassword(passwordEncoder.encode("oauth2user")); // Set a default password
+                user.setCreated_at(new Date());
+                
+                // Set name
+                if (name != null) {
+                    String[] nameParts = name.split(" ", 2);
+                    user.setFirstName(nameParts[0]);
+                    if (nameParts.length > 1) {
+                        user.setLastName(nameParts[1]);
+                    }
+                }
+                
+                // Set default values for required fields
+                user.setPhoneNumber("");
+                user.setInstitution("");
+                user.setRole("");
+                user.setAcademicLevel("");
+                user.setMajorField("");
+                
+                user = userv.postUserRecord(user);
             }
 
             // Generate JWT token
-            String token = generateToken(user);
+            String jwtToken = generateToken(user);
 
             // Create response
             Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
+            response.put("token", jwtToken);
             response.put("user", Map.of(
                 "userId", user.getUserId(),
                 "email", user.getEmail(),
                 "username", user.getUsername(),
-                "firstName", user.getFirstName(),
-                "lastName", user.getLastName(),
-                "institution", user.getInstitution(),
-                "role", user.getRole(),
-                "academicLevel", user.getAcademicLevel(),
-                "majorField", user.getMajorField()
+                "firstName", user.getFirstName() != null ? user.getFirstName() : "",
+                "lastName", user.getLastName() != null ? user.getLastName() : "",
+                "institution", user.getInstitution() != null ? user.getInstitution() : "",
+                "role", user.getRole() != null ? user.getRole() : "",
+                "academicLevel", user.getAcademicLevel() != null ? user.getAcademicLevel() : "",
+                "majorField", user.getMajorField() != null ? user.getMajorField() : ""
             ));
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             logger.error("OAuth2 user info error: ", e);
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", "Failed to get user info: " + e.getMessage()));
+            return ResponseEntity.status(500)
+                .body(Collections.singletonMap("error", 
+                    "Internal server error during OAuth2 authentication"));
         }
     }
+
+    @PostMapping("/upload-profile-picture")
+    public ResponseEntity<?> uploadProfilePicture(
+    @RequestParam("file") MultipartFile file,
+    @RequestParam("userId") int userId) {
+    
+    try {
+        UserEntity user = userv.findById(userId);
+        if (user == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please select a file"));
+        }
+
+        String contentType = file.getContentType();
+        if (!fileStorageConfig.isValidFileType(contentType)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid file type"));
+        }
+
+        if (file.getSize() > fileStorageConfig.getMaxFileSize()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "File size exceeds limit"));
+        }
+
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String fileName = UUID.randomUUID().toString() + extension;
+            String publicUrl = "/uploads/" + fileName; // Remove the host and port
+            
+            String uploadDir = fileStorageConfig.getUploadDir();
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            
+            user.setProfilePicturePath(publicUrl);
+            userv.postUserRecord(user);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Profile picture uploaded successfully",
+                "profilePicturePath", publicUrl,
+                "user", getUserResponseMap(user)
+            ));
+            
+        } catch (IOException e) {
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Failed to upload profile picture: " + e.getMessage()));
+        }
+}
 	
 	//Create of CRUD
 	@PostMapping("/postuserrecord")
@@ -212,6 +359,36 @@ public class UserController {
             logger.error("Error creating user: ", e);
             return ResponseEntity.badRequest()
                 .body("Error creating user: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/update-profile")
+    public ResponseEntity<?> updateProfile(@RequestBody UserEntity updatedUserDetails, @RequestParam("userId") int userId) {
+        try {
+            logger.info("Received profile update request for user: {}", userId);
+
+            // Validate user
+            UserEntity user = userv.findById(userId);
+            if (user == null) {
+                return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            }
+
+            // Update user details
+            user.setFirstName(updatedUserDetails.getFirstName());
+            user.setLastName(updatedUserDetails.getLastName());
+            user.setInstitution(updatedUserDetails.getInstitution());
+            user.setRole(updatedUserDetails.getRole());
+            user.setAcademicLevel(updatedUserDetails.getAcademicLevel());
+            user.setMajorField(updatedUserDetails.getMajorField());
+
+            // Save updated user
+            UserEntity updatedUser = userv.postUserRecord(user);
+
+            return ResponseEntity.ok(getUserResponseMap(updatedUser));
+
+        } catch (Exception e) {
+            logger.error("Error updating profile: ", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Profile update failed: " + e.getMessage()));
         }
     }
 

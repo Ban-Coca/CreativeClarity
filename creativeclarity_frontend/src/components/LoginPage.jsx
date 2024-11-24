@@ -62,6 +62,9 @@ const LoginPage = ({ onLoginSuccess }) => {
         if (onLoginSuccess) {
           onLoginSuccess();
         }
+
+        const storedToken = localStorage.getItem('token');
+        console.log('Stored token:', storedToken);
         
         navigate('/dashboard');
       } else {
@@ -73,6 +76,7 @@ const LoginPage = ({ onLoginSuccess }) => {
       setIsLoading(false);
     }
   };
+  
 
   const inputClasses = "w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200 placeholder:text-gray-500 placeholder:opacity-60";
 

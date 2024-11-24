@@ -34,6 +34,9 @@ public class UserEntity {
 	@Column(name = "major_field")
 	private String majorField;
 	
+  @Column(name = "profile_picture_path")
+    private String profilePicturePath;
+
 	public UserEntity() {
 		
 	}
@@ -65,6 +68,14 @@ public class UserEntity {
   public void setUsername(String username) {
     this.username = username;
   }
+
+  public String getProfilePicturePath() {
+    return profilePicturePath;
+}
+
+public void setProfilePicturePath(String profilePicturePath) {
+    this.profilePicturePath = profilePicturePath;
+}
 
   public String getEmail() {
     return email;

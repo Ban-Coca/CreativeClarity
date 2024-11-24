@@ -11,6 +11,8 @@ import DashboardPage from './components/DashboardPage';
 import ProfileSetupPage from './components/ProfileSetupPage';
 import ProfileSuccessPage from './components/ProfileSuccessPage';
 import OAuth2RedirectHandler from './components/OAuth2RedirectHandler';
+import UserProfile from './components/UserProfile';
+import NotesPage from './components/NotesPage';
 
 
 // Custom 404 component
@@ -153,6 +155,24 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ProfileSuccessPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/user-profile"
+            element={
+              <ProtectedRoute>
+                <UserProfile onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notes"
+            element={
+              <ProtectedRoute>
+                <NotesPage />
               </ProtectedRoute>
             }
           />
