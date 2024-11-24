@@ -6,7 +6,6 @@ import SideBar from '../components/Sidebar';// Import Frame component
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Add this line to set the base URL for axios
 
-<<<<<<< Updated upstream
 function Grades({onLogout}) {
   const location = useLocation();
   const { courseId } = useParams();
@@ -81,7 +80,7 @@ function Grades({onLogout}) {
       });
       console.log('Grades fetched:', response.data);
       setGrades(response.data);
-      localStorage.setItem('grades', JSON.stringify(response.data));
+      localStorage.setItem('grades', JSON.stringify(response.data)); // Save grades to local storage
     } catch (error) {
       console.error('Error fetching grades:', error);
       console.error('Error details:', error.response?.data || error.message);
@@ -100,6 +99,12 @@ function Grades({onLogout}) {
       console.error('Error fetching course details:', error);
       showSnackbar('Failed to fetch course details', 'error');
     }
+  };
+
+  const fetchAllData = async () => {
+    await fetchCourses();
+    await fetchGrades();
+    await fetchCourseDetails();
   };
 
   useEffect(() => {
@@ -152,11 +157,9 @@ function Grades({onLogout}) {
         const updatedGrades = selectedGrade
           ? prev.map(grade => grade.gradeId === selectedGrade ? response.data : grade)
           : [...prev, response.data];
-        localStorage.setItem('grades', JSON.stringify(updatedGrades));
+        localStorage.setItem('grades', JSON.stringify(updatedGrades)); // Save updated grades to local storage
         return updatedGrades;
       });
-      await fetchGrades(); // Ensure fetchGrades is called after submitting a grade
-      await fetchAllData(); // Fetch all data after submitting a grade
       setGradeModalOpen(false);
       setSelectedGrade(null);
       setGradeDetails({
@@ -194,7 +197,6 @@ function Grades({onLogout}) {
         localStorage.setItem('grades', JSON.stringify(updatedGrades)); // Update local storage
         return updatedGrades;
       }); // Remove grade from local state
-      await fetchAllData(); // Fetch all data after deleting a grade
       setGradeModalOpen(false); // Close the modal if it's open
     } catch (error) {
       console.error('Error deleting grade:', error);

@@ -5,6 +5,10 @@ import { Snackbar, Alert, Tabs, Tab, Box, Typography } from '@mui/material';
 import ArchivePage from './Archive';
 import Grades from './Grades';
 import Gallery from './Gallery';
+import axios from 'axios'; // Import axios
+
+axios.defaults.baseURL = 'http://localhost:8080'; // Set the base URL for axios
+axios.defaults.withCredentials = true; // Enable cross-origin requests with credentials
 
 function CourseDetail({ onLogout }) {
   const [snackbar, setSnackbar] = useState({
@@ -20,6 +24,13 @@ function CourseDetail({ onLogout }) {
   const location = useLocation();
   const tabFromPath = location.pathname.split('/').pop();
   const [activeTab, setActiveTab] = useState(validTabs.includes(tabFromPath) ? tabFromPath : 'notes');
+  const [grades, setGrades] = useState(() => {
+    const savedGrades = localStorage.getItem('grades');
+    return savedGrades ? JSON.parse(savedGrades) : [];
+  });
+
+  // Retrieve course details from location state
+  const course = location.state?.course;
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({
@@ -36,40 +47,59 @@ function CourseDetail({ onLogout }) {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
-    navigate(`/course/${courseId}/${newValue}`);
+    navigate(`/course/${courseId}/${newValue}`, { state: { course, grades } }); // Pass course and grades details as state
   };
 
   useEffect(() => {
-    const fetchCourseDetails = async () => {
-      try {
-        const response = await fetch(`http://localhost:8080/api/course/${courseId}`);
-        if (!response.ok) {
-          showSnackbar('Failed to load course details.', 'error');
-          return;
-        }
-
-        const text = await response.text(); // Get the raw response as text
-        console.log('Raw response:', text);  // Log the raw response for inspection
-
+    if (course) {
+      setCourseName(course.courseName);
+      setCourseCode(course.code);
+    } else {
+      const fetchCourseDetails = async () => {
         try {
-          // Clean up the response if needed (e.g., remove trailing closing brackets or other issues)
-          const cleanedText = text.replace(/]\s*$/, ''); // Remove trailing closing brackets
-          const course = JSON.parse(cleanedText); // Try parsing the cleaned response
-          console.log(response);
+          const response = await axios.get(`/api/course/${courseId}`);
+          if (response.status !== 200) {
+            showSnackbar('Failed to load course details.', 'error');
+            return;
+          }
+
+          const course = response.data;
+          console.log('Course details:', course);
           setCourseName(course.courseName);
           setCourseCode(course.code);
-        } catch (jsonError) {
-          console.error('Invalid JSON response:', jsonError);
-          showSnackbar('Invalid response format from server.', 'error');
+        } catch (error) {
+          console.error('Error fetching course details:', error);
+          showSnackbar('An error occurred while loading course details.', 'error');
         }
-      } catch (error) {
-        console.error('Error fetching course details:', error);
-        showSnackbar('An error occurred while loading course details.', 'error');
-      }
-    };
+      };
 
-    fetchCourseDetails();
-  }, [courseId]);
+      fetchCourseDetails();
+    }
+  }, [courseId, course]);
+
+  useEffect(() => {
+    if (activeTab === 'grades') {
+      const fetchGrades = async () => {
+        try {
+          const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`);
+          if (response.status !== 200) {
+            showSnackbar('Failed to load grades.', 'error');
+            return;
+          }
+
+          const grades = response.data;
+          console.log('Grades details:', grades);
+          setGrades(grades); // Update grades state
+          localStorage.setItem('grades', JSON.stringify(grades)); // Save grades to local storage
+        } catch (error) {
+          console.error('Error fetching grades:', error);
+          showSnackbar('An error occurred while loading grades.', 'error');
+        }
+      };
+
+      fetchGrades();
+    }
+  }, [activeTab, courseId]);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -82,10 +112,10 @@ function CourseDetail({ onLogout }) {
       <main className="flex-1 p-6 overflow-auto">
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            {courseName || 'Loading...'}
+            {courseName || 'Loading Course Name...'}
           </Typography>
           <Typography variant="subtitle1" color="textSecondary">
-            {courseCode || 'Loading...'}
+            {courseCode || 'Loading Course Code...'}
           </Typography>
 
           {/* Tabs */}
@@ -106,7 +136,7 @@ function CourseDetail({ onLogout }) {
         {/* Tab Content */}
         <Box mt={1.5}>
           {activeTab === 'archive' && <ArchivePage />}
-          {activeTab === 'grades' && <Grades />}
+          {activeTab === 'grades' && <Grades onLogout={onLogout} />}
           {activeTab === 'gallery' && <Gallery />}
         </Box>
       </main>

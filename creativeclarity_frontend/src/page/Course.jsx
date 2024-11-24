@@ -214,6 +214,7 @@ function Course({onLogout}) {
                   {/* Wrap most of the card content in Link, excluding the menu */}
                   <Link
                     to={`/course/${course.courseId}`}
+                    state={{ course }} // Pass course details as state
                     style={{ 
                       textDecoration: 'none', 
                       color: 'inherit',
