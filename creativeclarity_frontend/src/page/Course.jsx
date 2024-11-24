@@ -22,7 +22,6 @@ import SideBar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import '../components/css/Course.css';
 import { ArrowBack } from '@mui/icons-material';
-import Grades from './Grades'; // Import the Grades component
 import { Link, useLocation } from 'react-router-dom';
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
@@ -151,7 +150,7 @@ function Course({onLogout}) {
     }
     try {
       await axios.delete(`/api/course/deletecoursedetails/${courseToDelete}`);
-      await fetchCourses();
+      await fetchCourses(); // Fetch courses after deleting a course
       showSnackbar('Course deleted successfully');
       setDeleteDialogOpen(false);
       setCourseToDelete(null);
@@ -201,11 +200,48 @@ function Course({onLogout}) {
           {courseGridVisible && (
             <div className="course-grid">
               {courses.map((course) => (
+<<<<<<< Updated upstream
                 <div key={course.courseId} className="course-card" style={{ position: 'relative', height:'180px'}}>
                   <h3>{course.courseName}</h3>
                   <p>{course.code}</p>
                   <p>{course.semester} - {course.academicYear}</p>
                   
+=======
+                <div 
+                  key={course.courseId}
+                  className="course-card" 
+                  style={{
+                    position: 'relative',
+                    height: '150px',
+                    padding: '20px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    margin: '8px',
+                  }}
+                >
+                  {/* Wrap most of the card content in Link, excluding the menu */}
+                  <Link
+                    to={`/course/${course.courseId}`} // Ensure the path includes 'details'
+                    style={{ 
+                      textDecoration: 'none', 
+                      color: 'inherit',
+                      display: 'block',
+                      height: '100%',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s'
+                    }}
+                  >
+                    {/* Course Details */}
+                    <div className="course-content">
+                      <h3>{course.courseName}</h3>
+                      <p>{course.code}</p>
+                      <p>{course.semester} - {course.academicYear}</p>
+                      <p>{course.subject}</p>
+                    </div>
+                  </Link>
+
+                  {/* Menu Icon outside of Link */}
+>>>>>>> Stashed changes
                   <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                     <IconButton onClick={(event) => handleMenuClick(event, course)}>
                       <MoreVertIcon />

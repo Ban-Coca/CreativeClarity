@@ -189,8 +189,7 @@ const App = () => {
                 <Course onLogout={handleLogout}/>
               </ProtectedRoute>
             }
-            />
-          
+          />
           <Route
             path="/tasks"
             element={
@@ -211,10 +210,10 @@ const App = () => {
             path="/grades/:courseId"
             element={
               <ProtectedRoute>
-                <Grades />
+                <Grades onLogout={handleLogout} />
               </ProtectedRoute>
             }
-            />
+          />
           {/* Root route */}
           <Route
             path="/"

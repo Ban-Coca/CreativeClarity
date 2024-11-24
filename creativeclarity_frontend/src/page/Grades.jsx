@@ -6,9 +6,16 @@ import SideBar from '../components/Sidebar';// Import Frame component
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Add this line to set the base URL for axios
 
+<<<<<<< Updated upstream
 function Grades() {
   const location = useLocation();
   const { courseId } = useParams();
+=======
+function Grades({ onLogout, fetchAllData }) {
+  const location = useLocation();
+  const { courseId } = useParams(); // Ensure courseId is obtained from useParams
+  const [activeTab, setActiveTab] = useState('courses');
+>>>>>>> Stashed changes
   const navigate = useNavigate();
   const [courses, SetCourses] = useState(location.state?.courses || []); // Add this line to initialize courses state
   const [grades, setGrades] = useState(() => {
@@ -87,6 +94,19 @@ function Grades() {
     }
   };
 
+  const fetchCourseDetails = async () => {
+    try {
+      const response = await axios.get(`/api/course/${courseId}`, {
+        headers: getHeaders()
+      });
+      console.log('Course details fetched:', response.data);
+      SetCourses([response.data]);
+    } catch (error) {
+      console.error('Error fetching course details:', error);
+      showSnackbar('Failed to fetch course details', 'error');
+    }
+  };
+
   useEffect(() => {
     fetchGrades();
   }, [courseId]);
@@ -140,8 +160,8 @@ function Grades() {
         localStorage.setItem('grades', JSON.stringify(updatedGrades));
         return updatedGrades;
       });
-      console.log('Fetching courses after grade submit');
-      await fetchCourses(); // Ensure fetchCourses is awaited
+      await fetchGrades(); // Ensure fetchGrades is called after submitting a grade
+      await fetchAllData(); // Fetch all data after submitting a grade
       setGradeModalOpen(false);
       setSelectedGrade(null);
       setGradeDetails({
@@ -176,12 +196,11 @@ function Grades() {
       showSnackbar('Grade deleted successfully');
       setGrades(prev => {
         const updatedGrades = prev.filter(grade => grade.gradeId !== gradeId);
-        localStorage.setItem('grades', JSON.stringify(updatedGrades));
+        localStorage.setItem('grades', JSON.stringify(updatedGrades)); // Update local storage
         return updatedGrades;
-      });
-      await fetchGrades(); // Ensure fetchGrades is awaited
-      console.log('Fetching courses after grade delete');
-      await fetchCourses(); // Ensure fetchCourses is awaited
+      }); // Remove grade from local state
+      await fetchAllData(); // Fetch all data after deleting a grade
+      setGradeModalOpen(false); // Close the modal if it's open
     } catch (error) {
       console.error('Error deleting grade:', error);
       showSnackbar(`Failed to delete grade: ${error.response?.data || error.message}`, 'error');
