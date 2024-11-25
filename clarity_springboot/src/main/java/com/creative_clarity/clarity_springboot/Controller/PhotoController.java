@@ -3,6 +3,7 @@ package com.creative_clarity.clarity_springboot.Controller;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -22,7 +23,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Entity.PhotoEntity;
+import com.creative_clarity.clarity_springboot.Service.CourseService;
 import com.creative_clarity.clarity_springboot.Service.PhotoService;
 
 @RestController
@@ -34,19 +37,35 @@ public class PhotoController {
     @Autowired
     private PhotoService photoService;
 
+    @Autowired
+    private CourseService courseService;
+
     // Upload a photo
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadPhoto(@RequestParam("file") MultipartFile file,
-                                              @RequestParam("caption") String caption) {
+    public ResponseEntity<String> uploadPhoto(
+            @RequestParam("file") MultipartFile file, 
+            @RequestParam("caption") String caption, 
+            @RequestParam("courseId") int courseId) {
         try {
-            PhotoEntity photo = photoService.uploadPhoto(file, caption);
-            return new ResponseEntity<>("File uploaded successfully: " + photo.getFilename(), HttpStatus.CREATED);
+            PhotoEntity uploadedPhoto = photoService.uploadPhoto(file, caption, courseId);
+            return ResponseEntity.ok("File uploaded successfully: " + uploadedPhoto.getFilename());
         } catch (IOException e) {
-            logger.error("Error uploading photo.", e);
-            return new ResponseEntity<>("Failed to upload file.", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
+    @GetMapping("/course/{courseId}")
+    public List<PhotoEntity> getPhotosByCourse(@PathVariable int courseId) {
+        CourseEntity course = courseService.getCourseById(courseId).orElse(null);
+        if (course == null) {
+            // Handle the case when the course is not found
+            return new ArrayList<>(); // Return an empty list or handle it as needed
+        }
+        return photoService.getPhotosByCourse(course);
+    }
+    
     // Get all photos
     @GetMapping
     public ResponseEntity<List<PhotoEntity>> getAllPhotos() {
@@ -56,7 +75,7 @@ public class PhotoController {
 
     // Get a photo by ID
     @GetMapping("/{id}")
-    public ResponseEntity<PhotoEntity> getPhotoById(@PathVariable Long id) {
+    public ResponseEntity<PhotoEntity> getPhotoById(@PathVariable int id) {
         PhotoEntity photo = photoService.getPhotoById(id);
         if (photo != null) {
             return new ResponseEntity<>(photo, HttpStatus.OK);
@@ -67,7 +86,7 @@ public class PhotoController {
 
     // Delete a photo
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deletePhoto(@PathVariable Long id) {
+    public ResponseEntity<String> deletePhoto(@PathVariable int id) {
         try {
             photoService.deletePhoto(id);
             return new ResponseEntity<>("Photo deleted successfully.", HttpStatus.OK);
@@ -79,7 +98,7 @@ public class PhotoController {
 
     // Download the photo (based on file path)
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> downloadPhoto(@PathVariable Long id) throws IOException {
+    public ResponseEntity<Resource> downloadPhoto(@PathVariable int id) throws IOException {
         PhotoEntity photo = photoService.getPhotoById(id);
         if (photo != null) {
             Path path = Paths.get(photo.getFilePath());

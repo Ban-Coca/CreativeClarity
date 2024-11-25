@@ -2,12 +2,17 @@ package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class TaskEntity {
@@ -22,14 +27,15 @@ public class TaskEntity {
 	private boolean completed;
 	private String priority;  // new field
 	private boolean isArchived;  // New field to track archive status
-	
-	@ManyToOne
-    @JoinColumn(name = "course")
-    private CourseEntity course;
 
-    @ManyToOne
-    @JoinColumn(name = "archive")
-    private ArchiveEntity archive;
+	@JsonManagedReference("archive-task")
+    @OneToOne(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+	private ArchiveEntity archive;
+
+	@JsonBackReference("course-task")
+	@ManyToOne
+	@JoinColumn(name = "course")
+	private CourseEntity course;
 
 	public TaskEntity() {
 		

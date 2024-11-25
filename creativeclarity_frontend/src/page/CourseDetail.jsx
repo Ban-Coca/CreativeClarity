@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { Snackbar, Alert, Tabs, Tab, Box, Typography } from '@mui/material';
-import ArchivePage from './Archive';
 import Grades from './Grades';
 import Gallery from './Gallery';
+import TaskPage from '../pages/TaskPage';
+import CourseArchive from './CourseArchive';
 
 function CourseDetail({ onLogout }) {
   const [snackbar, setSnackbar] = useState({
@@ -100,14 +101,16 @@ function CourseDetail({ onLogout }) {
             <Tab value="archive" label="Archive" />
             <Tab value="grades" label="Grades" />
             <Tab value="gallery" label="Gallery" />
+            <Tab value="tasks" label="Tasks" />
           </Tabs>
         </Box>
 
         {/* Tab Content */}
         <Box mt={1.5}>
-          {activeTab === 'archive' && <ArchivePage />}
+          {activeTab === 'archive' && <CourseArchive />}
           {activeTab === 'grades' && <Grades />}
           {activeTab === 'gallery' && <Gallery />}
+          {activeTab === 'tasks' && <TaskPage/>}
         </Box>
       </main>
 

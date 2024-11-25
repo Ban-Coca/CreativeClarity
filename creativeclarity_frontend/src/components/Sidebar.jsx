@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, School, PanelsTopLeft } from 'lucide-react';
+import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, School, PanelsTopLeft, Archive} from 'lucide-react';
 
 const SideBar = ( {onLogout, activeTab, setActiveTab}) => {
   //const [activeTab, setActiveTab] = useState('overview');
@@ -66,6 +66,19 @@ const SideBar = ( {onLogout, activeTab, setActiveTab}) => {
               <span>Tasks</span>
             </button>
             
+            <button 
+              onClick={() => {
+                setActiveTab('archive')
+                navigate('/archive')
+              }}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                activeTab === 'archive' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
+              }`}
+            >
+              <Archive className="h-5 w-5" />
+              <span>Archive</span>
+            </button>
+
             <button 
               onClick={() => setActiveTab('profile')}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${

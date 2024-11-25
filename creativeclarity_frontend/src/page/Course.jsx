@@ -48,6 +48,8 @@ function Course({onLogout}) {
   const [courseGridVisible, setCourseGridVisible] = useState(true); // New state for course grid visibility
   const location = useLocation();
 
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+
   // Define semester options
   const semesterOptions = [
     { value: '1st Semester', label: '1st Semester', period:'August-December' },
@@ -69,7 +71,13 @@ function Course({onLogout}) {
       console.log('Fetching courses...');
       const response = await axios.get('/api/course/getallcourse');
       console.log('Courses fetched:', response.data);
-      setCourses(Array.isArray(response.data) ? response.data : []); // Ensure response data is an array
+      
+      // Filter out archived courses
+      const filteredCourses = Array.isArray(response.data)
+        ? response.data.filter(course => !course.isArchived)
+        : [];
+  
+      setCourses(filteredCourses); // Update the state with non-archived courses
       setCourseGridVisible(true); // Ensure course grid is visible after fetching courses
     } catch (error) {
       console.error('Error fetching courses:', error);
@@ -173,7 +181,7 @@ function Course({onLogout}) {
   const handleEditCourse = () => {
     handleOpen(selectedCourse);
     handleMenuClose();
-  };
+  };  
 
   const handleDeleteConfirmation = () => {
     setCourseToDelete(selectedCourse?.courseId);
@@ -181,6 +189,48 @@ function Course({onLogout}) {
     handleMenuClose();
   };
 
+  // New Function for submitting course to archive - Jeric
+  const handleArchiveCourse = () => {
+    if (!selectedCourse) {
+      showSnackbar('No course selected for archiving', 'error');
+      return;
+    }
+
+    // Open the archive confirmation dialog
+    setArchiveDialogOpen(true);
+  };
+
+  // New Function for submitting course to archive - Jeric
+  const handleConfirmArchive = async () => {
+    if (!selectedCourse) {
+      showSnackbar('No course selected for archiving', 'error');
+      return;
+    }
+  
+    try {
+      const response = await axios.put(`/api/course/archive/${selectedCourse.courseId}`, {}, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+  
+      if (response.status === 200) {
+        showSnackbar('Course archived successfully');
+        setCourses((prevCourses) =>
+          prevCourses.filter(course => course.courseId !== selectedCourse.courseId)
+        );
+      } else {
+        showSnackbar('Failed to archive course', 'error');
+      }
+    } catch (error) {
+      showSnackbar('Error archiving course', 'error');
+      console.error('Error archiving course:', error);
+    }
+  
+    setArchiveDialogOpen(false); // Close the dialog after archiving
+  };
+  
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <SideBar
@@ -254,6 +304,7 @@ function Course({onLogout}) {
         >
           <MenuItem onClick={handleEditCourse}>Edit</MenuItem>
           <MenuItem onClick={handleDeleteConfirmation}>Delete</MenuItem>
+          <MenuItem onClick={handleArchiveCourse}>Archive</MenuItem>
         </Menu>
 
         <Dialog open={modalOpen} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -341,6 +392,29 @@ function Course({onLogout}) {
               }}
             >
               Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Archive Confirmation Dialog */}
+        <Dialog open={archiveDialogOpen} onClose={() => setArchiveDialogOpen(false)}>
+          <DialogTitle>Confirm Archive</DialogTitle>
+          <DialogContent>
+            Are you sure you want to archive this course?
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setArchiveDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleConfirmArchive}
+              sx={{
+                backgroundColor: 'orange',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'darkorange',
+                },
+              }}
+            >
+              Archive
             </Button>
           </DialogActions>
         </Dialog>

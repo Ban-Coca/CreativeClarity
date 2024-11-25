@@ -60,4 +60,18 @@ public class CourseController {
 	public String deleteCourse(@PathVariable int courseId) {
 		return cserv.deleteCourse(courseId);
 	}
+
+	// Endpoint to archive a course
+    // Newly Added -Jeric
+    @PutMapping("/archive/{courseId}")
+	public ResponseEntity<String> archiveCourse(@PathVariable int courseId) {
+		try {
+			cserv.archiveCourse(courseId);
+			return ResponseEntity.ok("Course archived successfully.");
+		} catch (Exception e) {
+			// Log the error for easier debugging
+			System.err.println("Error while archiving course: " + e.getMessage());
+			return ResponseEntity.status(500).body("Error archiving course: " + e.getMessage());
+		}
+	}
 }

@@ -1,26 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Toaster, toast } from 'sonner';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography, CircularProgress } from '@mui/material';
-import SideBar from '../components/Sidebar';
+import { useParams } from "react-router-dom";
+import { Toaster, toast } from 'sonner'; // Importing Toaster and toast from sonner
+import { CircularProgress } from '@mui/material';
 
-function ArchivePage({ onLogout }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('archive');
-  const [archives, setArchives] = useState([]);
-  const [filteredArchives, setFilteredArchives] = useState([]);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const [selectedArchive, setSelectedArchive] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [selectedType, setSelectedType] = useState('');
-  const menuRef = useRef(null);
-
-  const [archiveToDelete, setArchiveToDelete] = useState(null);
+function CourseArchive() {
+  const { courseId } = useParams();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  const [archiveToUnarchive, setArchiveToUnarchive] = useState(null);
+  const [archives, setArchives] = useState([]);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [archiveToDelete, setArchiveToDelete] = useState(null);
+  const [selectedArchive, setSelectedArchive] = useState(null);
+  const [loading, setLoading] = useState(false); // Loading state
+  const menuRef = useRef(null);
   const [isUnarchiveModalOpen, setIsUnarchiveModalOpen] = useState(false);
-
+  const [archiveToUnarchive, setArchiveToUnarchive] = useState(null);
 
   const toggleDeleteModal = () => setIsDeleteModalOpen(!isDeleteModalOpen);
   const toggleUnarchiveModal = () => setIsUnarchiveModalOpen(!isUnarchiveModalOpen);
@@ -34,65 +28,47 @@ function ArchivePage({ onLogout }) {
     });
   };
 
-  // Function to filter archives based on type and search query
-  const filterArchives = () => {
-    let filtered = archives;
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    // Apply type filter
-    if (selectedType) {
-      filtered = filtered.filter((archive) => archive.type === selectedType);
-    }
-
-    // Apply search filter based on title
-    if (searchQuery) {
-      filtered = filtered.filter((archive) =>
-        archive.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredArchives(filtered);
-  };
-
-  // Function to fetch archives
   const fetchArchives = async () => {
-    setLoading(true); // Start loading
     try {
-      // Simulate a longer delay before making the actual API request (e.g., 3 seconds)
-      setTimeout(async () => {
-        const response = await axios.get('http://localhost:8080/api/archive/getallarchives');
-        setArchives(response.data);
-        filterArchives(); // Filter archives after fetching data
-        setLoading(false); // Stop loading after receiving the data
-        toast.success("Fetched Archives Successfully!");
-      }, 1500);
+      setLoading(true); // Start loading
+      await delay(1500); // Simulate delay (e.g., 1.5 seconds before making the request)
+
+      const response = await fetch(`http://localhost:8080/api/archive/course/${courseId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setArchives(data);
+        toast.success("Archive Fetched Successfully");
+      } else {  
+        toast.error("Failed to load archive.");
+      }
     } catch (error) {
-      console.error('Error fetching archives:', error);
-      toast.error("Failed to fetch archives");
-      setLoading(false); // Stop loading in case of error
+      console.error("Error fetching archive:", error);
+       toast.error("An error occurred while loading archive.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
-  useEffect(() => {
-    fetchArchives(); // Fetch archives initially
-  }, [selectedType]); // Refetch archives when the selectedType changes
 
   useEffect(() => {
-    filterArchives(); // Apply filtering when searchQuery changes
-  }, [searchQuery, archives, selectedType]); // Reapply filtering when searchQuery or archives change
+    fetchArchives();
+  }, []);
 
   const handleDelete = async () => {
     try {
       await axios.delete(`http://localhost:8080/api/archive/${archiveToDelete.archiveId}`);
       fetchArchives(); // Refresh the list
-      toast.success("Archive deleted successfully");
+      toast.success("Archive deleted successfully")
     } catch (error) {
       console.error('Error:', error.response ? error.response.data : error.message);
-      toast.error("Error occurred while deleting archive");
+      toast.error("Error occurred while deleting archive")
     } finally {
       setIsDeleteModalOpen(false);
     }
   };
-
+  
   const handleUnarchive = async (archiveId) => {
     try {
       const response = await axios.put(
@@ -124,83 +100,53 @@ function ArchivePage({ onLogout }) {
   }, []);
 
   const openArchiveDetailsModal = (archive) => {
-    setSelectedArchive(archive);
-    setArchiveToDelete(null); // Reset when viewing details
+    if (selectedArchive) {
+      setIsDeleteModalOpen(false); // Close delete modal if any
+    }
+    setSelectedArchive(archive); // Set selected archive
   };
 
   const closeArchiveDetailsModal = () => {
     setSelectedArchive(null);
-    setArchiveToDelete(null); // Reset when closing modal
+    setArchiveToDelete(null); // Reset archiveToDelete when closing modal
   };
 
-  const handleMenuUnarchive = (archive) => {
-    confirmUnarchive(archive); // Open modal instead of API call
+  const handleMenuUnarchive = (archiveId) => {
+    // Directly call the unarchive function without opening the modal
+    handleUnarchive(archiveId);
     setOpenMenuId(null); // Close the menu
   };
 
-  const handleModalUnarchive = (archiveId) => {
+  const handleModalUnarchive = () => {
     handleUnarchive(archiveId);
-    closeArchiveDetailsModal();
+    closeArchiveDetailsModal(); // Close the modal
   }
 
   const confirmUnarchive = (archive) => {
+    console.log("Unarchiving archive:", archive);
     setArchiveToUnarchive(archive);
-    setIsUnarchiveModalOpen(true); // Ensure modal opens
+    toggleUnarchiveModal();
   };
 
   const handleConfirmUnarchive = async () => {
     if (archiveToUnarchive) {
-      await handleUnarchive(archiveToUnarchive.archiveId);
-      setArchiveToUnarchive(null); // Clear state after action
-      setIsUnarchiveModalOpen(false); // Close modal
+      handleUnarchive(archiveToUnarchive.archiveId); // Perform unarchive
+      toggleUnarchiveModal(); // Close the modal
     }
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="w-64 bg-white shadow-md">
-        <SideBar
-            onLogout={onLogout}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-        />
-      </div>
       <main className="flex-1 p-2.5 overflow-auto">
         <section className="bg-white rounded-lg shadow-md p-6">
-          <div className="mb-6 flex justify-between items-center">
-            <div>
-              <label className="text-gray-700 mr-3" htmlFor="type-filter">
-                Filter by:
-              </label>
-              <select
-                id="type-filter"
-                className="border px-3 py-2 rounded-md"
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-              >
-                <option value="">All Types</option>
-                <option value="Course">Courses</option>
-                <option value="Task">Tasks</option>
-                <option value="Note">Notes</option>
-              </select>
-            </div>
-            <input
-              type="text"
-              className="border px-3 py-2 rounded-md"
-              placeholder="Search archives..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
           <div className="grid gap-4">
             {loading ? (
               <div className="flex flex-col justify-center items-center">
-                <CircularProgress size={50} color="primary" sx={{ marginTop: '40px' }} />
+                <CircularProgress size={50} color="primary" sx={{marginTop: "40px"}}/>
                 <p className="text-center text-gray-500 mb-5 mt-2">Loading archives...</p>
               </div>
-            ) : filteredArchives.length > 0 ? (
-              filteredArchives.map((archive) => (
+            ) : archives.length > 0 ? (
+              archives.map((archive) => (
                 <div key={archive.archiveId} className="bg-white border rounded-lg p-7 flex justify-between items-center">
                   <div
                     className="flex-1 cursor-pointer"
@@ -284,62 +230,61 @@ function ArchivePage({ onLogout }) {
           </div>
         )}
 
+        {/* Unarchive Confirmation Modal */}
         {isUnarchiveModalOpen && archiveToUnarchive && (
-          <Dialog
-            open={isUnarchiveModalOpen}
-            onClose={() => setIsUnarchiveModalOpen(false)}
-            aria-labelledby="unarchive-dialog-title"
-            aria-describedby="unarchive-dialog-description"
-          >
-            <DialogTitle id="unarchive-dialog-title">Confirm Unarchive</DialogTitle>
-            <DialogContent>
-              <Typography id="unarchive-dialog-description" variant="body1">
-                Are you sure you want to unarchive this item?
-              </Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => setIsUnarchiveModalOpen(false)}
-                color="secondary"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmUnarchive}
-                color="primary"
-                variant="contained"
-              >
-                Unarchive
-              </Button>
-            </DialogActions>
-          </Dialog>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+              className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg font-semibold mb-4">Confirm Unarchive</h2>
+              <p>
+                Are you sure you want to unarchive the archive:{" "}
+                <strong>{archiveToUnarchive.title}</strong>?
+              </p>
+              <div className="flex justify-end gap-4 mt-4">
+                <button
+                  className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+                  onClick={toggleUnarchiveModal}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  onClick={handleConfirmUnarchive}
+                >
+                  Unarchive
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Delete Confirmation Modal */}
         {isDeleteModalOpen && archiveToDelete && (
-          <Dialog
-            open={isDeleteModalOpen}
-            onClose={toggleDeleteModal}
-            aria-labelledby="delete-dialog-title"
-            aria-describedby="delete-dialog-description"
-          >
-            <DialogTitle id="delete-dialog-title">Are you sure you want to delete this archive?</DialogTitle>
-            <DialogActions>
-              <Button
-                onClick={handleDelete}
-                color="error"
-                variant="contained"
-              >
-                Yes
-              </Button>
-              <Button
-                onClick={toggleDeleteModal}
-                color="default"
-              >
-                No
-              </Button>
-            </DialogActions>
-          </Dialog>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+              className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg font-semibold mb-4">Confirm Deletion</h2>
+              <p>Are you sure you want to delete the archive: <strong>{archiveToDelete.title}</strong>?</p>
+              <div className="flex justify-end gap-4 mt-4">
+                <button
+                  className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+                  onClick={toggleDeleteModal}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
       <Toaster richColors position="bottom-right" closeButton/>
@@ -347,4 +292,4 @@ function ArchivePage({ onLogout }) {
   );
 }
 
-export default ArchivePage;
+export default CourseArchive;

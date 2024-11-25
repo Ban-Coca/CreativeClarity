@@ -2,6 +2,8 @@ package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,6 +23,7 @@ public class GradeEntity {
 	private String assessment_type;
 	private Date dateRecorded; 
 	
+	@JsonBackReference("course-grade")
 	@ManyToOne
 	@JoinColumn(name = "course")
 	private CourseEntity course;

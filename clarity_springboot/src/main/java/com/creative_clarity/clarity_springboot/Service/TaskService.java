@@ -69,8 +69,6 @@ public class TaskService {
 			return trepo.save(task);
 		}
 	}
-
-
 	
 	//Delete of CRUD
 	public String deleteTask(int taskId) {
@@ -87,24 +85,22 @@ public class TaskService {
 
 	// Method to archive completed tasks
 	public void archiveCompletedTask(int taskId) {
-		System.out.println("Task ID "+taskId);
-	    Optional<TaskEntity> taskOptional = trepo.findById(taskId);
-	    
-	    if (!taskOptional.isPresent()) {
-	        throw new IllegalArgumentException("Task not found");
-	    }
-		
-	    TaskEntity task = taskOptional.get();
-	    if (!task.getIsCompleted()) {
-	        throw new IllegalArgumentException("Task is not completed");
-	    }
-	    
+		System.out.println("Task ID " + taskId);
+
+		// Fetch the task to ensure it is managed
+		TaskEntity task = trepo.findById(taskId)
+							.orElseThrow(() -> new IllegalArgumentException("Task not found"));
+
+		if (!task.getIsCompleted()) {
+			throw new IllegalArgumentException("Task is not completed");
+		}
+
 		System.out.println("Task Title: " + task.getTitle());
 		System.out.println("Task Description: " + task.getDescription());
 
-	    CourseEntity course = task.getCourse();
-    
-		// Create the ArchiveEntity
+		CourseEntity course = task.getCourse();
+
+		// Create and populate the ArchiveEntity
 		ArchiveEntity archive = new ArchiveEntity();
 		archive.setTitle(task.getTitle());
 		archive.setDescription(task.getDescription());
@@ -113,10 +109,15 @@ public class TaskService {
 		archive.setTags("Completed Task");
 		archive.setCourse(course);
 
-		archiveRepository.save(archive);
+		// Save the archive first to persist it
+		ArchiveEntity savedArchive = archiveRepository.save(archive);
 
-		// Set the task as archived
+		// Update the task with the archive reference
+		archive.setTask(task); // Set the task in the archive entity
+		task.setArchive(savedArchive); // Update the task with the archive entity
 		task.setIsArchived(true);
+
+		// Save the task to update the relationship
 		trepo.save(task);
 	}
 
