@@ -3,6 +3,8 @@ package com.creative_clarity.clarity_springboot.Entity;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,13 +25,11 @@ public class CourseEntity {
 	private String semester;
 	private String academicYear;
 	private Date created_at;
-
+	private boolean isArchived;
+	
+	@JsonManagedReference("course-grade")
 	@OneToMany(fetch = FetchType.EAGER,mappedBy = "course", cascade = CascadeType.ALL)
 	private List<GradeEntity> grades;
-	
-	//Added Archive -Jeric
-	@OneToMany(fetch = FetchType.EAGER,mappedBy = "course", cascade = CascadeType.ALL)
-    private List<ArchiveEntity> archives;
 
 	public CourseEntity() {
 	}
@@ -87,6 +87,14 @@ public class CourseEntity {
 		this.created_at = created_at;
 	}
 
+	public boolean isIsArchived() {
+		return isArchived;
+	}
+
+	public void setIsArchived(boolean isArchived) {
+		this.isArchived = isArchived;
+	}
+
 	public List<GradeEntity> getGrades() {
 		return grades;
 	}
@@ -94,14 +102,4 @@ public class CourseEntity {
 	public void setGrades(List<GradeEntity> grades) {
 		this.grades = grades;
 	}
-	
-	//Added Archive -Jeric
-	public List<ArchiveEntity> getArchives() {
-        return archives;
-    }
-
-	//Added Archive -Jeric
-    public void setArchives(List<ArchiveEntity> archives) {
-        this.archives = archives;
-    }
 }

@@ -15,9 +15,11 @@ import com.creative_clarity.clarity_springboot.Repository.CourseRepository;
 @CrossOrigin(origins = "http://localhost:5173")
 @Service
 public class CourseService {
+
 	@Autowired
 	CourseRepository crepo;
 	
+
 	public CourseService() {
 		super();
 	}

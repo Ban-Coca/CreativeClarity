@@ -6,7 +6,7 @@ import SideBar from '../components/Sidebar';// Import Frame component
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Add this line to set the base URL for axios
 
-function Grades({onLogout}) {
+function Grades({onLogout, onGradesChange}) {
   const location = useLocation();
   const { courseId } = useParams();
   const [activeTab, setActiveTab] = useState('courses');
@@ -108,8 +108,10 @@ function Grades({onLogout}) {
   };
 
   useEffect(() => {
-    fetchGrades();
-  }, [courseId]);
+    if (activeTab === 'grades') {
+      fetchGrades();
+    }
+  }, [courseId, activeTab]);
 
   useEffect(() => {
     const saveGradesBeforeUnload = () => {
@@ -160,6 +162,8 @@ function Grades({onLogout}) {
         localStorage.setItem('grades', JSON.stringify(updatedGrades)); // Save updated grades to local storage
         return updatedGrades;
       });
+      onGradesChange(); // Fetch grades after submit
+      await fetchGrades(); // Ensure the modal Grade List fetches the updated grades
       setGradeModalOpen(false);
       setSelectedGrade(null);
       setGradeDetails({
@@ -192,11 +196,8 @@ function Grades({onLogout}) {
         headers: getHeaders()
       });
       showSnackbar('Grade deleted successfully');
-      setGrades(prev => {
-        const updatedGrades = prev.filter(grade => grade.gradeId !== gradeId);
-        localStorage.setItem('grades', JSON.stringify(updatedGrades)); // Update local storage
-        return updatedGrades;
-      }); // Remove grade from local state
+      setGrades(prev => prev.filter(grade => grade.gradeId !== gradeId)); // Remove grade from local state
+      localStorage.setItem('grades', JSON.stringify(grades.filter(grade => grade.gradeId !== gradeId))); // Update local storage
       setGradeModalOpen(false); // Close the modal if it's open
     } catch (error) {
       console.error('Error deleting grade:', error);

@@ -26,19 +26,22 @@ public class GradeEntity {
 	@JsonBackReference("course-grade")
 	@ManyToOne
 	@JoinColumn(name = "course")
-	
 	private CourseEntity course;
+	
+	private boolean deleted; // Add this field
 	
 	public GradeEntity() {
 		
 	}
 
-	public GradeEntity(Float score, Float total_points, Date dateRecorded, String assessment_type) {
+	public GradeEntity(Float score, Float total_points, Date dateRecorded, String assessment_type, CourseEntity course) {
 		super();
 		this.score = score;
 		this.total_points = total_points;
 		this.dateRecorded = dateRecorded; 
 		this.assessment_type = assessment_type;
+		this.course = course;
+		this.deleted = false; // Initialize as false
 	}
 
 	public int getGradeId() {
@@ -85,4 +88,11 @@ public class GradeEntity {
 		this.course = course;
 	}
 	
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
 }

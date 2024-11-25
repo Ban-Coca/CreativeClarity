@@ -20,10 +20,23 @@ public class PhotoEntity {
     private String type;
     private String filePath;
 
+    // @JsonBackReference("course-photo")
+    // @ManyToOne
+    // @JoinColumn(name = "course")
+    // private CourseEntity course;
+
     @Lob
     private byte[] media; // Store the media as byte array
 
     private LocalDateTime uploadDate;
+
+    // public CourseEntity getCourse() {
+    //     return course;
+    // }
+
+    // public void setCourse(CourseEntity course) {
+    //     this.course = course;
+    // }
 
     // Getters and setters
     public Long getId() {

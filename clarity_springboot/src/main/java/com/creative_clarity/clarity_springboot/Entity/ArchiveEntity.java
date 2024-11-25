@@ -2,6 +2,8 @@ package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,6 +24,7 @@ public class ArchiveEntity {
 	private Date archive_date;
 	private String tags;
 	
+	@JsonBackReference("course-archive")
 	@ManyToOne
     @JoinColumn(name = "course")
     private CourseEntity course;

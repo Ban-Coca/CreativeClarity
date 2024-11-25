@@ -50,6 +50,24 @@ function CourseDetail({ onLogout }) {
     navigate(`/course/${courseId}/${newValue}`, { state: { course, grades } }); // Pass course and grades details as state
   };
 
+  const fetchGrades = async () => {
+    try {
+      const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`);
+      if (response.status !== 200) {
+        showSnackbar('Failed to load grades.', 'error');
+        return;
+      }
+
+      const grades = response.data;
+      console.log('Grades details:', grades);
+      setGrades(grades); // Update grades state
+      localStorage.setItem('grades', JSON.stringify(grades)); // Save grades to local storage
+    } catch (error) {
+      console.error('Error fetching grades:', error);
+      showSnackbar('An error occurred while loading grades.', 'error');
+    }
+  };
+
   useEffect(() => {
     if (course) {
       setCourseName(course.courseName);
@@ -79,25 +97,18 @@ function CourseDetail({ onLogout }) {
 
   useEffect(() => {
     if (activeTab === 'grades') {
-      const fetchGrades = async () => {
-        try {
-          const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`);
-          if (response.status !== 200) {
-            showSnackbar('Failed to load grades.', 'error');
-            return;
-          }
-
-          const grades = response.data;
-          console.log('Grades details:', grades);
-          setGrades(grades); // Update grades state
-          localStorage.setItem('grades', JSON.stringify(grades)); // Save grades to local storage
-        } catch (error) {
-          console.error('Error fetching grades:', error);
-          showSnackbar('An error occurred while loading grades.', 'error');
-        }
-      };
-
       fetchGrades();
+    }
+  }, [activeTab, courseId]);
+
+  useEffect(() => {
+    if (activeTab === 'grades') {
+      const savedGrades = localStorage.getItem('grades');
+      if (savedGrades) {
+        setGrades(JSON.parse(savedGrades)); // Load grades from local storage
+      } else {
+        fetchGrades(); // Fetch grades if not found in local storage
+      }
     }
   }, [activeTab, courseId]);
 
@@ -136,7 +147,7 @@ function CourseDetail({ onLogout }) {
         {/* Tab Content */}
         <Box mt={1.5}>
           {activeTab === 'archive' && <ArchivePage />}
-          {activeTab === 'grades' && <Grades onLogout={onLogout} />}
+          {activeTab === 'grades' && <Grades onLogout={onLogout} onGradesChange={fetchGrades} />}
           {activeTab === 'gallery' && <Gallery />}
         </Box>
       </main>
