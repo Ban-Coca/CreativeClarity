@@ -62,6 +62,7 @@ public class SecurityConfig {
                     "/api/user/upload-profile-picture",
                     "/oauth2/**",
                     "/login/**",
+                    "/api/user/setup-profile",
                     "/uploads/**",
                     "/api/uploads/**" // Ensure this line is included to permit access to uploads
                 ).permitAll()

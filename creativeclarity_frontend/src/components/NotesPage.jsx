@@ -1,17 +1,31 @@
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Search, Folder, Edit3, Trash2, Save, X, BookOpen, Calendar, CheckSquare, User, LogOut } from 'lucide-react';
+import { FileText, Plus, Search, Folder, Edit3, Trash2, Save, X, BookOpen, Calendar, CheckSquare, User, LogOut, AlignLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-const NotesPage = () => {
+const NotesPage = ({ onLogout }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('notes');
+  const currentUserId = JSON.parse(localStorage.getItem('user'))?.userId;
   const [notes, setNotes] = useState(() => {
-    const savedNotes = localStorage.getItem('notes');
-    return savedNotes ? JSON.parse(savedNotes) : [];
+    if (currentUserId) {
+      const savedNotes = localStorage.getItem(`notes_${currentUserId}`);
+      return savedNotes ? JSON.parse(savedNotes) : [];
+    }
+    return [];
   });
-  const [subjects] = useState(() => {
-    const savedSubjects = localStorage.getItem('subjects');
-    return savedSubjects ? JSON.parse(savedSubjects) : [
+  const [subjects, setSubjects] = useState(() => {
+    if (currentUserId) {
+      const savedSubjects = localStorage.getItem(`subjects_${currentUserId}`);
+      return savedSubjects ? JSON.parse(savedSubjects) : [
+        'Mathematics',
+        'Science',
+        'History',
+        'English',
+        'Computer Science'
+      ];
+    }
+    return [
       'Mathematics',
       'Science',
       'History',
@@ -23,17 +37,31 @@ const NotesPage = () => {
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
+  const [selectedNote, setSelectedNote] = useState(null);
   const [newNote, setNewNote] = useState({
     title: '',
     content: '',
     subject: '',
+    userId: currentUserId,
     lastModified: new Date().toISOString()
   });
   const [editingNoteId, setEditingNoteId] = useState(null);
+  const [showAddSubjectModal, setShowAddSubjectModal] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('notes', JSON.stringify(notes));
-  }, [notes]);
+    // Save notes specific to the current user
+    if (currentUserId) {
+      localStorage.setItem(`notes_${currentUserId}`, JSON.stringify(notes));
+    }
+  }, [notes, currentUserId]);
+
+  useEffect(() => {
+    // Save subjects specific to the current user
+    if (currentUserId) {
+      localStorage.setItem(`subjects_${currentUserId}`, JSON.stringify(subjects));
+    }
+  }, [subjects, currentUserId]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -58,11 +86,31 @@ const NotesPage = () => {
     }
   };
 
+  const handleAddSubject = () => {
+    // Trim the subject name and check if it's not empty
+    const trimmedSubject = newSubjectName.trim();
+    if (trimmedSubject && !subjects.includes(trimmedSubject)) {
+      const updatedSubjects = [...subjects, trimmedSubject];
+      setSubjects(updatedSubjects);
+      
+      // Save subjects with user-specific key
+      if (currentUserId) {
+        localStorage.setItem(`subjects_${currentUserId}`, JSON.stringify(updatedSubjects));
+      }
+      
+      // Reset modal state
+      setNewSubjectName('');
+      setShowAddSubjectModal(false);
+    }
+  };
+
   const filteredNotes = notes.filter(note => {
+    // Ensure notes belong to the current user
+    const matchesUser = note.userId === currentUserId;
     const matchesSubject = selectedSubject === 'All' || note.subject === selectedSubject;
     const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          note.content.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSubject && matchesSearch;
+    return matchesUser && matchesSubject && matchesSearch;
   });
 
   const handleNewNote = () => {
@@ -80,19 +128,34 @@ const NotesPage = () => {
     if (editingNoteId !== null) {
       setNotes(notes.map(note => 
         note.id === editingNoteId 
-          ? { ...newNote, id: editingNoteId, lastModified: new Date().toISOString() }
+          ? { 
+              ...newNote, 
+              id: editingNoteId, 
+              userId: currentUserId, // Ensure user ID is set 
+              lastModified: new Date().toISOString() 
+            }
           : note
       ));
     } else {
       setNotes([...notes, {
         ...newNote,
         id: Date.now(),
+        userId: currentUserId, // Set user ID for new notes
         lastModified: new Date().toISOString()
       }]);
     }
     setShowNewNoteForm(false);
     setEditingNoteId(null);
   };
+
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    
+    if (!user || !token) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const handleEditNote = (note) => {
     setNewNote(note);
@@ -104,11 +167,19 @@ const NotesPage = () => {
     setNotes(notes.filter(note => note.id !== noteId));
   };
 
-  const onLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('isAuthenticated');
+  const handleLogout = () => {
+    // Call the onLogout function from props first
+    onLogout();
+    // Then navigate to login
     navigate('/login');
+  };
+
+  const handleNoteClick = (note) => {
+    setSelectedNote(note);
+  };
+
+  const closeNoteDetailsModal = () => {
+    setSelectedNote(null);
   };
 
   return (
@@ -155,8 +226,8 @@ const NotesPage = () => {
           </div>
           
           <button 
-            onClick={onLogout}
-            className="mt-auto mb-6 mx-6 flex items-center space-x-2 text-gray-600 hover:text-red-600 transition"
+            onClick={handleLogout}
+            className="absolute bottom-6 left-6 flex items-center space-x-2 text-gray-600 hover:text-red-600 transition"
           >
             <LogOut className="h-5 w-5" />
             <span>Logout</span>
@@ -206,7 +277,15 @@ const NotesPage = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-3">Subjects</h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-gray-500">Subjects</h3>
+                    <button
+                      onClick={() => setShowAddSubjectModal(true)}
+                      className="text-blue-600 hover:text-blue-800 transition"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
                   <div className="space-y-2">
                     <button
                       onClick={() => setSelectedSubject('All')}
@@ -236,6 +315,36 @@ const NotesPage = () => {
                   </div>
                 </div>
               </div>
+              {showAddSubjectModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-lg shadow-xl p-6 w-96">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-lg font-semibold">Add New Subject</h2>
+                      <button
+                        onClick={() => setShowAddSubjectModal(false)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      <input
+                        type="text"
+                        placeholder="Enter subject name"
+                        value={newSubjectName}
+                        onChange={(e) => setNewSubjectName(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <button
+                        onClick={handleAddSubject}
+                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                      >
+                        Add Subject
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Notes grid */}
@@ -289,7 +398,11 @@ const NotesPage = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredNotes.map(note => (
-                    <div key={note.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition">
+                    <div 
+                      key={note.id} 
+                      onClick={() => handleNoteClick(note)}
+                      className="bg-white rounded-lg shadow-sm hover:shadow-md transition cursor-pointer"
+                    >
                       <div className="p-6">
                         <div className="flex justify-between items-start mb-4">
                           <div>
@@ -300,13 +413,19 @@ const NotesPage = () => {
                           </div>
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => handleEditNote(note)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditNote(note);
+                              }}
                               className="text-gray-400 hover:text-blue-600"
                             >
                               <Edit3 className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => handleDeleteNote(note.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteNote(note.id);
+                              }}
                               className="text-gray-400 hover:text-red-600"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -326,10 +445,49 @@ const NotesPage = () => {
               )}
             </div>
           </div>
+          
+          {/* Note Details Modal */}
+          {selectedNote && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl shadow-2xl w-[600px] max-h-[80vh] overflow-hidden">
+                <div className="bg-blue-600 text-white p-6 flex justify-between items-center">
+                  <div>
+                    <h2 className="text-xl font-bold">{selectedNote.title}</h2>
+                    <span className="text-sm bg-white/20 px-2 py-1 rounded-full mt-2 inline-block">
+                      {selectedNote.subject}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={closeNoteDetailsModal}
+                    className="hover:bg-blue-500 p-2 rounded-full transition"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center text-gray-500 text-sm mb-4">
+                    <AlignLeft className="h-4 w-4 mr-2" />
+                    <span>
+                      Last modified: {new Date(selectedNote.lastModified).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="prose max-w-none text-gray-800">
+                    {selectedNote.content.split('\n').map((paragraph, index) => (
+                      <p key={index} className="mb-4">{paragraph}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+};
+
+NotesPage.propTypes = {
+  onLogout: PropTypes.func.isRequired
 };
 
 export default NotesPage;

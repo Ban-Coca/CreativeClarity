@@ -222,7 +222,7 @@ const DashboardPage = ({ onLogout }) => {
                       onError={(e) => {
                         console.error('Image failed to load:', e);
                         console.log('Attempted image URL:', user.profilePicture);
-                        e.target.src = 'http://localhost:8080/uploads/default-profile.png';
+                        e.target.src = '/src/assets/images/default-profile.png';
                       }} 
                     />
                   </div>

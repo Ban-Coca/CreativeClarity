@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User, Edit, Calendar, BookOpen, CheckSquare, LogOut, Camera, X, FileText } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-// import { LogOut } from 'react-feather';
 import PropTypes from 'prop-types';
 
 
@@ -70,6 +69,7 @@ const UserProfile = ({ onLogout }) => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleProfilePictureChange(e.dataTransfer.files[0]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleTabChange = (tab) => {
@@ -331,13 +331,13 @@ const checkImageExists = (url) => {
         <div className="relative group">
           <div className="w-24 h-24 rounded-full overflow-hidden">
             <img
-              src={formData.profilePicture || 'http://localhost:8080/uploads/default-profile.png'} // Add fallback image
+              src={formData.profilePicture || '/src/assets/images/default-profile.png'} // Add fallback image
               alt="Profile"
               className="w-full h-full object-cover"
               onError={(e) => {
                 console.error('Image failed to load:', e);
                 console.log('Attempted image URL:', formData.profilePicture);
-                e.target.src = 'http://localhost:8080/uploads/default-profile.png'; // Set fallback image on error
+                e.target.src = '/src/assets/images/default-profile.png'; // Set fallback image on error
               }}
             />
           </div>

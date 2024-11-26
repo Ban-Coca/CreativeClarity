@@ -172,7 +172,7 @@ const App = () => {
             path="/notes"
             element={
               <ProtectedRoute>
-                <NotesPage />
+                <NotesPage onLogout={handleLogout}/>
               </ProtectedRoute>
             }
           />

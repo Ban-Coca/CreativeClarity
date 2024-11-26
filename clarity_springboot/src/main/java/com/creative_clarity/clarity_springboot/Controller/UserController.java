@@ -120,7 +120,7 @@ public class UserController {
         userMap.put("userId", user.getUserId());
         userMap.put("email", user.getEmail());
         userMap.put("username", user.getUsername());
-        userMap.put("firstName", user.getFirstName() != null ? user.getFirstName() : "");
+        userMap.put("firstName", user.getFirstName() != null ? user.getFirstName() : "Student");
         userMap.put("lastName", user.getLastName() != null ? user.getLastName() : "");
         userMap.put("institution", user.getInstitution() != null ? user.getInstitution() : "");
         userMap.put("role", user.getRole() != null ? user.getRole() : "");
