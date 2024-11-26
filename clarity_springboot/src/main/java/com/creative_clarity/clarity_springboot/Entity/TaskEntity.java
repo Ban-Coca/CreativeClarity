@@ -1,10 +1,16 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class TaskEntity {
@@ -18,6 +24,11 @@ public class TaskEntity {
 	private Date due_date;
 	private boolean completed;
 	private String priority;  // new field
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    @JsonBackReference
+	private CourseEntity course;
 	
 	public TaskEntity() {
 		
@@ -75,4 +86,12 @@ public class TaskEntity {
 	public void setPriority(String priority) {
 		this.priority = priority;
 	}
+	
+	public CourseEntity getCourse() {
+        return course;
+    }
+
+    public void setCourse(CourseEntity course) {
+        this.course = course;
+    }
 }

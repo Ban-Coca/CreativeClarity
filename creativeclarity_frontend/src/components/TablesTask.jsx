@@ -37,6 +37,7 @@ import { Plus, BookCheck } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { fetchTasks, deleteTask } from '../service/taskService';
+import { PriorityColors } from '../utils/Priority';
 
 axios.defaults.baseURL = "http://localhost:8080/";
 function descendingComparator(a, b, orderBy) {
@@ -107,7 +108,6 @@ function LoadingComponent({loading}){
   }else{
     return null
   }
-  
 }
 function EnhancedTableHead(props) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
@@ -399,7 +399,11 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
                       <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.title}</TableCell>
                       <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.description}</TableCell>
                       <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{formatDate(row.due_date)}</TableCell>
-                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.priority}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>
+                        <div className='flex justify-center' style={{backgroundColor: PriorityColors[row.priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
+                          {row.priority}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })}

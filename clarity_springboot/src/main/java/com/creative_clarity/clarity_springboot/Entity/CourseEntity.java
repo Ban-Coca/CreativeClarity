@@ -1,7 +1,10 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -26,6 +29,10 @@ public class CourseEntity {
 
 	@OneToMany(fetch = FetchType.EAGER,mappedBy = "course", cascade = CascadeType.ALL)
 	private List<GradeEntity> grades;
+	
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "course", cascade = CascadeType.ALL)
+	@JsonManagedReference
+    private List<TaskEntity> tasks = new ArrayList<>();
 	
 	public CourseEntity() {
 	}
@@ -90,4 +97,12 @@ public class CourseEntity {
 	public void setGrades(List<GradeEntity> grades) {
 		this.grades = grades;
 	}
+	
+	public List<TaskEntity> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<TaskEntity> tasks) {
+        this.tasks = tasks;
+    }
 }

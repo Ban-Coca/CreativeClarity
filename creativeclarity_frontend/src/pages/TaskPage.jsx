@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Toaster, toast } from 'sonner';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import EnhancedTable from '../components/TablesTask';
 import { Priority, PriorityColors, PriorityList } from '../utils/Priority';
-import { Button, Modal, Box, Typography, Paper, TextField, Select, MenuItem, FormControl, InputLabel, IconButton } from '@mui/material';
+import { Button, Modal, Box, TextField, Select, MenuItem, FormControl, InputLabel, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import PropTypes from 'prop-types';
 import { fetchTasks, createTask, updateTask, deleteTask } from '../service/taskService';
+import { Save, X, Edit, Trash2} from 'lucide-react';
+import { lineWobble } from 'ldrs';
 // Set the base URL for Axios
 axios.defaults.baseURL = 'http://localhost:8080';
 const style = {
@@ -16,18 +18,39 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    width: 500,
     bgcolor: 'background.paper',
     boxShadow: 24,
     p: 4,
+    borderRadius: '0.75rem'
 };
-
+function LoadingComponent({loading}){
+    useEffect(() => {
+      lineWobble.register()
+    }, []);
+    if(loading){
+      return (
+          <Box display="flex" justifyContent="center" alignItems="center" height={200}>
+            <l-line-wobble
+              size="80"
+              stroke="5"
+              bg-opacity="0.1"
+              speed="1.75" 
+              color="black" 
+            ></l-line-wobble>
+          </Box>
+      )
+    }else{
+      return null
+    }
+  }
 const TaskPage = ({onLogout}) => {
     const [activeTab, setActiveTab] = useState('tasks');
     const [tasks, setTasks] = useState([]);
+    const [courses, setCourses] = useState([]);
     const [open, setOpen] = useState(false);
 
-    const [editingTaskId, setEditingTaskId] = useState(null);
+    const [editedTask, setEditedTask] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -40,18 +63,21 @@ const TaskPage = ({onLogout}) => {
         description: '',
         completed: false,
         due_date: '',
-        priority: ''
+        priority: '',
+        courseId: ''
     });
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
         completed: false,
         due_date: '',
-        priority: ''
+        priority: '',
+        course:null
     });
 
     useEffect(() => {
         fetchTasks();
+        fetchCourses() 
     }, []);
 
     const fetchTasks = async () => {
@@ -64,7 +90,7 @@ const TaskPage = ({onLogout}) => {
                     'Access-Control-Allow-Origin': '*'
                 }
             });
-            toast.success('Tasks fetched successfully');
+            //toast.success('Tasks fetched successfully');
             setTasks(response.data);
         } catch (error) {
             toast.error('Error fetching tasks');
@@ -98,16 +124,16 @@ const TaskPage = ({onLogout}) => {
         }
     };
 
-    const updateTask = async (taskId, updatedTask) => {
-        console.log('Updating task:', taskId, updatedTask);
+    const updateTask = async (taskData) => {
+        console.log('Updating task:', taskData.taskId, taskData);
         try {
             // Format the date properly for the backend
             const formattedTask = {
-                ...updatedTask,
-                due_date: new Date(updatedTask.due_date).toISOString().split('T')[0]
+                ...taskData,
+                due_date: new Date(taskData.due_date).toISOString().split('T')[0]
             };
 
-            const response = await axios.put(`/api/task/puttaskdetails?taskId=${taskId}`, formattedTask, {
+            const response = await axios.put(`/api/task/puttaskdetails?taskId=${taskData.taskId}`, formattedTask, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -115,12 +141,12 @@ const TaskPage = ({onLogout}) => {
 
             if (response.data) {
                 setTasks(tasks.map(task => 
-                    task.taskId === taskId ? {
+                    task.taskId === taskData.taskId ? {
                         ...response.data,
                         due_date: response.data.due_date // Keep the date in the response format
                     } : task
                 ));
-                setEditingTaskId(null);
+                //setEditingTaskId(null);
                 toast.success('Task updated successfully');
             }
             fetchTasks();
@@ -129,34 +155,33 @@ const TaskPage = ({onLogout}) => {
             console.error('Error updating task:', error.response?.data || error.message);
         }
     };
-
-    const handleEdit = (task) => {
-        setEditingTaskId(task.taskId);
-        setEditForm({
-            title: task.title,
-            description: task.description,
-            completed: task.completed,
-            due_date: formatDateForInput(task.due_date),
-            priority: task.priority
-        });
-    };
     
-    const handleSave = async (taskId) => {
-        await updateTask(taskId, editForm);
-        setEditingTaskId(null);
-    };
-
-    const handleBlur = (taskId) => {
-        if (editingTaskId === taskId) {
-            handleSave(taskId);
+    const handleSave = async (taskData) => {
+        if (!taskData) return;
+        try {
+          await updateTask(taskData);
+          setOpenTaskDetails(false);
+          fetchTasks(); // Refresh task list
+        } catch (error) {
+          toast.error('Error saving task');
+          console.error(error);
         }
     };
 
-    const handleKeyPress = (e, taskId) => {
-        if (e.key === 'Enter') {
-            handleSave(taskId);
+    const fetchCourses = useCallback(async () => {
+        try {
+            console.log('Fetching courses...');
+            const response = await axios.get('/api/course/getallcourse');
+            console.log('Courses fetched:', response.data);
+            const courseData = Array.isArray(response.data) ? response.data : [];
+            console.log(courseData)
+            setCourses(courseData);
+            console.log('Courses names:', courseData.map(course => course.courseName));
+        } catch (error) {
+            console.error('Error fetching courses:', error);
+            toast.error('Failed to fetch courses', 'error');
         }
-    };
+      }, []);
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -252,8 +277,46 @@ const TaskPage = ({onLogout}) => {
                                     value={newTask.priority} 
                                     onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
                                     {PriorityList.map((priority) => (
-                                        <MenuItem key={priority} value={priority}>{priority}</MenuItem>
+                                        <MenuItem 
+                                            key={priority} 
+                                            value={priority}
+                                            >
+                                                <div className='flex justify-center w-full' style={{backgroundColor: PriorityColors[priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
+                                                    {priority}
+                                                </div>
+                                        </MenuItem>
                                     ))}
+                                </Select>
+                            </FormControl>
+                            
+                            <FormControl fullWidth margin="normal">
+                                <InputLabel id="course-select-label">Courses</InputLabel>
+                                <Select
+                                    labelId="course-select-label"
+                                    id="course-select"
+                                    label="Courses"
+                                    value={newTask.course?.courseId || ''} 
+                                    onChange={(e) => setNewTask({
+                                        ...newTask, 
+                                        course: {
+                                            ...newTask.course,
+                                            courseId: e.target.value
+                                        }
+                                    })}>
+                                    {courses && courses.length > 0 ? (
+                                        courses.map((course) => (
+                                            <MenuItem 
+                                                key={course.courseId} 
+                                                value={course.courseId}
+                                            >
+                                                <div className='flex justify-center w-full'>
+                                                    {course.courseName}
+                                                </div>
+                                            </MenuItem>
+                                        ))
+                                    ) : (
+                                        <MenuItem disabled>No courses available</MenuItem>
+                                    )}
                                 </Select>
                             </FormControl>
 
@@ -283,9 +346,12 @@ const TaskPage = ({onLogout}) => {
                 </Modal>
                 <TaskDetailsModal 
                     task={selectedTask} 
+                    editedTask={editedTask}
+                    setEditedTask={setEditedTask}
                     onClose={() => setOpenTaskDetails(false)} 
                     open={openTaskDetails} 
-                    onDelete={handleDelete}/>
+                    onDelete={handleDelete}
+                    onUpdate={() => handleSave(editedTask)}/>
                 <ModalDelete 
                     open={openDeleteModal}
                     onClose={() => setOpenDeleteModal(false)}
@@ -297,73 +363,189 @@ const TaskPage = ({onLogout}) => {
     );
 };
 
-const TaskDetailsModal = ({ task, onClose, open, onDelete }) => {
+const TaskDetailsModal = ({ task, editedTask, setEditedTask, onClose, open, onDelete, onUpdate }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        if (task) {
+            setEditedTask(task);
+            setLoading(false);
+        }
+    }, [task, setEditedTask]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditedTask(prev => ({ ...prev, [name]: value }));
+    }
+
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+    }
+
+    const handleSave = () => {
+        console.log('Saving task:', editedTask);
+        onUpdate(editedTask);
+        setIsEditing(false);
+    }
+
+    const handleCancel = () => {
+        setEditedTask(task);
+        setIsEditing(false);
+    }
     const formatDate = (date) => {
+        const dateObj = new Date(date);
+        return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
+    }
+    const formatDisplayDate = (date) => {
+        if (!date) return '';
         const dateObj = new Date(date);
         return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
     }
     console.log(task)
     if (!task) return null;
-    console.log("This is opened!");
+    console.log("editing taks!: ", editedTask);
     return (
-        <Modal
-            open={open}
-            onClose={onClose}
-            aria-labelledby="task-details-modal"
-            aria-describedby="task-details-description"
-        >
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-white rounded-xl p-2">
-                <div className="flex justify-between items-left border-b border-gray-300">
-                    <h2 className="text-xl font-semibold mb-2">Task Details</h2>
-                    <div className="flex">
-                        <IconButton onClick={onclick}>
-                            <EditIcon/>
-                        </IconButton>
-
-                        <IconButton onClick={() => onDelete(task.taskId)}>
-                            <DeleteIcon className="text-red-500"/>
-                        </IconButton>
+        <Modal open={open} onClose={onClose}>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] bg-white rounded-lg">
+                {/* Header */}
+                <div className="flex justify-between items-center px-6 py-4 border-b border-blue-500">
+                    <h2 className="text-xl font-semibold">
+                        {isEditing ? 'Editing Mode' : 'Task Details'}
+                    </h2>
+                    <div className="flex gap-2">
+                        {isEditing ? (
+                            <>
+                                <button 
+                                    onClick={handleSave}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <Save className="w-5 h-5 text-green-600" />
+                                </button>
+                                <button 
+                                    onClick={handleCancel}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-red-600" />
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button 
+                                    onClick={() => setIsEditing(true)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <Edit className="w-5 h-5 text-gray-600" />
+                                </button>
+                                <button 
+                                    onClick={() => onDelete(task.taskId)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <Trash2 className="w-5 h-5 text-red-600" />
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
-                
-                <div className="flex flex-col">
-                    <div className="mt-8 ml-24">
-                        <h1 className="text-2xl font-semibold mb-8">{task.title}</h1>
+
+                {/* Content */}
+                <div className="p-6 space-y-6">
+                    {/* Title */}
+                    <div className="space-y-2">
+                        {isEditing ? (
+                            <TextField
+                                fullWidth
+                                name="title"
+                                value={editedTask.title}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                                label="Title"
+                            />
+                        ) : (
+                            <h1 className="text-2xl font-bold">{task.title}</h1>
+                        )}
                     </div>
 
-                    <div className="flex justify-between ml-24 mr-56">
-                        <div>
-                            <p className="mb-2">
-                                <strong>Status:</strong> {task.completed ? 'Completed' : 'Ongoing'}
-                            </p>
-                            <div className="flex items-center mt-5">
-                                <p className="mb-2">
-                                    <strong>Priority:</strong>
-                                </p>
-                                <div className="ml-4" style={{backgroundColor: PriorityColors[task.priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
-                                    {task.priority}
-                                </div>
+                    {/* Status and Due Date */}
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-700">Status</p>
+                            {isEditing ? (
+                                <FormControl fullWidth size="small">
+                                    <Select
+                                        name="completed"
+                                        value={editedTask.completed}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value={false}>Ongoing</MenuItem>
+                                        <MenuItem value={true}>Completed</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            ) : (
+                                <p className="text-base">{task.completed ? 'Completed' : 'Ongoing'}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-700">Due Date</p>
+                            {isEditing ? (
+                                <TextField
+                                    type="date"
+                                    name="due_date"
+                                    value={formatDateForInput(editedTask.due_date)}
+                                    onChange={handleInputChange}
+                                    size="small"
+                                    fullWidth
+                                />
+                            ) : (
+                                <p className="text-base">{formatDisplayDate(task.due_date)}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Priority */}
+                    <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-700">Priority</p>
+                        {isEditing ? (
+                            <FormControl fullWidth size="small">
+                                <Select
+                                    name="priority"
+                                    value={editedTask.priority}
+                                    onChange={handleInputChange}
+                                >
+                                    {PriorityList.map((priority) => (
+                                        <MenuItem key={priority} value={priority}>
+                                            <span className={`px-3 py-1 rounded text-black ${PriorityColors[priority]}`}>
+                                                {priority}
+                                            </span>
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        ) : (
+                            <div className={`px-3 py-1 rounded text-black`} style={{backgroundColor: PriorityColors[task.priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
+                                {task.priority}
                             </div>
-                        </div>
-
-                        <div>
-                            <p className="mb-2">
-                                <strong>Due Date:</strong> {formatDate(task.due_date)}
-                            </p>
-                        </div>
+                        )}
                     </div>
-                    <Box sx={{margin: '1rem 10rem 0 6rem'}}>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-700">Description</p>
                         <TextField
                             fullWidth
                             multiline
-                            variant='outlined'
-                            label='Description'
-                            value={task.description}
-                            slotProps={{readOnly: true}}
-                            />
-
-                    </Box>
-                    
+                            rows={4}
+                            name="description"
+                            value={isEditing ? editedTask.description : task.description}
+                            onChange={handleInputChange}
+                            variant="outlined"
+                            InputProps={{
+                                readOnly: !isEditing
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
         </Modal>
@@ -400,5 +582,5 @@ const ModalDelete = ({open, onClose, onConfirm, taskTitle}) => {
 }
 TaskPage.propTypes = {
     onLogout: PropTypes.func.isRequired
-  };
+};
 export default TaskPage;
