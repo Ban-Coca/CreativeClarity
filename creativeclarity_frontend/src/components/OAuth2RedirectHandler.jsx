@@ -17,7 +17,9 @@ const OAuth2RedirectHandler = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to get user info');
+          const errorData = await response.json();
+          console.error('OAuth2 Error:', errorData);
+          throw new Error(errorData.error || 'Authentication failed');
         }
 
         const data = await response.json();

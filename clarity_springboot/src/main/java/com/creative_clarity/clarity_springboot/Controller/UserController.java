@@ -17,6 +17,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -174,6 +175,8 @@ public class UserController {
             OAuth2User oauth2User = token.getPrincipal();
             String email;
             String name;
+
+            logger.info("OAuth2 User Attributes: {}", oauth2User.getAttributes());
             
             // Handle different OAuth2 providers
             if ("github".equals(token.getAuthorizedClientRegistrationId())) {
@@ -249,16 +252,22 @@ public class UserController {
                 "institution", user.getInstitution() != null ? user.getInstitution() : "",
                 "role", user.getRole() != null ? user.getRole() : "",
                 "academicLevel", user.getAcademicLevel() != null ? user.getAcademicLevel() : "",
-                "majorField", user.getMajorField() != null ? user.getMajorField() : ""
+                "majorField", user.getMajorField() != null ? user.getMajorField() : "",
+                "picture", user.getProfilePicturePath() != null ? user.getProfilePicturePath() : "" 
             ));
 
+            logger.info("Principal class: {}", principal.getClass().getName());
+            
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            logger.error("OAuth2 user info error: ", e);
+            logger.error("Detailed OAuth2 error: ", e);
             return ResponseEntity.status(500)
-                .body(Collections.singletonMap("error", 
-                    "Internal server error during OAuth2 authentication"));
+                .body(Map.of(
+                    "error", "Authentication failed",
+                    "details", e.getMessage(),
+                    "stackTrace", Arrays.toString(e.getStackTrace())
+                ));
         }
     }
 

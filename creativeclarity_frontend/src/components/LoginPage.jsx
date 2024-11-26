@@ -13,9 +13,14 @@ const LoginPage = ({ onLoginSuccess }) => {
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
-  const handleGithubLogin = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/github';
-  };
+  const handleGithubLogin = async () => {
+    try {
+        // Redirect to GitHub OAuth2 authorization endpoint
+        window.location.href = 'http://localhost:8080/oauth2/authorization/github';
+    } catch (error) {
+        console.error('GitHub login error:', error);
+    }
+};
   const handleFacebookLogin = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/facebook';
   };

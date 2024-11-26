@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,12 +113,25 @@ public class SecurityConfig {
 
     private String generateToken(OAuth2User oauth2User) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + 86400000); // 24 hours
-        
-        // Get the user's ID from your UserService
-        String email = oauth2User.getAttribute("email");
-        UserEntity user = userService.findByEmail(email);
-        String userId = String.valueOf(user.getUserId()); // Convert ID to string
+    Date expiryDate = new Date(now.getTime() + 86400000); // 24 hours
+    
+    // Get the user's ID from your UserService
+    String email = oauth2User.getAttribute("email");
+    
+    // Fallback to login if email is null
+    if (email == null) {
+        String login = oauth2User.getAttribute("login");
+        email = login + "@github.com";
+    }
+    
+    UserEntity user = userService.findByEmail(email);
+    
+    // If user is still null, create a new user
+    if (user == null) {
+        user = createUserFromOAuth2(oauth2User, email);
+    }
+    
+    String userId = String.valueOf(user.getUserId()); // Convert ID to string
 
         return Jwts.builder()
             .setSubject(userId) // Use ID instead of email
@@ -125,6 +139,35 @@ public class SecurityConfig {
             .setExpiration(expiryDate)
             .signWith(SignatureAlgorithm.HS512, jwtSecret)
             .compact();
+    }
+
+    private UserEntity createUserFromOAuth2(OAuth2User oauth2User, String email) {
+        UserEntity user = new UserEntity();
+        user.setEmail(email);
+        user.setUsername(email);
+        user.setPassword(passwordEncoder().encode("oauth2user"));
+        user.setCreated_at(new Date());
+        
+        String name = oauth2User.getAttribute("name");
+        String login = oauth2User.getAttribute("login");
+        
+        if (name != null) {
+            String[] nameParts = name.split(" ", 2);
+            user.setFirstName(nameParts[0]);
+            if (nameParts.length > 1) {
+                user.setLastName(nameParts[1]);
+            }
+        } else if (login != null) {
+            user.setFirstName(login);
+        }
+    
+        String profilePicture = oauth2User.getAttribute("avatar_url");
+        if (profilePicture != null) {
+            user.setProfilePicturePath(profilePicture);
+        }
+        
+        userService.postUserRecord(user);
+        return user;
     }
 
     @Bean
@@ -135,30 +178,47 @@ public class SecurityConfig {
             OAuth2User oauth2User = delegate.loadUser(request);
             String registrationId = request.getClientRegistration().getRegistrationId();
             
-            String email;
-            String name;
+            String email = null;
+            String name = null;
+            String profilePicture = null; // New variable to store profile picture URL
             
-            switch (registrationId) {
-                case "github":
-                    email = oauth2User.getAttribute("email");
-                    if (email == null) {
-                        String login = oauth2User.getAttribute("login");
-                        email = login + "@github.com";
-                    }
-                    name = oauth2User.getAttribute("name");
-                    if (name == null) {
-                        name = oauth2User.getAttribute("login");
-                    }
-                    break;
+            try {
+                switch (registrationId) {
+                    case "github":
+                        email = oauth2User.getAttribute("email");
+                        if (email == null) {
+                            String login = oauth2User.getAttribute("login");
+                            if (login == null) {
+                                logger.error("Unable to retrieve GitHub login");
+                                throw new OAuth2AuthenticationException("GitHub login not found");
+                            }
+                            email = login + "@github.com";
+                        }
+                        name = oauth2User.getAttribute("name");
+                        if (name == null) {
+                            name = oauth2User.getAttribute("login");
+                        }
+                        profilePicture = oauth2User.getAttribute("avatar_url");
+                        break;
                     
                 case "facebook":
                     email = oauth2User.getAttribute("email");
                     name = oauth2User.getAttribute("name");
+                    // Facebook profile picture
+                profilePicture = oauth2User.getAttribute("picture.data.url");
                     break;
                     
                 default: // Google and others
                     email = oauth2User.getAttribute("email");
                     name = oauth2User.getAttribute("name");
+                    // Google profile picture
+                profilePicture = oauth2User.getAttribute("picture");
+                break;
+            }
+
+            if (email == null || email.isEmpty()) {
+                logger.error("No email found for OAuth2 user from {}", registrationId);
+                throw new OAuth2AuthenticationException("No email provided");
             }
             
             // Create or update user
@@ -177,11 +237,21 @@ public class SecurityConfig {
                         user.setLastName(nameParts[1]);
                     }
                 }
+
+                 // Set profile picture if available
+            if (profilePicture != null) {
+                user.setProfilePicturePath(profilePicture);
+            }
                 
                 userService.postUserRecord(user);
             }
             
             return oauth2User;
+
+        } catch (Exception e) {
+            logger.error("Error processing OAuth2 user: ", e);
+            throw e;
+        }
         };
     }
 }

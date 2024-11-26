@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User, Edit, Calendar, BookOpen, CheckSquare, LogOut, Camera, X, FileText } from 'lucide-react';
+import { User, Edit, Calendar, BookOpen, CheckSquare, LogOut, Camera, X, FileText} from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
@@ -11,6 +11,7 @@ const UserProfile = ({ onLogout }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showEnlargedImage, setShowEnlargedImage] = useState(false);
   
   const [activeTab, setActiveTab] = useState(() => {
     if (location.pathname === '/user-profile') return 'profile';
@@ -325,15 +326,45 @@ const checkImageExists = (url) => {
     </div>
   );
 
+  const EnlargedImageModal = () => (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-8"
+      onClick={() => setShowEnlargedImage(false)}
+    >
+      <div className="relative max-w-full max-h-full flex items-center justify-center">
+        <button
+          onClick={() => setShowEnlargedImage(false)}
+          className="absolute top-4 right-4 text-white hover:text-gray-300 z-60"
+        >
+          <X className="h-8 w-8" />
+        </button>
+        <img
+          src={formData.profilePicture || '/src/assets/images/default-profile.png'}
+          alt="Enlarged Profile"
+          className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+          onError={(e) => {
+            console.error('Enlarged image failed to load:', e);
+            e.target.src = '/src/assets/images/default-profile.png';
+          }}
+        />
+      </div>
+    </div>
+  );
+
   const ProfileHeader = () => (
     <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
       <div className="flex items-center space-x-6">
         <div className="relative group">
-          <div className="w-24 h-24 rounded-full overflow-hidden">
+        <div 
+          className="w-24 h-24 rounded-full overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => !isEditing && setShowEnlargedImage(true)}
+        >
             <img
               src={formData.profilePicture || '/src/assets/images/default-profile.png'} // Add fallback image
               alt="Profile"
               className="w-full h-full object-cover"
+              onClick={() => !isEditing && setShowEnlargedImage(true)}
               onError={(e) => {
                 console.error('Image failed to load:', e);
                 console.log('Attempted image URL:', formData.profilePicture);
@@ -642,6 +673,7 @@ const checkImageExists = (url) => {
 
       {/* Image Upload Modal */}
       {showImageModal && <ImageUploadModal />}
+      {showEnlargedImage && <EnlargedImageModal />}
     </div>
   );
 };
