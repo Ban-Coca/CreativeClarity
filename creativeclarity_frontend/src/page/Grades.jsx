@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Paper, Typography, Container } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Paper, Typography, Container, Menu, MenuItem, IconButton, LinearProgress } from '@mui/material';
+import { MoreVert } from '@mui/icons-material';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -15,7 +16,7 @@ function Grades({ onLogout, onGradesChange }) {
   const navigate = useNavigate();
   const [courses, SetCourses] = useState(location.state?.courses || []); // Add this line to initialize courses state
   const [grades, setGrades] = useState(() => {
-    const savedGrades = localStorage.getItem('grades');
+    const savedGrades = localStorage.getItem(`grades_${courseId}`);
     return savedGrades ? JSON.parse(savedGrades) : [];
   });
   const [gradeModalOpen, setGradeModalOpen] = useState(false);
@@ -28,6 +29,8 @@ function Grades({ onLogout, onGradesChange }) {
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [gradeToDelete, setGradeToDelete] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedGradeId, setSelectedGradeId] = useState(null);
 
   const showToast = (message, type = 'success') => {
     toast(message, { type });
@@ -70,7 +73,7 @@ function Grades({ onLogout, onGradesChange }) {
       });
       console.log('Grades fetched:', response.data);
       setGrades(response.data);
-      localStorage.setItem('grades', JSON.stringify(response.data)); // Save grades to local storage
+      localStorage.setItem(`grades_${courseId}`, JSON.stringify(response.data)); // Save grades to local storage
     } catch (error) {
       console.error('Error fetching grades:', error);
       console.error('Error details:', error.response?.data || error.message);
@@ -105,14 +108,14 @@ function Grades({ onLogout, onGradesChange }) {
 
   useEffect(() => {
     const saveGradesBeforeUnload = () => {
-      localStorage.setItem('grades', JSON.stringify(grades));
+      localStorage.setItem(`grades_${courseId}`, JSON.stringify(grades));
     };
 
     window.addEventListener('beforeunload', saveGradesBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', saveGradesBeforeUnload);
     };
-  }, [grades]);
+  }, [grades, courseId]);
 
   const handleGradeChange = (e) => {
     const { name, value } = e.target;
@@ -149,11 +152,10 @@ function Grades({ onLogout, onGradesChange }) {
         const updatedGrades = selectedGrade
           ? prev.map((grade) => (grade.gradeId === selectedGrade ? response.data : grade))
           : [...prev, response.data];
-        localStorage.setItem('grades', JSON.stringify(updatedGrades)); // Save updated grades to local storage
+        localStorage.setItem(`grades_${courseId}`, JSON.stringify(updatedGrades)); // Save updated grades to local storage
         return updatedGrades;
       });
-      onGradesChange(); // Fetch grades after submit
-      await fetchGrades(); // Ensure the modal Grade List fetches the updated grades
+      await onGradesChange(); // Fetch grades after submit
       setGradeModalOpen(false);
       setSelectedGrade(null);
       setGradeDetails({
@@ -205,6 +207,31 @@ function Grades({ onLogout, onGradesChange }) {
     navigate('/courses');
   };
 
+  const calculateInitialGrade = () => {
+    if (grades.length === 0) return 'N/A';
+    const totalScore = grades.reduce((acc, grade) => acc + grade.score, 0);
+    const totalPoints = grades.reduce((acc, grade) => acc + grade.total_points, 0);
+    return ((totalScore / totalPoints) * 100).toFixed(2);
+  };
+
+  const getProgressBarColor = (grade) => {
+    return grade >= 60 ? 'success' : 'error'; // 60 is the passing grade
+  };
+
+  const getGradeStatusText = (grade) => {
+    return grade >= 60 ? 'Passed' : 'Failed';
+  };
+
+  const handleMenuOpen = (event, gradeId) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedGradeId(gradeId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedGradeId(null);
+  };
+
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <SideBar onLogout={onLogout} activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -218,18 +245,27 @@ function Grades({ onLogout, onGradesChange }) {
         }}
       >
         <Container>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', m: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between'}}>
             <Button variant="contained" color="secondary" onClick={() => setGradeModalOpen(true)}>
               Add Grade
             </Button>
           </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <Paper elevation={3} sx={{ padding: 3, maxHeight: '70vh', overflowY: 'auto', width: '80%', backgroundColor: '#f5f5f5' }}>
+          <Box sx={{ display: 'flex', mt: 4 }}>
+            <Paper elevation={3} sx={{ padding: 3, maxHeight: '100vh', overflowY: 'auto', width: '50%', backgroundColor: '#f5f5f5' }}>
               <Typography variant="h4" gutterBottom sx={{ color: '#3f51b5', textAlign: 'center' }}>
                 Grade List
               </Typography>
               {grades.map((grade) => (
-                <Paper key={grade.gradeId} elevation={3} sx={{ padding: 3, mb: 2, backgroundColor: '#e3f2fd' }}>
+                <Paper key={grade.gradeId} elevation={3} sx={{ padding: 3, mb: 2, backgroundColor: '#e3f2fd', position: 'relative' }}>
+                  <IconButton
+                    aria-label="more"
+                    aria-controls="long-menu"
+                    aria-haspopup="true"
+                    onClick={(event) => handleMenuOpen(event, grade.gradeId)}
+                    sx={{ position: 'absolute', top: 8, right: 8 }}
+                  >
+                    <MoreVert />
+                  </IconButton>
                   <Typography variant="h6" gutterBottom sx={{ color: '#1e88e5' }}>
                     Assessment Type: {grade.assessment_type}
                   </Typography>
@@ -242,17 +278,36 @@ function Grades({ onLogout, onGradesChange }) {
                   <Typography variant="body1" sx={{ color: '#424242' }}>
                     Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}
                   </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                    <Button variant="outlined" color="primary" onClick={() => handleGradeEdit(grade)}>
-                      Edit
-                    </Button>
-                    <Button variant="outlined" color="error" onClick={() => confirmGradeDelete(grade.gradeId)}>
-                      Delete
-                    </Button>
-                  </Box>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl) && selectedGradeId === grade.gradeId}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={() => { handleGradeEdit(grade); handleMenuClose(); }}>Edit</MenuItem>
+                    <MenuItem onClick={() => { confirmGradeDelete(grade.gradeId); handleMenuClose(); }}>Delete</MenuItem>
+                  </Menu>
                 </Paper>
               ))}
             </Paper>
+            <Box sx={{ flexGrow: 1, ml: 5 }}>
+              <Paper elevation={3} sx={{ padding: 3, backgroundColor: '#f5f5f5' }}>
+                <Typography variant="h4" gutterBottom sx={{ color: '#3f51b5', textAlign: 'center' }}>
+                  Initial Computed Grade
+                </Typography>
+                <Typography variant="h6" sx={{ color: '#1e88e5', textAlign: 'center' }}>
+                  {calculateInitialGrade()}%
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={calculateInitialGrade()}
+                  color={getProgressBarColor(calculateInitialGrade())}
+                  sx={{ height: 20, borderRadius: 5, mt: 2 }}
+                />
+                <Typography variant="h6" sx={{ color: getProgressBarColor(calculateInitialGrade()) === 'success' ? 'green' : 'red', textAlign: 'center', mt: 2 }}>
+                  {getGradeStatusText(calculateInitialGrade())}
+                </Typography>
+              </Paper>
+            </Box>
           </Box>
 
           <Dialog open={gradeModalOpen} onClose={() => setGradeModalOpen(false)} maxWidth="sm" fullWidth>

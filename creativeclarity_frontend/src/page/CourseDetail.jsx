@@ -25,7 +25,7 @@ function CourseDetail({ onLogout }) {
   const tabFromPath = location.pathname.split('/').pop();
   const [activeTab, setActiveTab] = useState(validTabs.includes(tabFromPath) ? tabFromPath : 'notes');
   const [grades, setGrades] = useState(() => {
-    const savedGrades = localStorage.getItem('grades');
+    const savedGrades = localStorage.getItem(`grades_${courseId}`);
     return savedGrades ? JSON.parse(savedGrades) : [];
   });
 
@@ -61,11 +61,15 @@ function CourseDetail({ onLogout }) {
       const grades = response.data;
       console.log('Grades details:', grades);
       setGrades(grades); // Update grades state
-      localStorage.setItem('grades', JSON.stringify(grades)); // Save grades to local storage
+      localStorage.setItem(`grades_${courseId}`, JSON.stringify(grades)); // Save grades to local storage
     } catch (error) {
       console.error('Error fetching grades:', error);
       showSnackbar('An error occurred while loading grades.', 'error');
     }
+  };
+
+  const handleGradesChange = async () => {
+    await fetchGrades();
   };
 
   useEffect(() => {
@@ -103,7 +107,7 @@ function CourseDetail({ onLogout }) {
 
   useEffect(() => {
     if (activeTab === 'grades') {
-      const savedGrades = localStorage.getItem('grades');
+      const savedGrades = localStorage.getItem(`grades_${courseId}`);
       if (savedGrades) {
         setGrades(JSON.parse(savedGrades)); // Load grades from local storage
       } else {
@@ -147,7 +151,11 @@ function CourseDetail({ onLogout }) {
         {/* Tab Content */}
         <Box mt={1.5}>
           {activeTab === 'archive' && <ArchivePage />}
-          {activeTab === 'grades' && <Grades onLogout={onLogout} onGradesChange={fetchGrades} />}
+          {activeTab === 'grades' && (
+            <Box sx={{ marginLeft: '-250px' }}>
+              <Grades onLogout={onLogout} onGradesChange={handleGradesChange} />
+            </Box>
+          )}
           {activeTab === 'gallery' && <Gallery />}
         </Box>
       </main>
