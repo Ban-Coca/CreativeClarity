@@ -188,7 +188,7 @@ function Course({onLogout}) {
         setActiveTab={setActiveTab}
         />
       <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px' }}>
-        <Box sx={{ marginTop: '64px' }}>
+        <Box>
           <div className="title-container">
             <h2>Courses</h2>
             <Button variant="contained" color="primary" onClick={() => handleOpen()}>
