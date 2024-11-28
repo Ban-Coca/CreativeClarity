@@ -17,11 +17,11 @@ import {
   InputLabel 
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded'; // Import LeaderboardRoundedIcon
 import axios from 'axios';
 import SideBar from '../components/Sidebar';
 import '../components/css/Course.css';
-import { ArrowBack } from '@mui/icons-material';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
 
@@ -46,6 +46,7 @@ function Course({onLogout}) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [courseGridVisible, setCourseGridVisible] = useState(true); // New state for course grid visibility
   const location = useLocation();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Define semester options
   const semesterOptions = [
@@ -180,6 +181,11 @@ function Course({onLogout}) {
     handleMenuClose();
   };
 
+  const handleViewAnalytics = () => {
+    setActiveTab('progress');
+    navigate(`/progress`);
+  };
+
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <SideBar
@@ -191,9 +197,20 @@ function Course({onLogout}) {
         <Box>
           <div className="title-container">
             <h2>Courses</h2>
-            <Button variant="contained" color="primary" onClick={() => handleOpen()}>
-              Add Course
-            </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Button variant="contained" color="primary" onClick={() => handleOpen()}>
+                Add Course
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<LeaderboardRoundedIcon />}
+                onClick={handleViewAnalytics}
+                sx={{ marginLeft: '10px' }}
+              >
+                View Analytics
+              </Button>
+            </Box>
           </div>
 
           {courseGridVisible && (

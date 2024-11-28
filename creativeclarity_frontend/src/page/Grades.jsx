@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Paper, Typography, Container, Menu, MenuItem, IconButton, LinearProgress } from '@mui/material';
-import { MoreVert } from '@mui/icons-material';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Paper, Typography, Container, Menu, MenuItem, IconButton, LinearProgress, Pagination, Select, FormControl, InputLabel, Checkbox } from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -13,7 +13,6 @@ function Grades({ onLogout, onGradesChange }) {
   const location = useLocation();
   const { courseId } = useParams();
   const [activeTab, setActiveTab] = useState('courses');
-  const navigate = useNavigate();
   const [courses, SetCourses] = useState(location.state?.courses || []); // Add this line to initialize courses state
   const [grades, setGrades] = useState(() => {
     const savedGrades = localStorage.getItem(`grades_${courseId}`);
@@ -29,8 +28,11 @@ function Grades({ onLogout, onGradesChange }) {
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [gradeToDelete, setGradeToDelete] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedGradeId, setSelectedGradeId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const gradesPerPage = 5;
+  const [sortOption, setSortOption] = useState('');
+  const [selectedGrades, setSelectedGrades] = useState([]);
+  const [deleteSelectedConfirmationOpen, setDeleteSelectedConfirmationOpen] = useState(false);
 
   const showToast = (message, type = 'success') => {
     toast(message, { type });
@@ -94,12 +96,6 @@ function Grades({ onLogout, onGradesChange }) {
     }
   };
 
-  const fetchAllData = async () => {
-    await fetchCourses();
-    await fetchGrades();
-    await fetchCourseDetails();
-  };
-
   useEffect(() => {
     if (activeTab === 'grades') {
       fetchGrades();
@@ -119,7 +115,13 @@ function Grades({ onLogout, onGradesChange }) {
 
   const handleGradeChange = (e) => {
     const { name, value } = e.target;
-    setGradeDetails((prev) => ({ ...prev, [name]: value }));
+    setGradeDetails((prev) => {
+      if (name === 'score' && parseFloat(value) > parseFloat(prev.total_points)) {
+        showToast('Score cannot exceed total points', 'error');
+        return prev;
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleGradeSubmit = async () => {
@@ -127,6 +129,12 @@ function Grades({ onLogout, onGradesChange }) {
       // Validate required fields
       if (!gradeDetails.score || !gradeDetails.total_points || !gradeDetails.assessment_type || !gradeDetails.dateRecorded) {
         showToast('Please fill in all required fields', 'error');
+        return;
+      }
+
+      // Validate score does not exceed total points
+      if (parseFloat(gradeDetails.score) > parseFloat(gradeDetails.total_points)) {
+        showToast('Score cannot exceed total points', 'error');
         return;
       }
 
@@ -189,7 +197,7 @@ function Grades({ onLogout, onGradesChange }) {
       });
       showToast('Grade deleted successfully');
       setGrades((prev) => prev.filter((grade) => grade.gradeId !== gradeToDelete)); // Remove grade from local state
-      localStorage.setItem('grades', JSON.stringify(grades.filter((grade) => grade.gradeId !== gradeToDelete))); // Update local storage
+      localStorage.setItem(`grades_${courseId}`, JSON.stringify(grades.filter((grade) => grade.gradeId !== gradeToDelete))); // Update local storage
       setDeleteConfirmationOpen(false); // Close the confirmation dialog
     } catch (error) {
       console.error('Error deleting grade:', error);
@@ -197,18 +205,35 @@ function Grades({ onLogout, onGradesChange }) {
     }
   };
 
-  const confirmGradeDelete = (gradeId) => {
-    setGradeToDelete(gradeId);
-    setDeleteConfirmationOpen(true);
+  const handleDeleteSelectedGrades = async () => {
+    try {
+      await Promise.all(
+        selectedGrades.map((gradeId) =>
+          axios.delete(`/api/grade/deletegradedetails/${gradeId}`, {
+            headers: getHeaders(),
+          })
+        )
+      );
+      showToast('Selected grades deleted successfully');
+      setGrades((prev) => {
+        const updatedGrades = prev.filter((grade) => !selectedGrades.includes(grade.gradeId));
+        localStorage.setItem(`grades_${courseId}`, JSON.stringify(updatedGrades)); // Update local storage with courseId
+        return updatedGrades;
+      });
+      setSelectedGrades([]);
+      setDeleteSelectedConfirmationOpen(false); // Close the confirmation dialog
+    } catch (error) {
+      console.error('Error deleting selected grades:', error);
+      showToast(`Failed to delete selected grades: ${error.response?.data || error.message}`, 'error');
+    }
   };
 
-  const handleNavigateBack = () => {
-    localStorage.setItem('grades', JSON.stringify(grades));
-    navigate('/courses');
+  const confirmDeleteSelectedGrades = () => {
+    setDeleteSelectedConfirmationOpen(true);
   };
 
   const calculateInitialGrade = () => {
-    if (grades.length === 0) return 'N/A';
+    if (grades.length === 0) return null;
     const totalScore = grades.reduce((acc, grade) => acc + grade.score, 0);
     const totalPoints = grades.reduce((acc, grade) => acc + grade.total_points, 0);
     return ((totalScore / totalPoints) * 100).toFixed(2);
@@ -222,14 +247,36 @@ function Grades({ onLogout, onGradesChange }) {
     return grade >= 60 ? 'Passed' : 'Failed';
   };
 
-  const handleMenuOpen = (event, gradeId) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedGradeId(gradeId);
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedGradeId(null);
+  const handleSortChange = (event) => {
+    setSortOption(event.target.value);
+  };
+
+  const handleGradeSelect = (gradeId) => {
+    setSelectedGrades((prev) =>
+      prev.includes(gradeId) ? prev.filter((id) => id !== gradeId) : [...prev, gradeId]
+    );
+  };
+
+  const sortedGrades = [...grades].sort((a, b) => {
+    if (sortOption === 'ascending') {
+      return a.score - b.score;
+    } else if (sortOption === 'descending') {
+      return b.score - a.score;
+    } else if (sortOption === 'failing') {
+      return (a.score / a.total_points) - (b.score / b.total_points);
+    } else {
+      return 0;
+    }
+  });
+
+  const paginatedGrades = sortedGrades.slice((currentPage - 1) * gradesPerPage, currentPage * gradesPerPage);
+
+  const isFailing = (score, totalPoints) => {
+    return (score / totalPoints) < 0.6;
   };
 
   return (
@@ -241,7 +288,6 @@ function Grades({ onLogout, onGradesChange }) {
           p: 3,
           width: { sm: `calc(100% - 240px)` },
           ml: { sm: '240px' },
-          overflowY: 'auto',
         }}
       >
         <Container>
@@ -251,61 +297,100 @@ function Grades({ onLogout, onGradesChange }) {
             </Button>
           </Box>
           <Box sx={{ display: 'flex', mt: 4 }}>
-            <Paper elevation={3} sx={{ padding: 3, maxHeight: '100vh', overflowY: 'auto', width: '50%', backgroundColor: '#f5f5f5' }}>
-              <Typography variant="h4" gutterBottom sx={{ color: '#3f51b5', textAlign: 'center' }}>
-                Grade List
-              </Typography>
-              {grades.map((grade) => (
-                <Paper key={grade.gradeId} elevation={3} sx={{ padding: 3, mb: 2, backgroundColor: '#e3f2fd', position: 'relative' }}>
-                  <IconButton
-                    aria-label="more"
-                    aria-controls="long-menu"
-                    aria-haspopup="true"
-                    onClick={(event) => handleMenuOpen(event, grade.gradeId)}
-                    sx={{ position: 'absolute', top: 8, right: 8 }}
-                  >
-                    <MoreVert />
-                  </IconButton>
-                  <Typography variant="h6" gutterBottom sx={{ color: '#1e88e5' }}>
-                    Assessment Type: {grade.assessment_type}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: '#424242' }}>
-                    Score: {grade.score}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: '#424242' }}>
-                    Total Points: {grade.total_points}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: '#424242' }}>
-                    Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}
-                  </Typography>
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl) && selectedGradeId === grade.gradeId}
-                    onClose={handleMenuClose}
-                  >
-                    <MenuItem onClick={() => { handleGradeEdit(grade); handleMenuClose(); }}>Edit</MenuItem>
-                    <MenuItem onClick={() => { confirmGradeDelete(grade.gradeId); handleMenuClose(); }}>Delete</MenuItem>
-                  </Menu>
-                </Paper>
-              ))}
+            <Paper elevation={3} sx={{ padding: 3, height: '60vh', width: '55%', backgroundColor: '#f5f5f5' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h4" gutterBottom sx={{ color: '#3f51b5', textAlign: 'center' }}>
+                  Grade List
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {selectedGrades.length > 0 && (
+                    <IconButton
+                      aria-label="delete"
+                      onClick={confirmDeleteSelectedGrades}
+                      sx={{ color: '#f44336', mr: 2, mb: 2, transform: 'scale(1.2)' }} // Slightly bigger delete icon
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
+                  <FormControl variant="outlined" sx={{ minWidth: 100, mb: 2 }}>
+                    <InputLabel>Sort By</InputLabel>
+                    <Select
+                      value={sortOption}
+                      onChange={handleSortChange}
+                      label="Sort By"
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      <MenuItem value="ascending">Ascending</MenuItem>
+                      <MenuItem value="descending">Descending</MenuItem>
+                      <MenuItem value="failing">Failing</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Box>
+              <Box sx={{ overflowY: 'auto', height: 'calc(100% - 56px)' }}>
+                {paginatedGrades.map((grade) => (
+                  <Paper key={grade.gradeId} elevation={3} sx={{ padding: 1.7, mb: 2, backgroundColor: '#e3f2fd', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Checkbox
+                      checked={selectedGrades.includes(grade.gradeId)}
+                      onChange={() => handleGradeSelect(grade.gradeId)}
+                      sx={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)' }}
+                    />
+                    <IconButton
+                      aria-label="edit"
+                      onClick={() => handleGradeEdit(grade)}
+                      sx={{ position: 'absolute', top: 8, right: 8, color: '#ff9800' }} // Custom color for the edit icon
+                    >
+                      <Edit />
+                    </IconButton>
+                    <Box sx={{ ml: 5, flexGrow: 1 }}>
+                      <Typography variant="h6" gutterBottom sx={{ color: '#1e88e5', ml: 2}}>
+                        Assessment Type: {grade.assessment_type}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: isFailing(grade.score, grade.total_points) ? 'red' : '#424242', ml: 2 }}>
+                        Score: {grade.score}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: '#424242', ml: 2 }}>
+                        Total Points: {grade.total_points}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: '#424242', ml: 2 }}>
+                        Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                ))}
+              </Box>
+              <Pagination
+                count={Math.ceil(sortedGrades.length / gradesPerPage)}
+                page={currentPage}
+                onChange={handlePageChange}
+                sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
+              />
             </Paper>
             <Box sx={{ flexGrow: 1, ml: 5 }}>
               <Paper elevation={3} sx={{ padding: 3, backgroundColor: '#f5f5f5' }}>
                 <Typography variant="h4" gutterBottom sx={{ color: '#3f51b5', textAlign: 'center' }}>
                   Initial Computed Grade
                 </Typography>
-                <Typography variant="h6" sx={{ color: '#1e88e5', textAlign: 'center' }}>
-                  {calculateInitialGrade()}%
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={calculateInitialGrade()}
-                  color={getProgressBarColor(calculateInitialGrade())}
-                  sx={{ height: 20, borderRadius: 5, mt: 2 }}
-                />
-                <Typography variant="h6" sx={{ color: getProgressBarColor(calculateInitialGrade()) === 'success' ? 'green' : 'red', textAlign: 'center', mt: 2 }}>
-                  {getGradeStatusText(calculateInitialGrade())}
-                </Typography>
+                {calculateInitialGrade() !== null ? (
+                  <>
+                    <Typography variant="h6" sx={{ color: '#1e88e5', textAlign: 'center' }}>
+                      {calculateInitialGrade()}%
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={calculateInitialGrade()}
+                      color={getProgressBarColor(calculateInitialGrade())}
+                      sx={{ height: 20, borderRadius: 5, mt: 2 }}
+                    />
+                    <Typography variant="h6" sx={{ color: getProgressBarColor(calculateInitialGrade()) === 'success' ? 'green' : 'red', textAlign: 'center', mt: 2 }}>
+                      {getGradeStatusText(calculateInitialGrade())}
+                    </Typography>
+                  </>
+                ) : (
+                  <Typography variant="h6" sx={{ color: '#1e88e5', textAlign: 'center' }}>
+                    No grades available
+                  </Typography>
+                )}
               </Paper>
             </Box>
           </Box>
@@ -373,6 +458,21 @@ function Grades({ onLogout, onGradesChange }) {
                 Cancel
               </Button>
               <Button onClick={handleGradeDelete} color="error" variant="contained">
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={deleteSelectedConfirmationOpen} onClose={() => setDeleteSelectedConfirmationOpen(false)}>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogContent>
+              <Typography>Are you sure you want to delete the selected grades?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteSelectedConfirmationOpen(false)} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleDeleteSelectedGrades} color="error" variant="contained">
                 Delete
               </Button>
             </DialogActions>

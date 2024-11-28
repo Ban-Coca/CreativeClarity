@@ -18,6 +18,7 @@ import ArchivePage from './page/Archive';
 import Grades from './page/Grades';
 import Picture from './page/Gallery';
 import CourseDetail from './page/CourseDetail';
+import Progress from './page/Progress'; // Import Progress component
 
 // Custom 404 component
 const NotFound = () => {
@@ -213,6 +214,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Grades onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/progress"
+            element={
+              <ProtectedRoute>
+                <Progress />
               </ProtectedRoute>
             }
           />
