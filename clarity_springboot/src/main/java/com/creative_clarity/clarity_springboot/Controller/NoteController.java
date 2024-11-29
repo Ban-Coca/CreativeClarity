@@ -1,6 +1,7 @@
 package com.creative_clarity.clarity_springboot.Controller;
 
 import java.util.List;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,17 +23,25 @@ import com.creative_clarity.clarity_springboot.Service.NoteService;
 public class NoteController {
 	@Autowired
 	NoteService nserv;
+
+	// Get notes for a specific user
+  @GetMapping("/getusernotes")
+  public List<NoteEntity> getUserNotes(@RequestParam int userId) {
+    return nserv.getNotesByUserId(userId);
+  }
 	
-	@GetMapping("/print")
-	public String print() {
-		return "Hello, Course";
-	}
-	
-	//Create of CRUD
-	@PostMapping("/postnoterecord")
-	public NoteEntity postNoteRecord(@RequestBody NoteEntity note) {
-		return nserv.postNoteRecord(note);
-	}
+	// Create note
+  @PostMapping("/postnoterecord")
+  public NoteEntity postNoteRecord(@RequestBody NoteEntity note) {
+    // Ensure created_at and lastModified are set
+    if (note.getCreated_at() == null) {
+      note.setCreated_at(new Date());
+    }
+    if (note.getLastModified() == null) {
+      note.setLastModified(new Date());
+    }
+    return nserv.postNoteRecord(note);
+  }
 
 	//Read of CRUD
 	@GetMapping("/getallnote")

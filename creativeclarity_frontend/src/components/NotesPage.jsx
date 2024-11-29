@@ -2,38 +2,24 @@ import { useState, useEffect } from 'react';
 import { FileText, Plus, Search, Folder, Edit3, Trash2, Save, X, BookOpen, Calendar, CheckSquare, User, LogOut, AlignLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import axios from 'axios';
+
+axios.defaults.baseURL = 'http://localhost:8080'; // Add this line
+
 
 const NotesPage = ({ onLogout }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('notes');
+  const token = localStorage.getItem('token');
   const currentUserId = JSON.parse(localStorage.getItem('user'))?.userId;
-  const [notes, setNotes] = useState(() => {
-    if (currentUserId) {
-      const savedNotes = localStorage.getItem(`notes_${currentUserId}`);
-      return savedNotes ? JSON.parse(savedNotes) : [];
-    }
-    return [];
-  });
-  const [subjects, setSubjects] = useState(() => {
-    if (currentUserId) {
-      const savedSubjects = localStorage.getItem(`subjects_${currentUserId}`);
-      return savedSubjects ? JSON.parse(savedSubjects) : [
-        'Mathematics',
-        'Science',
-        'History',
-        'English',
-        'Computer Science'
-      ];
-    }
-    return [
-      'Mathematics',
-      'Science',
-      'History',
-      'English',
-      'Computer Science'
-    ];
-  });
-  
+  const [activeTab, setActiveTab] = useState('notes');
+  const [notes, setNotes] = useState([]);
+  const [subjects, setSubjects] = useState([
+    'Mathematics',
+    'Science',
+    'History',
+    'English',
+    'Computer Science'
+  ]);
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
@@ -50,18 +36,23 @@ const NotesPage = ({ onLogout }) => {
   const [newSubjectName, setNewSubjectName] = useState('');
 
   useEffect(() => {
-    // Save notes specific to the current user
-    if (currentUserId) {
-      localStorage.setItem(`notes_${currentUserId}`, JSON.stringify(notes));
-    }
-  }, [notes, currentUserId]);
+    const fetchNotes = async () => {
+      if (currentUserId && token) {
+        try {
+          const response = await axios.get(`/api/note/getusernotes?userId=${currentUserId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          setNotes(response.data);
+        } catch (error) {
+          console.error('Error fetching notes:', error);
+        }
+      }
+    };
 
-  useEffect(() => {
-    // Save subjects specific to the current user
-    if (currentUserId) {
-      localStorage.setItem(`subjects_${currentUserId}`, JSON.stringify(subjects));
-    }
-  }, [subjects, currentUserId]);
+    fetchNotes();
+  }, [currentUserId, token]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -87,25 +78,16 @@ const NotesPage = ({ onLogout }) => {
   };
 
   const handleAddSubject = () => {
-    // Trim the subject name and check if it's not empty
     const trimmedSubject = newSubjectName.trim();
     if (trimmedSubject && !subjects.includes(trimmedSubject)) {
       const updatedSubjects = [...subjects, trimmedSubject];
       setSubjects(updatedSubjects);
-      
-      // Save subjects with user-specific key
-      if (currentUserId) {
-        localStorage.setItem(`subjects_${currentUserId}`, JSON.stringify(updatedSubjects));
-      }
-      
-      // Reset modal state
       setNewSubjectName('');
       setShowAddSubjectModal(false);
     }
   };
 
   const filteredNotes = notes.filter(note => {
-    // Ensure notes belong to the current user
     const matchesUser = note.userId === currentUserId;
     const matchesSubject = selectedSubject === 'All' || note.subject === selectedSubject;
     const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -120,32 +102,45 @@ const NotesPage = ({ onLogout }) => {
       title: '',
       content: '',
       subject: subjects[0],
+      userId: currentUserId,
       lastModified: new Date().toISOString()
     });
   };
 
-  const handleSaveNote = () => {
-    if (editingNoteId !== null) {
-      setNotes(notes.map(note => 
-        note.id === editingNoteId 
-          ? { 
-              ...newNote, 
-              id: editingNoteId, 
-              userId: currentUserId, // Ensure user ID is set 
-              lastModified: new Date().toISOString() 
-            }
-          : note
-      ));
-    } else {
-      setNotes([...notes, {
+  const handleSaveNote = async () => {
+    if (!currentUserId) return;
+
+    try {
+      const noteToSave = {
         ...newNote,
-        id: Date.now(),
-        userId: currentUserId, // Set user ID for new notes
-        lastModified: new Date().toISOString()
-      }]);
+        userId: currentUserId,
+        created_at: newNote.id ? undefined : new Date(),
+        lastModified: new Date()
+      };
+
+      if (editingNoteId !== null) {
+        const response = await axios.put(`/api/note/putnotedetails?noteId=${editingNoteId}`, noteToSave, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setNotes(notes.map(note => 
+          note.noteId === editingNoteId ? response.data : note
+        ));
+      } else {
+        const response = await axios.post('/api/note/postnoterecord', noteToSave, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setNotes([...notes, response.data]);
+      }
+      
+      setShowNewNoteForm(false);
+      setEditingNoteId(null);
+    } catch (error) {
+      console.error('Error saving note:', error);
     }
-    setShowNewNoteForm(false);
-    setEditingNoteId(null);
   };
 
   useEffect(() => {
@@ -159,18 +154,25 @@ const NotesPage = ({ onLogout }) => {
 
   const handleEditNote = (note) => {
     setNewNote(note);
-    setEditingNoteId(note.id);
+    setEditingNoteId(note.noteId);
     setShowNewNoteForm(true);
   };
 
-  const handleDeleteNote = (noteId) => {
-    setNotes(notes.filter(note => note.id !== noteId));
+  const handleDeleteNote = async (noteId) => {
+    try {
+      await axios.delete(`/api/note/deletenotedetails/${noteId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setNotes(notes.filter(note => note.noteId !== noteId));
+    } catch (error) {
+      console.error('Error deleting note:', error);
+    }
   };
 
   const handleLogout = () => {
-    // Call the onLogout function from props first
     onLogout();
-    // Then navigate to login
     navigate('/login');
   };
 
@@ -184,7 +186,6 @@ const NotesPage = ({ onLogout }) => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
       <div className="w-64 h-screen flex-shrink-0 bg-white shadow-lg fixed">
         <div className="h-full flex flex-col">
           <div className="p-6">
@@ -235,7 +236,6 @@ const NotesPage = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 ml-64">
         <div className="h-full p-8">
           <div className="flex justify-between items-center mb-8">
@@ -260,7 +260,6 @@ const NotesPage = ({ onLogout }) => {
           </div>
 
           <div className="grid grid-cols-12 gap-6">
-            {/* Sidebar filters */}
             <div className="col-span-3">
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="mb-6">
@@ -347,7 +346,6 @@ const NotesPage = ({ onLogout }) => {
               )}
             </div>
 
-            {/* Notes grid */}
             <div className="col-span-9">
               {showNewNoteForm ? (
                 <div className="bg-white rounded-lg shadow-sm p-6">

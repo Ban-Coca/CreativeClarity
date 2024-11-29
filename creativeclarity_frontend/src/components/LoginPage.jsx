@@ -20,7 +20,7 @@ const LoginPage = ({ onLoginSuccess }) => {
     } catch (error) {
         console.error('GitHub login error:', error);
     }
-};
+  };
   const handleFacebookLogin = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/facebook';
   };
@@ -142,6 +142,7 @@ const LoginPage = ({ onLoginSuccess }) => {
                   type="text"
                   name="email"
                   value={formData.email}
+                  autoComplete='email'
                   onChange={handleInputChange}
                   placeholder="Email/Phone Number"
                   className={inputClasses}
@@ -166,6 +167,7 @@ const LoginPage = ({ onLoginSuccess }) => {
                 <input
                   type="password"
                   name="password"
+                  autoComplete='current-password'
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Password"
