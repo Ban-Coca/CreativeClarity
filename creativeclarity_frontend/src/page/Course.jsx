@@ -79,6 +79,7 @@ function Course({onLogout}) {
   }, []);
 
   useEffect(() => {
+    document.title = 'Courses';
     fetchCourses();
   }, [fetchCourses, location]);
 

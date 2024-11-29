@@ -44,7 +44,10 @@ const SideBar = ( {onLogout, activeTab, setActiveTab}) => {
             </button>
 
             <button 
-              onClick={() => setActiveTab('calendar')}
+              onClick={() => {
+                setActiveTab('calendar')
+                navigate('/calendar')
+              }}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                 activeTab === 'calendar' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
               }`}

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -31,7 +34,8 @@ public class CourseEntity {
 	private List<GradeEntity> grades;
 	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "course", cascade = CascadeType.ALL)
-	@JsonManagedReference
+	//@JsonManagedReference
+	@Fetch(FetchMode.JOIN)
     private List<TaskEntity> tasks = new ArrayList<>();
 	
 	public CourseEntity() {

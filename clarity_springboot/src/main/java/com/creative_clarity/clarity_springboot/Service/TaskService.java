@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.naming.NameNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Service;
 
 import com.creative_clarity.clarity_springboot.Entity.TaskEntity;
@@ -32,6 +33,7 @@ public class TaskService {
     }
     
     //Read of CRUD
+    @EntityGraph(attributePaths = {"course"})
     public List<TaskEntity> getAllTasks(){
         return trepo.findAll();
     }

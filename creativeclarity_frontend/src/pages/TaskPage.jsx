@@ -5,9 +5,8 @@ import Sidebar from '../components/Sidebar';
 import EnhancedTable from '../components/TablesTask';
 import { Priority, PriorityColors, PriorityList } from '../utils/Priority';
 import { Button, Modal, Box, TextField, Select, MenuItem, FormControl, InputLabel, IconButton } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import { fetchTasks, createTask, updateTask, deleteTask } from '../service/taskService';
 import { Save, X, Edit, Trash2} from 'lucide-react';
 import { lineWobble } from 'ldrs';
@@ -26,6 +25,7 @@ const style = {
 };
 function LoadingComponent({loading}){
     useEffect(() => {
+        
       lineWobble.register()
     }, []);
     if(loading){
@@ -52,20 +52,17 @@ const TaskPage = ({onLogout}) => {
 
     const [editedTask, setEditedTask] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [errors, setErrors] = useState({
+        title: '',
+        due_date: '',
+        description: ''
+      });
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openTaskDetails, setOpenTaskDetails] = useState(false);
     const [taskToDelete, setTaskToDelete] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const [editForm, setEditForm] = useState({
-        title: '',
-        description: '',
-        completed: false,
-        due_date: '',
-        priority: '',
-        courseId: ''
-    });
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
@@ -76,6 +73,7 @@ const TaskPage = ({onLogout}) => {
     });
 
     useEffect(() => {
+        document.title = 'Tasks';
         fetchTasks();
         fetchCourses() 
     }, []);
@@ -101,6 +99,7 @@ const TaskPage = ({onLogout}) => {
     };
 
     const createTask = async (task) => {
+
         try {
             const response = await axios.post('/api/task/posttaskrecord', task, {
                 headers: {
@@ -187,16 +186,6 @@ const TaskPage = ({onLogout}) => {
     const handleClose = () => setOpen(false);
 
     console.log(tasks);
-    const formatDate = (date) => {
-        const dateObj = new Date(date);
-        return `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
-    }
-
-    const formatDateForInput = (dateString) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toISOString().split('T')[0];
-    };
     
     const handleRowClick = (task) => {
         setSelectedTask(task);
@@ -219,8 +208,40 @@ const TaskPage = ({onLogout}) => {
         }
     }
 
+    const validateForm = () => {
+        let tempErrors = {};
+        let isValid = true;
+      
+        // Title validation
+        if (!newTask.title || newTask.title.trim() === '') {
+          tempErrors.title = 'Title is required';
+          isValid = false;
+        } else if (newTask.title.length < 3) {
+          tempErrors.title = 'Title must be at least 3 characters';
+          isValid = false;
+        }
+      
+        // Due date validation
+        if (!newTask.due_date) {
+          tempErrors.due_date = 'Due date is required';
+          isValid = false;
+        } else if (new Date(newTask.due_date) < new Date()) {
+          tempErrors.due_date = 'Due date cannot be in the past';
+          isValid = false;
+        }
+      
+        // Description validation
+        if (newTask.description && newTask.description.length > 500) {
+          tempErrors.description = 'Description must be less than 500 characters';
+          isValid = false;
+        }
+      
+        setErrors(tempErrors);
+        return isValid;
+    };
+
     return (
-        <div className="flex min-h-screen">
+        <div className="flex h-screen">
             <div className="w-64 bg-white shadow-md">
                 <Sidebar 
                     onLogout={onLogout}
@@ -229,7 +250,7 @@ const TaskPage = ({onLogout}) => {
             </div>
             <Toaster richColors position="bottom-right" closeButton/>
             <div className="flex-1 flex flex-col">
-                <div className="bg-[#f9fafb] h-full shadow-sm max-h-full p-4 w-100">
+                <div className="bg-[#f9fafb] h-full shadow-sm max-h-full p-4 w-100 overflow-auto">
                     <div className="flex justify-between items-center mt-4 ml-4">
                         {tasks.length === 0 ? <h1 className="text-2xl font-bold text-gray-900">Ready to start tracking tasks?</h1> : <h1 className="text-2xl font-bold text-gray-900">My Tasks</h1>}
                         <div>
@@ -257,6 +278,8 @@ const TaskPage = ({onLogout}) => {
                                 variant="outlined"
                                 value={newTask.title}
                                 onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                                error={!!errors.title}
+                                helperText={errors.title}
                                 required/>
 
                             <TextField
@@ -265,8 +288,10 @@ const TaskPage = ({onLogout}) => {
                                 value={newTask.description}
                                 onChange={(e) => setNewTask({...newTask, description: e.target.value})}
                                 margin='normal'
+                                error={!!errors.description}
+                                helperText={errors.description}
                                 fullWidth
-                                required/>
+                                />
 
                             <FormControl fullWidth margin="normal">
                                 <InputLabel id="priority-select-label">Priority</InputLabel>
@@ -327,6 +352,8 @@ const TaskPage = ({onLogout}) => {
                                 value={newTask.due_date}
                                 onChange={(e) => setNewTask({...newTask, due_date: e.target.value})}
                                 InputLabelProps={{ shrink: true }}
+                                error={!!errors.due_date}
+                                helperText={errors.due_date}
                                 fullWidth
                                 margin="normal"
                                 required
@@ -335,8 +362,10 @@ const TaskPage = ({onLogout}) => {
                             <Button
                                 variant="contained"
                                 onClick={() => {
-                                    createTask(newTask);
-                                    handleClose();
+                                    if (validateForm()){
+                                        createTask(newTask);
+                                        handleClose();
+                                    }
                                 }}
                             >
                                 Add Task
@@ -366,6 +395,7 @@ const TaskPage = ({onLogout}) => {
 const TaskDetailsModal = ({ task, editedTask, setEditedTask, onClose, open, onDelete, onUpdate }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
     useEffect(() => {
         if (task) {
             setEditedTask(task);
@@ -407,10 +437,11 @@ const TaskDetailsModal = ({ task, editedTask, setEditedTask, onClose, open, onDe
     if (!task) return null;
     console.log("editing taks!: ", editedTask);
     return (
+
         <Modal open={open} onClose={onClose}>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] bg-white rounded-lg">
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] bg-white rounded-lg p-4">
                 {/* Header */}
-                <div className="flex justify-between items-center px-6 py-4 border-b border-blue-500">
+                <div className="flex justify-between items-center px-6 py-4 border-b-2 border-blue-500">
                     <h2 className="text-xl font-semibold">
                         {isEditing ? 'Editing Mode' : 'Task Details'}
                     </h2>
@@ -483,10 +514,10 @@ const TaskDetailsModal = ({ task, editedTask, setEditedTask, onClose, open, onDe
                                     </Select>
                                 </FormControl>
                             ) : (
-                                <p className="text-base">{task.completed ? 'Completed' : 'Ongoing'}</p>
+                                <p className="text-base">{task.isCompleted ? 'Completed' : 'Ongoing'}</p>
                             )}
                         </div>
-
+                        
                         <div className="space-y-2">
                             <p className="text-sm font-medium text-gray-700">Due Date</p>
                             {isEditing ? (

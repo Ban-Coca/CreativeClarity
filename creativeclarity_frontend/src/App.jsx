@@ -16,6 +16,7 @@ import TaskPage from './pages/TaskPage';
 import ErrorPage from './pages/ErrorPage';
 import ArchivePage from './page/Archive';
 import Grades from './page/Grades';
+import Calendar from './pages/Calendar';
 
 // Custom 404 component
 const NotFound = () => {
@@ -215,6 +216,14 @@ const App = () => {
               </ProtectedRoute>
             }
             />
+          <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <Calendar onLogout={handleLogout}/>
+              </ProtectedRoute>
+            }
+          />
           {/* Root route */}
           <Route
             path="/"

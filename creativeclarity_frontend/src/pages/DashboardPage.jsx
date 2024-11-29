@@ -1,17 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut } from 'lucide-react';
+import { Calendar, BookOpen, Clock, CheckSquare, Bell, User, LogOut, ChevronRight, ChevronLeft} from 'lucide-react';
+import { toast } from 'sonner';
 import SideBar from '../components/Sidebar';
-
+import { formatDate } from '../utils/dateUtils';
+import { fetchTasks } from '../service/taskService'; 
+import { useNavigate } from 'react-router-dom';
 const DashboardPage = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [tasks, setTasks] = useState([]);
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
-  // Sample data - in a real app, this would come from your backend
-  const upcomingAssignments = [
-    { id: 1, title: 'Research Paper', course: 'History 101', dueDate: '2024-11-10' },
-    { id: 2, title: 'Math Problem Set', course: 'Calculus II', dueDate: '2024-11-12' },
-    { id: 3, title: 'Lab Report', course: 'Physics 201', dueDate: '2024-11-15' }
-  ];
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+
+  const getTasks = async () => {
+    try{
+      const data = await fetchTasks();
+      setTasks(data);
+      console.log(data)
+      console.log(tasks)
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      toast.error('Failed to fetch tasks');
+    } 
+  }
+  useEffect(() => {
+    document.title = 'Home';
+    console.log('User logged in', localStorage.getItem('user'));
+    getTasks(); 
+  }, []);
+  const handleTaskClick = () => {
+    navigate(`/tasks/`);
+  };
+  // Calculate pagination
+  const indexOfLastTask = currentPage * itemsPerPage;
+  const indexOfFirstTask = indexOfLastTask - itemsPerPage;
+  const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
+  const totalPages = Math.ceil(tasks.length / itemsPerPage);
 
   const courses = [
     { id: 1, name: 'History 101', progress: 75 },
@@ -33,7 +60,7 @@ const DashboardPage = ({ onLogout }) => {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Welcome back, Student!</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Welcome back, {currentUser.firstName} {currentUser.lastName}!</h1>
             <p className="text-gray-600">Here&apos;s your academic overview</p>
           </div>
           <button className="flex items-center space-x-2 bg-white p-2 rounded-lg shadow hover:shadow-md transition">
@@ -47,20 +74,47 @@ const DashboardPage = ({ onLogout }) => {
           {/* Upcoming Assignments Card */}
           <div className="col-span-2 bg-white rounded-lg shadow-sm">
             <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-blue-600" />
-                <h2 className="text-lg font-semibold text-gray-900">Upcoming Assignments</h2>
+              <div className="flex justify-between space-x-2">
+                <div className='flex items-center space-x-2'>
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">Upcoming Assignments</h2>
+                </div>
+                
+
+                <div className="flex justify-between items-center ">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-1 py-1 text-blue-600 mr-1 rounded-md disabled:opacity-50"
+                  >
+                    <ChevronLeft/>
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-1 py-1 text-blue-600 ml-1 rounded-md disabled:opacity-50"
+                  >
+                    <ChevronRight/>
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="p-6">
+            <div className="p-6 min-h-80">
               <div className="space-y-4">
-                {upcomingAssignments.map(assignment => (
-                  <div key={assignment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                {currentTasks.map(assignment => (
+                  <div 
+                    key={assignment.taskId} 
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    onClick={handleTaskClick}
+                    >
                     <div>
                       <h3 className="font-medium text-gray-900">{assignment.title}</h3>
-                      <p className="text-sm text-gray-600">{assignment.course}</p>
+                      <p className="text-sm text-gray-600">{assignment.course.courseName}</p>
                     </div>
-                    <div className="text-sm text-blue-600">Due: {assignment.dueDate}</div>
+                    <div className="text-sm text-blue-600">Due: {formatDate(assignment.due_date)}</div>
                   </div>
                 ))}
               </div>

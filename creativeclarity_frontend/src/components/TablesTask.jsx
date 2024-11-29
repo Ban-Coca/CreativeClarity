@@ -5,10 +5,8 @@ import PropTypes from 'prop-types';
 // MUI Components
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
-import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -28,10 +26,9 @@ import { visuallyHidden } from '@mui/utils';
 
 // Icons
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { lineWobble } from 'ldrs'
-import { Plus, BookCheck } from 'lucide-react';
+import { Plus, BookCheck, Timer, CircleCheckBig, ListFilter } from 'lucide-react';
 
 // Services and Utils
 import axios from 'axios';
@@ -70,10 +67,16 @@ const headCells = [
     label: 'Title',
   },
   {
-    id: 'description',
+    id: 'course',
     numeric: false,
     disablePadding: false,
-    label: 'Description',
+    label: 'Course',
+  }, 
+  {
+    id: 'isCompleted',
+    numeric: false,
+    disablePadding: false,
+    label: 'Status',
   },
   {
     id: 'due_date',
@@ -126,7 +129,7 @@ function EnhancedTableHead(props) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{
-              'aria-label': 'select all desserts',
+              'aria-label': 'select all tasks',
             }}
           />
         </TableCell>
@@ -227,7 +230,7 @@ function EnhancedTableToolbar(props) {
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
-            <FilterListIcon />
+            <ListFilter  />
           </IconButton>
         </Tooltip>
       )}
@@ -264,9 +267,11 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
     tasks.map(task => ({
       id: task.taskId,
       title: task.title,
+      isCompleted: task.isCompleted,
       description: task.description,
       due_date: task.due_date,
-      priority: task.priority
+      priority: task.priority,
+      course: task.course
     })),
     [tasks]
   );
@@ -397,7 +402,17 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
                         {row.id}
                       </TableCell>
                       <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.title}</TableCell>
-                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.description}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.course.courseName}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.isCompleted ?
+                        <span className='flex '>
+                          <CircleCheckBig className='mr-1'/>
+                          <p className='p-1'>Completed</p>
+                        </span>
+                        : <span className='flex'>
+                            <Timer className='mr-1'/>
+                            <p className='p-1'>Ongoing</p>
+                          </span>}
+                      </TableCell>
                       <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{formatDate(row.due_date)}</TableCell>
                       <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>
                         <div className='flex justify-center' style={{backgroundColor: PriorityColors[row.priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
