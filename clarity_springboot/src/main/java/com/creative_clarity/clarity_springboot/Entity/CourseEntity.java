@@ -7,6 +7,8 @@ import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -16,6 +18,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 public class CourseEntity {
@@ -38,16 +42,23 @@ public class CourseEntity {
 	@Fetch(FetchMode.JOIN)
     private List<TaskEntity> tasks = new ArrayList<>();
 	
+	@ManyToOne
+    @JoinColumn(name = "user_id")
+	// @JsonBackReference
+	@JsonIgnoreProperties({"courses"})
+    private UserEntity user;
+
 	public CourseEntity() {
 	}
 
-	public CourseEntity(String courseName, String code, String semester, String academicYear, Date created_at) {
+	public CourseEntity(String courseName, String code, String semester, String academicYear, Date created_at, UserEntity user) {
 		super();
 		this.courseName = courseName;
 		this.code = code;
 		this.semester = semester;
 		this.academicYear = academicYear;
 		this.created_at = created_at;
+		this.user = user;
 	}
 
 	public int getCourseId() {
@@ -108,5 +119,13 @@ public class CourseEntity {
 
     public void setTasks(List<TaskEntity> tasks) {
         this.tasks = tasks;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 }

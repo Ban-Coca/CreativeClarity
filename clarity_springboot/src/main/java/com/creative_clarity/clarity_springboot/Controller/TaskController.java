@@ -49,7 +49,14 @@ public class TaskController {
 	public List<TaskEntity> getTasksByCourseId(@PathVariable int courseId) {
 		return tserv.getTasksByCourseId(courseId);
 	}
-		
+	@GetMapping("/getbyuser/{userId}")
+	public List<TaskEntity> getTasksByUserId(@PathVariable int userId) {
+		return tserv.getTasksByUserId(userId);
+	}
+	public String getMethodName(@RequestParam String param) {
+		return new String();
+	}
+	
 	//Update of CRUD
 	@PutMapping("/puttaskdetails")
 	public TaskEntity putTaskDetails(@RequestParam("taskId") int taskId, @RequestBody TaskEntity newTaskDetails) {

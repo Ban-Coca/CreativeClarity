@@ -2,10 +2,10 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 axios.defaults.baseURL = 'http://localhost:8080';
-
+const currentUser = JSON.parse(localStorage.getItem('user'));
 export const fetchTasks = async () => {
     try {
-        const response = await axios.get('/api/task/getalltask', {
+        const response = await axios.get('/api/task/getbyuser/' + currentUser.userId, {
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'

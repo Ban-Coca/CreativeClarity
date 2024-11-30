@@ -104,7 +104,7 @@ const Calendar = ({ onLogout }) => {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen">
         <div className="w-64 flex-shrink-0">
             <SideBar 
                 onLogout={onLogout}
@@ -112,15 +112,15 @@ const Calendar = ({ onLogout }) => {
                 setActiveTab={setActiveTab}
             />
         </div>
-        <div className="flex-1 min-h-screen">
-            <div className="p-8">
+        <div className="flex-1 h-screen overflow-auto">
+            <div className="mt-8 ml-8 p-2">
                 <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
             </div>
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl p-4 border rounded-lg shadow-sm bg-white">
                     <div className="pb-4 border-b">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-semibold">
+                            <h2 className="text-xl font-semibold text-blue-500 ">
                                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                             </h2>
                             <div className="flex gap-2">

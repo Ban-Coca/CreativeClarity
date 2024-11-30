@@ -38,6 +38,12 @@ public class CourseController {
 	public List<CourseEntity> getAllCourses(){
 		return cserv.getAllCourses();
 	}
+
+	//GET COURSE BY USER ID
+	@GetMapping("/getcourse/{userId}")
+	public List<CourseEntity> getCourseByUserId(@PathVariable int userId){
+		return cserv.getCourseByUserId(userId);
+	}
 			
 	//Update of CRUD
 	@PutMapping("/putcoursedetails/{courseId}")

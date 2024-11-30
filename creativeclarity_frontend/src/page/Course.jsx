@@ -28,6 +28,7 @@ import { Link, useLocation } from 'react-router-dom';
 axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
 
 function Course({onLogout}) {
+  const currentUser = JSON.parse(localStorage.getItem('user'));
   const [courses, setCourses] = useState([]); // Ensure initial state is an empty array
   const [activeTab, setActiveTab] = useState('courses');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -37,11 +38,13 @@ function Course({onLogout}) {
     message: '',
     severity: 'success'
   });
+  
   const [courseDetails, setCourseDetails] = useState({
     courseName: '',
     code: '',
     semester: '',
     academicYear: '',
+    user: {userId: currentUser.userId}
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
@@ -55,7 +58,7 @@ function Course({onLogout}) {
     { value: '2nd Semester', label: '2nd Semester', period:'January-May' },
     { value: 'Summer', label: 'Summer', period:'June-July' }
   ];
-
+  
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
   };
@@ -68,7 +71,7 @@ function Course({onLogout}) {
   const fetchCourses = useCallback(async () => {
     try {
       console.log('Fetching courses...');
-      const response = await axios.get('/api/course/getallcourse');
+      const response = await axios.get('/api/course/getcourse/' + currentUser.userId);
       console.log('Courses fetched:', response.data);
       setCourses(Array.isArray(response.data) ? response.data : []); // Ensure response data is an array
       setCourseGridVisible(true); // Ensure course grid is visible after fetching courses
@@ -80,6 +83,7 @@ function Course({onLogout}) {
 
   useEffect(() => {
     document.title = 'Courses';
+    console.log("User: ", currentUser.userId);
     fetchCourses();
   }, [fetchCourses, location]);
 
@@ -99,6 +103,7 @@ function Course({onLogout}) {
         code: '',
         semester: '',
         academicYear: '',
+        user: null
       });
     }
     setModalOpen(true);
@@ -122,8 +127,15 @@ function Course({onLogout}) {
 
   const handleSubmit = async () => {
     try {
-      const { courseName, code, semester, academicYear } = courseDetails;
-      const courseData = { courseName, code, semester, academicYear };
+      // const { courseName, code, semester, academicYear, user = { userId: currentUser.userId } } = courseDetails;
+      // const courseData = { courseName, code, semester, academicYear, user };
+      const courseData = {
+        courseName: courseDetails.courseName,
+        code: courseDetails.code,
+        semester: courseDetails.semester,
+        academicYear: courseDetails.academicYear,
+        user: { userId: currentUser.userId } // Always include the user object
+      };
 
       if (selectedCourse) {
         // Update existing course
@@ -190,7 +202,7 @@ function Course({onLogout}) {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px' }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px', overflow:'auto' }}>
         <Box sx={{ marginTop: '64px' }}>
           <div className="title-container">
             <h2>Courses</h2>

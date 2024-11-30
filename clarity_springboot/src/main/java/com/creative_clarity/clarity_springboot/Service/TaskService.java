@@ -23,6 +23,8 @@ public class TaskService {
     @Autowired
     CourseRepository courseRepository;
 
+    @Autowired
+    CourseService courseService;
     public TaskService() {
         super();
     }
@@ -78,6 +80,17 @@ public class TaskService {
                .collect(Collectors.toList());
     }
 
+    // Get tasks by user ID
+    public List<TaskEntity> getTasksByUserId(int userId) {
+        // Get courses for user
+        List<CourseEntity> userCourses = courseService.findByUserId(userId);
+        
+        // Collect all tasks from user's courses
+        return userCourses.stream()
+            .flatMap(course -> course.getTasks().stream())
+            .collect(Collectors.toList());
+    }
+    
     // New method to get all courses
     public List<CourseEntity> getAllCourses() {
         return courseRepository.findAll();

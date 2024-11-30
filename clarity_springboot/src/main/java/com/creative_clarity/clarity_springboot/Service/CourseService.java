@@ -35,6 +35,15 @@ public class CourseService {
 		}).collect(Collectors.toList());
 	}
 	
+	//GET COURSE BY USER ID
+	public List<CourseEntity> getCourseByUserId(int userId){
+		List<CourseEntity> courses = findByUserId(userId);
+		return courses.stream().map(course -> {
+			course.getGrades().forEach(grade -> grade.setCourse(null));
+			return course;
+		}).collect(Collectors.toList());
+	}
+
 	//Update of CRUD
 	public CourseEntity putCourseDetails (int courseId, CourseEntity newCourseDetails) {
 		CourseEntity course = crepo.findById(courseId).orElseThrow(() -> new NoSuchElementException("Course " + courseId + " not found"));
@@ -59,5 +68,22 @@ public class CourseService {
 			msg = "Course ID "+ courseId +" NOT FOUND!";
 		}
 		return msg;
+	}
+
+	//helper method
+	public List<CourseEntity> findByUserId(int userId) {
+		List<CourseEntity> userCourses = crepo.findAll().stream()
+			.filter(course -> course.getUser() != null && 
+							 course.getUser().getUserId() == userId)
+			.map(course -> {
+				course.getGrades().forEach(grade -> grade.setCourse(null));
+				return course;
+			})
+			.collect(Collectors.toList());
+	
+		if (userCourses.isEmpty()) {
+			throw new NoSuchElementException("No courses found for user ID: " + userId);
+		}
+		return userCourses;
 	}
 }

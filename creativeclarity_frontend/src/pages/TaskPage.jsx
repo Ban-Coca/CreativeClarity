@@ -71,6 +71,7 @@ const TaskPage = ({onLogout}) => {
         priority: '',
         course:null
     });
+    const currentUser = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
         document.title = 'Tasks';
@@ -81,7 +82,7 @@ const TaskPage = ({onLogout}) => {
     const fetchTasks = async () => {
         setLoading(true);
         try {
-            const API_URL = '/api/task/getalltask';
+            const API_URL = '/api/task/getbyuser/' + currentUser.userId;
             const response = await axios.get(API_URL, {
                 headers: {
                     'Content-Type': 'application/json',

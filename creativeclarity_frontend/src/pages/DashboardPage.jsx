@@ -28,7 +28,7 @@ const DashboardPage = ({ onLogout }) => {
   }
   useEffect(() => {
     document.title = 'Home';
-    console.log('User logged in', localStorage.getItem('user'));
+    console.log('User logged in', currentUser.userId);
     getTasks(); 
   }, []);
   const handleTaskClick = () => {

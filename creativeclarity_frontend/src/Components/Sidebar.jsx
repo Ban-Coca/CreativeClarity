@@ -9,12 +9,19 @@ const SideBar = ( {onLogout, activeTab, setActiveTab}) => {
   return (
     <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
         <div className="p-6">
-          <img
-            src="/src/assets/images/logoCreativeClarity.png"
-            alt="Logo"
-            className="h-12 mb-8"
-            onClick={ () => navigate('/dashboard')}
-          />
+          <div className="flex content-center mb-8" onClick={ () => navigate('/dashboard')}>
+            <img
+              src="/src/assets/images/logoCreativeClarity.png"
+              alt="Logo"
+              className="h-12 mt-2 mr-2"
+            />
+            <div className="flex flex-col items-start justify-center">
+              <h1 className="text-2xl font-bold text-blue-500 ">Creative</h1>
+              <h1 className="text-2xl font-bold text-blue-500">Clarity</h1>
+            </div>
+           
+          </div>
+          
           
           <nav className="space-y-2">
             <button 
