@@ -21,7 +21,7 @@ import jakarta.persistence.CascadeType;
 @Entity
 public class UserEntity {
 	
-	@Id
+  @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int userId;
 	
@@ -49,6 +49,9 @@ public class UserEntity {
   @Fetch(FetchMode.JOIN)
   private List<CourseEntity> courses = new ArrayList<>();
 	
+  @Column(name = "profile_picture_path")
+    private String profilePicturePath;
+
 	public UserEntity() {
 		
 	}
@@ -79,6 +82,14 @@ public class UserEntity {
 
   public void setUsername(String username) {
     this.username = username;
+  }
+
+  public String getProfilePicturePath() {
+    return profilePicturePath;
+}
+
+  public void setProfilePicturePath(String profilePicturePath) {
+      this.profilePicturePath = profilePicturePath;
   }
 
   public String getEmail() {

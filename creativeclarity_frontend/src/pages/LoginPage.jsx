@@ -15,8 +15,13 @@ const LoginPage = ({ onLoginSuccess }) => {
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
-  const handleGithubLogin = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/github';
+  const handleGithubLogin = async () => {
+    try {
+        // Redirect to GitHub OAuth2 authorization endpoint
+        window.location.href = 'http://localhost:8080/oauth2/authorization/github';
+    } catch (error) {
+        console.error('GitHub login error:', error);
+    }
   };
   const handleFacebookLogin = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/facebook';
@@ -64,6 +69,9 @@ const LoginPage = ({ onLoginSuccess }) => {
         if (onLoginSuccess) {
           onLoginSuccess();
         }
+
+        const storedToken = localStorage.getItem('token');
+        console.log('Stored token:', storedToken);
         
         navigate('/dashboard');
       } else {
@@ -75,6 +83,7 @@ const LoginPage = ({ onLoginSuccess }) => {
       setIsLoading(false);
     }
   };
+  
 
   const inputClasses = "w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200 placeholder:text-gray-500 placeholder:opacity-60";
 
@@ -135,6 +144,7 @@ const LoginPage = ({ onLoginSuccess }) => {
                   type="text"
                   name="email"
                   value={formData.email}
+                  autoComplete='email'
                   onChange={handleInputChange}
                   placeholder="Email/Phone Number"
                   className={inputClasses}
@@ -159,6 +169,7 @@ const LoginPage = ({ onLoginSuccess }) => {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
+                  autoComplete='current-password'
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Password"

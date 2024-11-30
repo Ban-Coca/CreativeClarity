@@ -17,6 +17,9 @@ import ErrorPage from './pages/ErrorPage';
 import ArchivePage from './page/Archive';
 import Grades from './page/Grades';
 import Calendar from './pages/Calendar';
+import UserProfile from './pages/UserProfile';
+import NotesPage from './pages/NotesPage';
+
 
 // Custom 404 component
 const NotFound = () => {
@@ -170,6 +173,24 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ProfileSuccessPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/user-profile"
+            element={
+              <ProtectedRoute>
+                <UserProfile onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notes"
+            element={
+              <ProtectedRoute>
+                <NotesPage onLogout={handleLogout}/>
               </ProtectedRoute>
             }
           />

@@ -13,22 +13,49 @@ public class NoteEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int noteId;
 	
-	private String title;
-	private String content;
-	private Date created_at;
-	private String tags;
+	private int userId;
+  private String title;
+  private String content;
+  private String subject;
+  private Date created_at;
+  private Date lastModified;
 	
 	public NoteEntity() {
 		
 	}
 
-	public NoteEntity(String title, String content, Date created_at, String tags) {
-		super();
-		this.title = title;
-		this.content = content;
-		this.created_at = created_at;
-		this.tags = tags;
-	}
+	public NoteEntity(int userId, String title, String content, String subject, Date created_at, Date lastModified) {
+    this.userId = userId;
+    this.title = title;
+    this.content = content;
+    this.subject = subject;
+    this.created_at = created_at;
+    this.lastModified = lastModified;
+  }
+
+	public int getUserId() {
+    return userId;
+  }
+
+  public void setUserId(int userId) {
+    this.userId = userId;
+  }
+
+	public String getSubject() {
+    return subject;
+  }
+
+	public Date getLastModified() {
+    return lastModified;
+  }
+
+  public void setLastModified(Date lastModified) {
+    this.lastModified = lastModified;
+  }
+
+  public void setSubject(String subject) {
+    this.subject = subject;
+  }
 
 	public int getNoteId() {
 		return noteId;
@@ -57,15 +84,5 @@ public class NoteEntity {
 	public void setCreated_at(Date created_at) {
 		this.created_at = created_at;
 	}
-
-	public String getTags() {
-		return tags;
-	}
-
-	public void setTags(String tags) {
-		this.tags = tags;
-	}
-	
-	
 	
 }

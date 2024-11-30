@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import javax.naming.NameNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.creative_clarity.clarity_springboot.Entity.UserEntity;
@@ -13,9 +14,12 @@ import com.creative_clarity.clarity_springboot.Repository.UserRepository;
 
 @Service
 public class UserService {
-	
+
 	@Autowired
 	UserRepository urepo;
+
+	@Value("${app.upload.dir}")
+  private String uploadDir;
 	
 	public UserService() {
 		super();
