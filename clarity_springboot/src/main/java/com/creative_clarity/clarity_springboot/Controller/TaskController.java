@@ -3,6 +3,8 @@ package com.creative_clarity.clarity_springboot.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -74,4 +76,25 @@ public class TaskController {
 		return tserv.getAllCourses();
 	}
 	
+	// Newly Added -Jeric
+	// Endpoint to archive a completed task
+    @PutMapping("/archive/{taskId}")
+	public ResponseEntity<String> archiveTask(@PathVariable int taskId) {
+		try {
+			tserv.archiveCompletedTask(taskId);
+			return ResponseEntity.ok("Task archived successfully.");
+		} catch (Exception e) {
+			// Log the error for easier debugging
+			System.err.println("Error while archiving task: " + e.getMessage());
+			return ResponseEntity.status(500).body("Error archiving task: " + e.getMessage());
+		}
+	}
+
+	// Newly Added - Jeric
+	// Endpoint to update the completion status of a task
+	@PutMapping("/updateCompleted/{taskId}")
+    public ResponseEntity<TaskEntity> updateCompleted(@PathVariable int taskId, @RequestParam boolean completed) {
+        TaskEntity updatedTask = tserv.updateTaskCompleted(taskId, completed);
+        return new ResponseEntity<>(updatedTask, HttpStatus.OK);
+    }
 }

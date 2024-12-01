@@ -1,46 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert, Paper, Typography, Grid, Container } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Paper, Typography, Container, Menu, MenuItem, IconButton, LinearProgress, Pagination, Select, FormControl, InputLabel, Checkbox } from '@mui/material';
+import { Edit, Delete } from '@mui/icons-material';
 import axios from 'axios';
-import { useParams, useNavigate, useBeforeUnload, useLocation } from 'react-router-dom';
-import SideBar from '../components/Sidebar';// Import Frame component
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import SideBar from '../components/Sidebar'; // Import Frame component
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Add this line to set the base URL for axios
 
-function Grades({onLogout}) {
+function Grades({ onLogout, onGradesChange }) {
   const location = useLocation();
   const { courseId } = useParams();
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('courses');
   const [courses, SetCourses] = useState(location.state?.courses || []); // Add this line to initialize courses state
   const [activeTab, setActiveTab] = useState('courses');
   const [grades, setGrades] = useState(() => {
-    const savedGrades = localStorage.getItem('grades');
+    const savedGrades = localStorage.getItem(`grades_${courseId}`);
     return savedGrades ? JSON.parse(savedGrades) : [];
   });
   const [gradeModalOpen, setGradeModalOpen] = useState(false);
   const [gradeDetails, setGradeDetails] = useState({
-    score: '', 
+    score: '',
     total_points: '',
     assessment_type: '',
     dateRecorded: '',
   });
   const [selectedGrade, setSelectedGrade] = useState(null);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [gradeToDelete, setGradeToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const gradesPerPage = 5;
+  const [sortOption, setSortOption] = useState('');
+  const [selectedGrades, setSelectedGrades] = useState([]);
+  const [deleteSelectedConfirmationOpen, setDeleteSelectedConfirmationOpen] = useState(false);
 
-  const showSnackbar = (message, severity = 'success') => {
-    setSnackbar({
-      open: true,
-      message,
-      severity
-    });
-  };
-
-  const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') return;
-    setSnackbar(prev => ({ ...prev, open: false }));
+  const showToast = (message, type = 'success') => {
+    toast(message, { type });
   };
 
   const getAuthToken = () => {
@@ -50,8 +46,8 @@ function Grades({onLogout}) {
   const getHeaders = () => {
     const token = getAuthToken();
     return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     };
   };
 
@@ -71,10 +67,10 @@ function Grades({onLogout}) {
       } catch (error) {
         console.error('Error fetching courses:', error);
         console.error('Error details:', error.response?.data || error.message);
-        showSnackbar('Failed to fetch courses', 'error');
+        showToast('Failed to fetch courses', 'error');
       }
     }
-  }
+  };
 
   const fetchGrades = async () => {
     const token = getAuthToken();
@@ -88,32 +84,53 @@ function Grades({onLogout}) {
       });
       console.log('Grades fetched:', response.data);
       setGrades(response.data);
-      localStorage.setItem('grades', JSON.stringify(response.data));
+      localStorage.setItem(`grades_${courseId}`, JSON.stringify(response.data)); // Save grades to local storage
     } catch (error) {
       console.error('Error fetching grades:', error);
       console.error('Error details:', error.response?.data || error.message);
-      showSnackbar('Failed to fetch grades', 'error');
+      showToast('Failed to fetch grades', 'error');
+    }
+  };
+
+  const fetchCourseDetails = async () => {
+    try {
+      const response = await axios.get(`/api/course/${courseId}`, {
+        headers: getHeaders(),
+      });
+      console.log('Course details fetched:', response.data);
+      SetCourses([response.data]);
+    } catch (error) {
+      console.error('Error fetching course details:', error);
+      showToast('Failed to fetch course details', 'error');
     }
   };
 
   useEffect(() => {
-    fetchGrades();
-  }, [courseId]);
+    if (activeTab === 'grades') {
+      fetchGrades();
+    }
+  }, [courseId, activeTab]);
 
   useEffect(() => {
     const saveGradesBeforeUnload = () => {
-      localStorage.setItem('grades', JSON.stringify(grades));
+      localStorage.setItem(`grades_${courseId}`, JSON.stringify(grades));
     };
 
     window.addEventListener('beforeunload', saveGradesBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', saveGradesBeforeUnload);
     };
-  }, [grades]);
+  }, [grades, courseId]);
 
   const handleGradeChange = (e) => {
     const { name, value } = e.target;
-    setGradeDetails(prev => ({ ...prev, [name]: value }));
+    setGradeDetails((prev) => {
+      if (name === 'score' && parseFloat(value) > parseFloat(prev.total_points)) {
+        showToast('Score cannot exceed total points', 'error');
+        return prev;
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleGradeSubmit = async () => {
@@ -121,7 +138,13 @@ function Grades({onLogout}) {
     try {
       // Validate required fields
       if (!gradeDetails.score || !gradeDetails.total_points || !gradeDetails.assessment_type || !gradeDetails.dateRecorded) {
-        showSnackbar('Please fill in all required fields', 'error');
+        showToast('Please fill in all required fields', 'error');
+        return;
+      }
+
+      // Validate score does not exceed total points
+      if (parseFloat(gradeDetails.score) > parseFloat(gradeDetails.total_points)) {
+        showToast('Score cannot exceed total points', 'error');
         return;
       }
 
@@ -130,7 +153,7 @@ function Grades({onLogout}) {
         score: parseFloat(gradeDetails.score), // Ensure score is a float
         total_points: parseFloat(gradeDetails.total_points), // Ensure total_points is a float
         dateRecorded: gradeDetails.dateRecorded,
-        assessment_type: gradeDetails.assessment_type
+        assessment_type: gradeDetails.assessment_type,
       };
       console.log('Submitting grade data:', gradeData); // Add this line to log the grade data
       let response;
@@ -141,7 +164,7 @@ function Grades({onLogout}) {
             'Content-Type': 'application/json'
           }
         });
-        showSnackbar('Grade updated successfully');
+        showToast('Grade updated successfully');
       } else {
         response = await axios.post(`/api/grade/postgraderecord`, gradeData, {
           headers: {
@@ -151,19 +174,18 @@ function Grades({onLogout}) {
         });
         showSnackbar('Grade added successfully');
       }
-      setGrades(prev => {
+      setGrades((prev) => {
         const updatedGrades = selectedGrade
-          ? prev.map(grade => grade.gradeId === selectedGrade ? response.data : grade)
+          ? prev.map((grade) => (grade.gradeId === selectedGrade ? response.data : grade))
           : [...prev, response.data];
-        localStorage.setItem('grades', JSON.stringify(updatedGrades));
+        localStorage.setItem(`grades_${courseId}`, JSON.stringify(updatedGrades)); // Save updated grades to local storage
         return updatedGrades;
       });
-      console.log('Fetching courses after grade submit');
-      await fetchCourses(); // Ensure fetchCourses is awaited
+      await onGradesChange(); // Fetch grades after submit
       setGradeModalOpen(false);
       setSelectedGrade(null);
       setGradeDetails({
-        score: '', 
+        score: '',
         total_points: '',
         assessment_type: '',
         dateRecorded: '',
@@ -171,7 +193,7 @@ function Grades({onLogout}) {
     } catch (error) {
       console.error('Error saving grade:', error);
       const errorMessage = error.response?.data ? JSON.stringify(error.response.data) : error.message || 'An unknown error occurred';
-      showSnackbar(`Failed to save grade: ${errorMessage}`, 'error');
+      showToast(`Failed to save grade: ${errorMessage}`, 'error');
     }
   };
 
@@ -180,7 +202,7 @@ function Grades({onLogout}) {
       score: grade.score,
       total_points: grade.total_points, // Changed totalPoints to total_points
       dateRecorded: grade.dateRecorded.split('T')[0],
-      assessment_type: grade.assessment_type // Added assessment_type
+      assessment_type: grade.assessment_type, // Added assessment_type
     });
     setSelectedGrade(grade.gradeId);
     setGradeModalOpen(true);
@@ -195,24 +217,88 @@ function Grades({onLogout}) {
           'Content-Type': 'application/json'
         }
       });
-      showSnackbar('Grade deleted successfully');
-      setGrades(prev => {
-        const updatedGrades = prev.filter(grade => grade.gradeId !== gradeId);
-        localStorage.setItem('grades', JSON.stringify(updatedGrades));
-        return updatedGrades;
-      });
-      await fetchGrades(); // Ensure fetchGrades is awaited
-      console.log('Fetching courses after grade delete');
-      await fetchCourses(); // Ensure fetchCourses is awaited
+      showToast('Grade deleted successfully');
+      setGrades((prev) => prev.filter((grade) => grade.gradeId !== gradeToDelete)); // Remove grade from local state
+      localStorage.setItem(`grades_${courseId}`, JSON.stringify(grades.filter((grade) => grade.gradeId !== gradeToDelete))); // Update local storage
+      setDeleteConfirmationOpen(false); // Close the confirmation dialog
     } catch (error) {
       console.error('Error deleting grade:', error);
-      showSnackbar(`Failed to delete grade: ${error.response?.data || error.message}`, 'error');
+      showToast(`Failed to delete grade: ${error.response?.data || error.message}`, 'error');
     }
   };
 
-  const handleNavigateBack = () => {
-    localStorage.setItem('grades', JSON.stringify(grades));
-    navigate('/courses');
+  const handleDeleteSelectedGrades = async () => {
+    try {
+      await Promise.all(
+        selectedGrades.map((gradeId) =>
+          axios.delete(`/api/grade/deletegradedetails/${gradeId}`, {
+            headers: getHeaders(),
+          })
+        )
+      );
+      showToast('Selected grades deleted successfully');
+      setGrades((prev) => {
+        const updatedGrades = prev.filter((grade) => !selectedGrades.includes(grade.gradeId));
+        localStorage.setItem(`grades_${courseId}`, JSON.stringify(updatedGrades)); // Update local storage with courseId
+        return updatedGrades;
+      });
+      setSelectedGrades([]);
+      setDeleteSelectedConfirmationOpen(false); // Close the confirmation dialog
+    } catch (error) {
+      console.error('Error deleting selected grades:', error);
+      showToast(`Failed to delete selected grades: ${error.response?.data || error.message}`, 'error');
+    }
+  };
+
+  const confirmDeleteSelectedGrades = () => {
+    setDeleteSelectedConfirmationOpen(true);
+  };
+
+  const calculateInitialGrade = () => {
+    if (grades.length === 0) return null;
+    const totalScore = grades.reduce((acc, grade) => acc + grade.score, 0);
+    const totalPoints = grades.reduce((acc, grade) => acc + grade.total_points, 0);
+    return ((totalScore / totalPoints) * 100).toFixed(2);
+  };
+
+  const getProgressBarColor = (grade) => {
+    return grade >= 60 ? 'success' : 'error'; // 60 is the passing grade
+  };
+
+  const getGradeStatusText = (grade) => {
+    return grade >= 60 ? 'Passed' : 'Failed';
+  };
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  const handleSortChange = (event) => {
+    setSortOption(event.target.value);
+  };
+
+  const handleGradeSelect = (gradeId) => {
+    setSelectedGrades((prev) =>
+      prev.includes(gradeId) ? prev.filter((id) => id !== gradeId) : [...prev, gradeId]
+    );
+  };
+
+  const sortedGrades = [...grades].sort((a, b) => {
+    if (sortOption === 'ascending') {
+      return a.score - b.score;
+    } else if (sortOption === 'descending') {
+      return b.score - a.score;
+    } else if (sortOption === 'failing') {
+      return (a.score / a.total_points) - (b.score / b.total_points);
+    } else {
+      return 0;
+    }
+  });
+
+  const paginatedGrades = sortedGrades.slice((currentPage - 1) * gradesPerPage, currentPage * gradesPerPage);
+
+  const isFailing = (score, totalPoints) => {
+    return (score / totalPoints) < 0.6;
   };
 
   return (
@@ -226,130 +312,199 @@ function Grades({onLogout}) {
           p: 3,
           width: { sm: `calc(100% - 240px)` },
           ml: { sm: '240px' },
-          overflowY: 'auto',
-        }}>
-          <Container>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', m: 3 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleNavigateBack}
-              >
-                Back to Courses
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => setGradeModalOpen(true)}
-              >
-                Add Grade
-              </Button>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Paper elevation={3} sx={{ padding: 2, maxHeight: '70vh', overflowY: 'auto', width: '350px' }}>
-                <Typography variant="h5" gutterBottom>
+        }}
+      >
+        <Container>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between'}}>
+            <Button variant="contained" color="secondary" onClick={() => setGradeModalOpen(true)}>
+              Add Grade
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', mt: 4 }}>
+            <Paper elevation={3} sx={{ padding: 3, height: '60vh', width: '55%', backgroundColor: '#f5f5f5' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h4" gutterBottom sx={{ color: '#3f51b5', textAlign: 'center' }}>
                   Grade List
                 </Typography>
-                {grades.map((grade) => (
-                  <Paper key={grade.gradeId} elevation={3} sx={{ padding: 3, mb: 2 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Assessment Type: {grade.assessment_type}
-                    </Typography>
-                    <Typography variant="body1">
-                      Score: {grade.score}
-                    </Typography>
-                    <Typography variant="body1">
-                      Total Points: {grade.total_points}
-                    </Typography>
-                    <Typography variant="body1">
-                      Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                      <Button variant="outlined" color="primary" onClick={() => handleGradeEdit(grade)}>Edit</Button>
-                      <Button variant="outlined" color="error" onClick={() => handleGradeDelete(grade.gradeId)}>Delete</Button>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {selectedGrades.length > 0 && (
+                    <IconButton
+                      aria-label="delete"
+                      onClick={confirmDeleteSelectedGrades}
+                      sx={{ color: '#f44336', mr: 2, mb: 2, transform: 'scale(1.2)' }} // Slightly bigger delete icon
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
+                  <FormControl variant="outlined" sx={{ minWidth: 100, mb: 2 }}>
+                    <InputLabel>Sort By</InputLabel>
+                    <Select
+                      value={sortOption}
+                      onChange={handleSortChange}
+                      label="Sort By"
+                    >
+                      <MenuItem value="">None</MenuItem>
+                      <MenuItem value="ascending">Ascending</MenuItem>
+                      <MenuItem value="descending">Descending</MenuItem>
+                      <MenuItem value="failing">Failing</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Box>
+              <Box sx={{ overflowY: 'auto', height: 'calc(100% - 56px)' }}>
+                {paginatedGrades.map((grade) => (
+                  <Paper key={grade.gradeId} elevation={3} sx={{ padding: 1.7, mb: 2, backgroundColor: '#e3f2fd', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Checkbox
+                      checked={selectedGrades.includes(grade.gradeId)}
+                      onChange={() => handleGradeSelect(grade.gradeId)}
+                      sx={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)' }}
+                    />
+                    <IconButton
+                      aria-label="edit"
+                      onClick={() => handleGradeEdit(grade)}
+                      sx={{ position: 'absolute', top: 8, right: 8, color: '#ff9800' }} // Custom color for the edit icon
+                    >
+                      <Edit />
+                    </IconButton>
+                    <Box sx={{ ml: 5, flexGrow: 1 }}>
+                      <Typography variant="h6" gutterBottom sx={{ color: '#1e88e5', ml: 2}}>
+                        Assessment Type: {grade.assessment_type}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: isFailing(grade.score, grade.total_points) ? 'red' : '#424242', ml: 2 }}>
+                        Score: {grade.score}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: '#424242', ml: 2 }}>
+                        Total Points: {grade.total_points}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: '#424242', ml: 2 }}>
+                        Date Recorded: {new Date(grade.dateRecorded).toLocaleDateString()}
+                      </Typography>
                     </Box>
                   </Paper>
                 ))}
+              </Box>
+              <Pagination
+                count={Math.ceil(sortedGrades.length / gradesPerPage)}
+                page={currentPage}
+                onChange={handlePageChange}
+                sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
+              />
+            </Paper>
+            <Box sx={{ flexGrow: 1, ml: 5 }}>
+              <Paper elevation={3} sx={{ padding: 3, backgroundColor: '#f5f5f5' }}>
+                <Typography variant="h4" gutterBottom sx={{ color: '#3f51b5', textAlign: 'center' }}>
+                  Initial Computed Grade
+                </Typography>
+                {calculateInitialGrade() !== null ? (
+                  <>
+                    <Typography variant="h6" sx={{ color: '#1e88e5', textAlign: 'center' }}>
+                      {calculateInitialGrade()}%
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={calculateInitialGrade()}
+                      color={getProgressBarColor(calculateInitialGrade())}
+                      sx={{ height: 20, borderRadius: 5, mt: 2 }}
+                    />
+                    <Typography variant="h6" sx={{ color: getProgressBarColor(calculateInitialGrade()) === 'success' ? 'green' : 'red', textAlign: 'center', mt: 2 }}>
+                      {getGradeStatusText(calculateInitialGrade())}
+                    </Typography>
+                  </>
+                ) : (
+                  <Typography variant="h6" sx={{ color: '#1e88e5', textAlign: 'center' }}>
+                    No grades available
+                  </Typography>
+                )}
               </Paper>
             </Box>
+          </Box>
 
-            <Dialog
-              open={gradeModalOpen}
-              onClose={() => setGradeModalOpen(false)}
-              maxWidth="sm"
-              fullWidth
-            >
-              <DialogTitle>{selectedGrade ? 'Edit Grade' : 'Add Grade'}</DialogTitle>
-              <DialogContent>
-                <TextField
-                  name="score"
-                  label="Score"
-                  value={gradeDetails.score}
-                  onChange={handleGradeChange}
-                  fullWidth
-                  margin="normal"
-                  required
-                />
-                <TextField
-                  name="total_points"
-                  label="Total Points"
-                  value={gradeDetails.total_points} // Changed totalPoints to total_points
-                  onChange={handleGradeChange}
-                  fullWidth
-                  margin="normal"
-                  required
-                />
-                <TextField
-                  name="assessment_type"
-                  label="Assessment Type"
-                  value={gradeDetails.assessment_type}
-                  onChange={handleGradeChange}
-                  fullWidth
-                  margin="normal"
-                  required
-                /> {/* Added assessment_type */}
-                <TextField
-                  name="dateRecorded"
-                  label="Date Recorded"
-                  type="date"
-                  value={gradeDetails.dateRecorded}
-                  onChange={handleGradeChange}
-                  InputLabelProps={{ shrink: true }}
-                  fullWidth
-                  margin="normal"
-                  required
-                />
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setGradeModalOpen(false)} color="primary">
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleGradeSubmit} 
-                  color="primary" 
-                  variant="contained"
-                >
-                  {selectedGrade ? 'Update Grade' : 'Add Grade'}
-                </Button>
-              </DialogActions>
-            </Dialog>
+          <Dialog open={gradeModalOpen} onClose={() => setGradeModalOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle>{selectedGrade ? 'Edit Grade' : 'Add Grade'}</DialogTitle>
+            <DialogContent>
+              <TextField
+                name="score"
+                label="Score"
+                value={gradeDetails.score}
+                onChange={handleGradeChange}
+                fullWidth
+                margin="normal"
+                required
+              />
+              <TextField
+                name="total_points"
+                label="Total Points"
+                value={gradeDetails.total_points} // Changed totalPoints to total_points
+                onChange={handleGradeChange}
+                fullWidth
+                margin="normal"
+                required
+              />
+              <TextField
+                name="assessment_type"
+                label="Assessment Type"
+                value={gradeDetails.assessment_type}
+                onChange={handleGradeChange}
+                fullWidth
+                margin="normal"
+                required
+              />{' '}
+              {/* Added assessment_type */}
+              <TextField
+                name="dateRecorded"
+                label="Date Recorded"
+                type="date"
+                value={gradeDetails.dateRecorded}
+                onChange={handleGradeChange}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                margin="normal"
+                required
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setGradeModalOpen(false)} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleGradeSubmit} color="primary" variant="contained">
+                {selectedGrade ? 'Update Grade' : 'Add Grade'}
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-            <Snackbar 
-              open={snackbar.open} 
-              autoHideDuration={3000}
-              onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-              <Alert 
-                onClose={handleSnackbarClose} 
-                severity={snackbar.severity} 
-                sx={{ width: '100%' }}
-              >
-                {snackbar.message}
-              </Alert>
-            </Snackbar>
-          </Container>
-        </Box>
+          <Dialog open={deleteConfirmationOpen} onClose={() => setDeleteConfirmationOpen(false)}>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogContent>
+              <Typography>Are you sure you want to delete this grade?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteConfirmationOpen(false)} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleGradeDelete} color="error" variant="contained">
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={deleteSelectedConfirmationOpen} onClose={() => setDeleteSelectedConfirmationOpen(false)}>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogContent>
+              <Typography>Are you sure you want to delete the selected grades?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteSelectedConfirmationOpen(false)} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleDeleteSelectedGrades} color="error" variant="contained">
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+        </Container>
+      </Box>
     </Box>
   );
 }

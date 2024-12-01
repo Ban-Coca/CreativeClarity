@@ -20,6 +20,9 @@ import Calendar from './pages/Calendar';
 import UserProfile from './pages/UserProfile';
 import NotesPage from './pages/NotesPage';
 
+import Picture from './page/Gallery';
+import CourseDetail from './page/CourseDetail';
+import Progress from './page/Progress'; // Import Progress component
 
 // Custom 404 component
 const NotFound = () => {
@@ -211,8 +214,7 @@ const App = () => {
                 <Course onLogout={handleLogout}/>
               </ProtectedRoute>
             }
-            />
-          
+          />
           <Route
             path="/tasks"
             element={
@@ -225,7 +227,7 @@ const App = () => {
             path="/archive"
             element={
               <ProtectedRoute>
-                <ArchivePage/>
+                <ArchivePage onLogout={handleLogout}/>
               </ProtectedRoute>
             }
           />
@@ -245,10 +247,34 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/progress"
+            element={
+              <ProtectedRoute>
+                <Progress />
+              </ProtectedRoute>
+            }
+          />
           {/* Root route */}
           <Route
             path="/"
             element={<Navigate to="/login" replace />}  // Always redirect to login
+          />
+          <Route
+            path="/uploads"
+            element={
+            <ProtectedRoute>
+              <Picture />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/course/:courseId/*"
+            element={
+              <ProtectedRoute>
+                <CourseDetail onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
           />
 
           {/* Error route */}

@@ -2,6 +2,7 @@ package com.creative_clarity.clarity_springboot.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,11 @@ import com.creative_clarity.clarity_springboot.Repository.CourseRepository;
 @CrossOrigin(origins = "http://localhost:5173")
 @Service
 public class CourseService {
+
 	@Autowired
 	CourseRepository crepo;
 	
+
 	public CourseService() {
 		super();
 	}
@@ -33,6 +36,11 @@ public class CourseService {
 			course.getGrades().forEach(grade -> grade.setCourse(null));
 			return course;
 		}).collect(Collectors.toList());
+	}
+
+	//Read of CRUD
+	public Optional<CourseEntity> getCourseById(int courseId){
+		return crepo.findById(courseId);
 	}
 	
 	//GET COURSE BY USER ID

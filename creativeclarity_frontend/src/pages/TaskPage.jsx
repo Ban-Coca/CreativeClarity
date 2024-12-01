@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Toaster, toast } from 'sonner';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
-import EnhancedTable from '../components/TablesTask';
+import EnhancedTable from '../Components/TablesTask';
 import { Priority, PriorityColors, PriorityList } from '../utils/Priority';
 import { Button, Modal, Box, TextField, Select, MenuItem, FormControl, InputLabel, IconButton } from '@mui/material';
 import PropTypes from 'prop-types';

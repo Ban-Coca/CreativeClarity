@@ -1,8 +1,10 @@
 package com.creative_clarity.clarity_springboot.Controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Service.CourseService;
 
@@ -43,6 +46,13 @@ public class CourseController {
 	@GetMapping("/getcourse/{userId}")
 	public List<CourseEntity> getCourseByUserId(@PathVariable int userId){
 		return cserv.getCourseByUserId(userId);
+	}
+	
+	@GetMapping("{courseId}")
+	public ResponseEntity<CourseEntity> getCourseById(@PathVariable int courseId) {
+		Optional<CourseEntity> course = cserv.getCourseById(courseId);
+		return course.map(ResponseEntity::ok) // If course is found, return 200 OK with the course
+					.orElse(ResponseEntity.notFound().build()); // If not found, return 404
 	}
 			
 	//Update of CRUD

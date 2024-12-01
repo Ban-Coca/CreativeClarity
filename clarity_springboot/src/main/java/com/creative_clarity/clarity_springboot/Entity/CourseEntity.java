@@ -33,7 +33,9 @@ public class CourseEntity {
 	private String semester;
 	private String academicYear;
 	private Date created_at;
-
+	private boolean isArchived;
+	
+	@JsonManagedReference("course-grade")
 	@OneToMany(fetch = FetchType.EAGER,mappedBy = "course", cascade = CascadeType.ALL)
 	private List<GradeEntity> grades;
 	
@@ -103,6 +105,14 @@ public class CourseEntity {
 
 	public void setCreated_at(Date created_at) {
 		this.created_at = created_at;
+	}
+
+	public boolean isIsArchived() {
+		return isArchived;
+	}
+
+	public void setIsArchived(boolean isArchived) {
+		this.isArchived = isArchived;
 	}
 
 	public List<GradeEntity> getGrades() {

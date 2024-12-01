@@ -27,13 +27,18 @@ public class TaskEntity {
 	private Date due_date;
 	private boolean completed;
 	private String priority;  // new field
+	private boolean isArchived;  // New field to track archive status
 	
 	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     @JsonIgnoreProperties({"tasks", "grades"}) 
 	//@JsonBackReference
 	private CourseEntity course;
-	
+
+    @ManyToOne
+    @JoinColumn(name = "archive")
+    private ArchiveEntity archive;
+
 	public TaskEntity() {
 		
 	}
@@ -90,6 +95,14 @@ public class TaskEntity {
 	public void setPriority(String priority) {
 		this.priority = priority;
 	}
+
+	public boolean getIsArchived() {
+        return isArchived;
+    }
+
+    public void setIsArchived(boolean isArchived) {
+        this.isArchived = isArchived;
+    }
 	
 	public CourseEntity getCourse() {
         return course;
@@ -99,4 +112,11 @@ public class TaskEntity {
         this.course = course;
     }
 
+    public ArchiveEntity getArchive() {
+        return archive;
+    }
+
+    public void setArchive(ArchiveEntity archive) {
+        this.archive = archive;
+    }
 }

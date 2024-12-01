@@ -17,13 +17,11 @@ import {
   InputLabel 
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded'; // Import LeaderboardRoundedIcon
 import axios from 'axios';
 import SideBar from '../components/Sidebar';
-import TopBar from '../components/TopBar';
 import '../components/css/Course.css';
-import { ArrowBack } from '@mui/icons-material';
-import Grades from './Grades'; // Import the Grades component
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
 import {Plus} from 'lucide-react';
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
@@ -53,6 +51,7 @@ function Course({onLogout}) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [courseGridVisible, setCourseGridVisible] = useState(true); // New state for course grid visibility
   const location = useLocation();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Define semester options
   const semesterOptions = [
@@ -217,6 +216,11 @@ function Course({onLogout}) {
     handleMenuClose();
   };
 
+  const handleViewAnalytics = () => {
+    setActiveTab('progress');
+    navigate(`/progress`);
+  };
+
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <SideBar
@@ -225,7 +229,7 @@ function Course({onLogout}) {
         setActiveTab={setActiveTab}
         />
       <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px', overflow:'auto' }}>
-        <Box sx={{ marginTop: '64px' }}>
+        <Box>
           <div className="title-container">
             <div className="flex items-center space-x-3 mb-2">
               <div className="h-8 w-2 bg-blue-600 rounded-full"></div>
@@ -240,33 +244,61 @@ function Course({onLogout}) {
               <Plus className="h-5 w-5" />
               <span>Add Course</span>
             </button>
+            <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<LeaderboardRoundedIcon />}
+                onClick={handleViewAnalytics}
+                sx={{ marginLeft: '10px' }}
+              >
+                View Analytics
+            </Button>
           </div>
 
           {courseGridVisible && (
             <div className="course-grid">
               {courses.map((course) => (
-                <div key={course.courseId} className="course-card" style={{ position: 'relative', height:'180px'}}>
-                  <h3>{course.courseName}</h3>
-                  <p>{course.code}</p>
-                  <p>{course.semester} - {course.academicYear}</p>
-                  
+                <div 
+                  key={course.courseId}
+                  className="course-card" 
+                  style={{
+                    position: 'relative',
+                    height: '150px',
+                    padding: '20px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    margin: '8px',
+                  }}
+                >
+                  {/* Wrap most of the card content in Link, excluding the menu */}
+                  <Link
+                    to={`/course/${course.courseId}`}
+                    state={{ course }} // Pass course details as state
+                    style={{ 
+                      textDecoration: 'none', 
+                      color: 'inherit',
+                      display: 'block',
+                      height: '100%',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s'
+                    }}
+                  >
+                    {/* Course Details */}
+                    <div className="course-content">
+                      <h3>{course.courseName}</h3>
+                      <p>{course.code}</p>
+                      <p>{course.semester} - {course.academicYear}</p>
+                      <p>{course.subject}</p>
+                    </div>
+                  </Link>
+
+                  {/* Menu Icon outside of Link */}
                   <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                    <IconButton onClick={(event) => handleMenuClick(event, course)}>
+                    <IconButton 
+                      onClick={(event) => handleMenuClick(event, course)}
+                    >
                       <MoreVertIcon />
                     </IconButton>
-                    <p>{course.subject}</p>
-                    
-                  </Box>
-                  <Box sx={{ mt: 1, display: 'flex', gap: 1, justifyContent: 'center' }}>
-                    <Button
-                      component={Link}
-                      to={`/grades/${course.courseId}`}
-                      variant="outlined"
-                      color="primary"
-                      state={{ course }}
-                    >
-                      View Grades
-                    </Button>
                   </Box>
                 </div>
               ))}
