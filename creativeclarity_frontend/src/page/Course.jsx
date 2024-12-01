@@ -24,11 +24,13 @@ import '../components/css/Course.css';
 import { ArrowBack } from '@mui/icons-material';
 import Grades from './Grades'; // Import the Grades component
 import { Link, useLocation } from 'react-router-dom';
+import {Plus} from 'lucide-react';
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
 
 function Course({onLogout}) {
   const currentUser = JSON.parse(localStorage.getItem('user'));
+  const token = localStorage.getItem('token');
   const [courses, setCourses] = useState([]); // Ensure initial state is an empty array
   const [activeTab, setActiveTab] = useState('courses');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -71,7 +73,12 @@ function Course({onLogout}) {
   const fetchCourses = useCallback(async () => {
     try {
       console.log('Fetching courses...');
-      const response = await axios.get('/api/course/getcourse/' + currentUser.userId);
+      const response = await axios.get('/api/course/getcourse/' + currentUser.userId, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
       console.log('Courses fetched:', response.data);
       setCourses(Array.isArray(response.data) ? response.data : []); // Ensure response data is an array
       setCourseGridVisible(true); // Ensure course grid is visible after fetching courses
@@ -139,12 +146,22 @@ function Course({onLogout}) {
 
       if (selectedCourse) {
         // Update existing course
-        await axios.put(`/api/course/putcoursedetails/${selectedCourse.courseId}`, courseData);
+        await axios.put(`/api/course/putcoursedetails/${selectedCourse.courseId}`, courseData, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
         showSnackbar('Course updated successfully');
       } else {
         // Create new course
         console.log(courseData);
-        await axios.post('/api/course/postcourserecord', courseData);
+        await axios.post('/api/course/postcourserecord', courseData, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
         showSnackbar('Course created successfully');
       }
 
@@ -163,7 +180,12 @@ function Course({onLogout}) {
       return;
     }
     try {
-      await axios.delete(`/api/course/deletecoursedetails/${courseToDelete}`);
+      await axios.delete(`/api/course/deletecoursedetails/${courseToDelete}`,{
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
       await fetchCourses();
       showSnackbar('Course deleted successfully');
       setDeleteDialogOpen(false);
@@ -205,10 +227,19 @@ function Course({onLogout}) {
       <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px', overflow:'auto' }}>
         <Box sx={{ marginTop: '64px' }}>
           <div className="title-container">
-            <h2>Courses</h2>
-            <Button variant="contained" color="primary" onClick={() => handleOpen()}>
-              Add Course
-            </Button>
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="h-8 w-2 bg-blue-600 rounded-full"></div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                Courses
+              </h1>
+            </div>
+            <button
+                onClick={() => handleOpen()}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              <Plus className="h-5 w-5" />
+              <span>Add Course</span>
+            </button>
           </div>
 
           {courseGridVisible && (

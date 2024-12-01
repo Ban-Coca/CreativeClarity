@@ -56,11 +56,15 @@ function Grades({onLogout}) {
   };
 
   const fetchCourses = async () => {
+    const token = getAuthToken();
     if(!courses){
       try {
         console.log('Fetching courses');
         const response = await axios.get('/api/course/getallcourses', {
-          headers: getHeaders()
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
         console.log('Courses fetched:', response.data);
         SetCourses(response.data);
@@ -73,10 +77,14 @@ function Grades({onLogout}) {
   }
 
   const fetchGrades = async () => {
+    const token = getAuthToken();
     try {
       console.log(`Fetching grades for courseId: ${courseId}`);
       const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`, {
-        headers: getHeaders()
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       console.log('Grades fetched:', response.data);
       setGrades(response.data);
@@ -109,6 +117,7 @@ function Grades({onLogout}) {
   };
 
   const handleGradeSubmit = async () => {
+    const token = getAuthToken();
     try {
       // Validate required fields
       if (!gradeDetails.score || !gradeDetails.total_points || !gradeDetails.assessment_type || !gradeDetails.dateRecorded) {
@@ -127,11 +136,19 @@ function Grades({onLogout}) {
       let response;
       if (selectedGrade) {
         response = await axios.put(`/api/grade/putgradedetails?gradeId=${selectedGrade}`, gradeData, {
-          headers: getHeaders()
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
         showSnackbar('Grade updated successfully');
       } else {
-        response = await axios.post(`/api/grade/postgraderecord`, gradeData);
+        response = await axios.post(`/api/grade/postgraderecord`, gradeData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         showSnackbar('Grade added successfully');
       }
       setGrades(prev => {
@@ -170,9 +187,13 @@ function Grades({onLogout}) {
   };
 
   const handleGradeDelete = async (gradeId) => {
+    const token = getAuthToken();
     try {
       await axios.delete(`/api/grade/deletegradedetails/${gradeId}`, {
-        headers: getHeaders()
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       showSnackbar('Grade deleted successfully');
       setGrades(prev => {

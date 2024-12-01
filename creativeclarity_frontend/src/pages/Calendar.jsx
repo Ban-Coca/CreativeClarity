@@ -11,8 +11,9 @@ const Calendar = ({ onLogout }) => {
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
+    document.title = 'Calendar';
     const loadTasks = async () => {
-      document.title = 'Calendar';
+      
       try {
         const fetchedTasks = await fetchTasks();
         setTasks(fetchedTasks);
@@ -113,8 +114,9 @@ const Calendar = ({ onLogout }) => {
             />
         </div>
         <div className="flex-1 h-screen overflow-auto">
-            <div className="mt-8 ml-8 p-2">
-                <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
+            <div className="flex mt-6 ml-6 p-2 items-center space-x-3">
+                <div className="h-8 w-2 bg-blue-600 rounded-full"></div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Calendar</h1>
             </div>
             <div className="flex justify-center">
                 <div className="w-full max-w-4xl p-4 border rounded-lg shadow-sm bg-white">

@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import SideBar from '../components/Sidebar';
 import { formatDate } from '../utils/dateUtils';
 import { fetchTasks } from '../service/taskService'; 
-import { useNavigate } from 'react-router-dom';
 
 const DashboardPage = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -112,7 +111,7 @@ const DashboardPage = ({ onLogout }) => {
   }
   useEffect(() => {
     document.title = 'Home';
-    console.log('User logged in', currentUser.userId);
+    console.log('User logged in', localStorage.getItem('token'));
     getTasks(); 
   }, []);
   const handleTaskClick = () => {
@@ -145,11 +144,11 @@ const DashboardPage = ({ onLogout }) => {
 
       {/* Main Content */}
       <div className="flex-1 ml-64">
-    <div className="h-full p-8 overflow-y-auto">
+        <div className="h-full p-8 overflow-y-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
                 Welcome back, {user.firstName}!
               </h1>
               <p className="text-gray-600">Here&apos;s your academic overview</p>
@@ -206,7 +205,7 @@ const DashboardPage = ({ onLogout }) => {
                     <ChevronLeft/>
                   </button>
                   <span className="text-sm text-gray-600">
-                    {currentPage} of {totalPages}
+                    {currentPage}
                   </span>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
@@ -268,7 +267,9 @@ const DashboardPage = ({ onLogout }) => {
                     </div>
                   ))}
                 </div>
-                <button className="mt-6 w-full py-2 px-4 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition duration-200">
+                <button 
+                  onClick={() => navigate('/courses')}
+                  className="mt-6 w-full py-2 px-4 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition duration-200">
                   View All Courses
                 </button>
               </div>

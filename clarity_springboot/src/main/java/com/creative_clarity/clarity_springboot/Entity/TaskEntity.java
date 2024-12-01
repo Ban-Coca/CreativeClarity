@@ -28,7 +28,7 @@ public class TaskEntity {
 	private boolean completed;
 	private String priority;  // new field
 	
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     @JsonIgnoreProperties({"tasks", "grades"}) 
 	//@JsonBackReference

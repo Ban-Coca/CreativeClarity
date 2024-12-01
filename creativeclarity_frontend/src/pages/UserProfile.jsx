@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { User, Edit, Calendar, BookOpen, CheckSquare, LogOut, Camera, X, FileText} from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import SideBar from '../components/Sidebar';
 
 
 const UserProfile = ({ onLogout }) => {
@@ -13,13 +14,7 @@ const UserProfile = ({ onLogout }) => {
   const [dragActive, setDragActive] = useState(false);
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
   
-  const [activeTab, setActiveTab] = useState(() => {
-    if (location.pathname === '/user-profile') return 'profile';
-    if (location.pathname === '/calendar') return 'calendar';
-    if (location.pathname === '/tasks') return 'tasks';
-    if (location.pathname === '/notes') return 'notes'; 
-    return 'overview';
-  });
+  const [activeTab, setActiveTab] = useState('profile');
 
   const [userData, setUserData] = useState({
     firstName: '',
@@ -36,6 +31,7 @@ const UserProfile = ({ onLogout }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    document.title = 'User Profile';
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
@@ -72,29 +68,6 @@ const UserProfile = ({ onLogout }) => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    switch (tab) {
-      case 'overview':
-        navigate('/dashboard');
-        break;
-      case 'calendar':
-        navigate('/calendar');
-        break;
-      case 'tasks':
-        navigate('/tasks');
-        break;
-      case 'notes':
-        navigate('/notes');  // Add this case
-        break;
-      case 'profile':
-        navigate('/user-profile');
-        break;
-      default:
-        break;
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -183,7 +156,6 @@ const UserProfile = ({ onLogout }) => {
 
 const handleProfilePictureChange = async (file) => {
   console.log('File selected:', file);
-  
   if (file) {
     try {
       if (file.size > 10 * 1024 * 1024) {
@@ -413,53 +385,10 @@ const checkImageExists = (url) => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
-      <div className="p-6">
-  <div className="flex items-center space-x-3 mb-8">
-    <img
-      src="/src/assets/images/logoCreativeClarity.png"
-      alt="Logo"
-      className="h-12"
-    />
-    <div className="flex flex-col">
-      <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-900 bg-clip-text text-transparent">
-        CreativeClarity
-      </h1>
-    </div>
-  </div>
-          
-          <nav className="space-y-2">
-            {[
-              { icon: BookOpen, label: 'Overview', value: 'overview' },
-              { icon: Calendar, label: 'Calendar', value: 'calendar' },
-              { icon: CheckSquare, label: 'Tasks', value: 'tasks' },
-              { icon: FileText, label: 'Notes', value: 'notes' },  // New Notes button
-              { icon: User, label: 'Profile', value: 'profile' }
-            ].map(({ icon: Icon, label, value }) => (
-              <button 
-                key={value}
-                onClick={() => handleTabChange(value)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                  activeTab === value 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-        
-        <button 
-          onClick={handleLogout}
-          className="absolute bottom-6 left-6 flex items-center space-x-2 text-gray-600 hover:text-red-600 transition"
-        >
-          <LogOut className="h-5 w-5" />
-          <span>Logout</span>
-        </button>
-      </div>
+      <SideBar 
+        onLogout={onLogout}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab} />
 
        {/* Main Content */}
         <div className="ml-64 p-8 flex-1">

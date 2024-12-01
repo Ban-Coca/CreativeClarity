@@ -3,6 +3,8 @@ import { FileText, Plus, Search, Folder, Edit3, Trash2, Save, X, BookOpen, Calen
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import axios from 'axios';
+import SideBar from '../components/Sidebar';
+import { toast } from 'sonner';
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Add this line
 
@@ -36,6 +38,7 @@ const NotesPage = ({ onLogout }) => {
   const [newSubjectName, setNewSubjectName] = useState('');
 
   useEffect(() => {
+    document.title = 'My Notes';
     const fetchNotes = async () => {
       if (currentUserId && token) {
         try {
@@ -53,29 +56,6 @@ const NotesPage = ({ onLogout }) => {
 
     fetchNotes();
   }, [currentUserId, token]);
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    switch (tab) {
-      case 'overview':
-        navigate('/dashboard');
-        break;
-      case 'calendar':
-        navigate('/calendar');
-        break;
-      case 'tasks':
-        navigate('/tasks');
-        break;
-      case 'notes':
-        navigate('/notes');
-        break;
-      case 'profile':
-        navigate('/user-profile');
-        break;
-      default:
-        break;
-    }
-  };
 
   const handleAddSubject = () => {
     const trimmedSubject = newSubjectName.trim();
@@ -159,13 +139,17 @@ const NotesPage = ({ onLogout }) => {
   };
 
   const handleDeleteNote = async (noteId) => {
+    const token = localStorage.getItem('token');
+    console.log('Note to be deleted: ', noteId)
     try {
       await axios.delete(`/api/note/deletenotedetails/${noteId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
       setNotes(notes.filter(note => note.noteId !== noteId));
+      toast.success('Note Deleted successfully!')
     } catch (error) {
       console.error('Error deleting note:', error);
     }
@@ -187,53 +171,10 @@ const NotesPage = ({ onLogout }) => {
   return (
     <div className="flex h-screen bg-gray-50">
       <div className="w-64 h-screen flex-shrink-0 bg-white shadow-lg fixed">
-        <div className="h-full flex flex-col">
-          <div className="p-6">
-            <div className="flex items-center space-x-3 mb-8">
-              <img
-                src="/src/assets/images/logoCreativeClarity.png"
-                alt="Logo"
-                className="h-12"
-              />
-              <div className="flex flex-col">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-900 bg-clip-text text-transparent">
-                  CreativeClarity
-                </h1>
-              </div>
-            </div>
-            
-            <nav className="space-y-2">
-              {[
-                { icon: BookOpen, label: 'Overview', value: 'overview' },
-                { icon: Calendar, label: 'Calendar', value: 'calendar' },
-                { icon: CheckSquare, label: 'Tasks', value: 'tasks' },
-                { icon: FileText, label: 'Notes', value: 'notes' },
-                { icon: User, label: 'Profile', value: 'profile' }
-              ].map(({ icon: Icon, label, value }) => (
-                <button 
-                  key={value}
-                  onClick={() => handleTabChange(value)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                    activeTab === value 
-                      ? 'bg-blue-600 text-white' 
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </nav>
-          </div>
-          
-          <button 
-            onClick={handleLogout}
-            className="absolute bottom-6 left-6 flex items-center space-x-2 text-gray-600 hover:text-red-600 transition"
-          >
-            <LogOut className="h-5 w-5" />
-            <span>Logout</span>
-          </button>
-        </div>
+      <SideBar 
+        onLogout={onLogout}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab} />
       </div>
 
       <div className="flex-1 ml-64">
@@ -397,7 +338,7 @@ const NotesPage = ({ onLogout }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredNotes.map(note => (
                     <div 
-                      key={note.id} 
+                      key={note.noteId} 
                       onClick={() => handleNoteClick(note)}
                       className="bg-white rounded-lg shadow-sm hover:shadow-md transition cursor-pointer"
                     >
@@ -422,7 +363,7 @@ const NotesPage = ({ onLogout }) => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteNote(note.id);
+                                handleDeleteNote(note.noteId);
                               }}
                               className="text-gray-400 hover:text-red-600"
                             >

@@ -2,13 +2,15 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 axios.defaults.baseURL = 'http://localhost:8080';
-const currentUser = JSON.parse(localStorage.getItem('user'));
+
 export const fetchTasks = async () => {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
     try {
         const response = await axios.get('/api/task/getbyuser/' + currentUser.userId, {
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Authorization': `Bearer ${token}`
             }
         });
         toast.success('Tasks fetched successfully');
@@ -21,11 +23,13 @@ export const fetchTasks = async () => {
 };
 
 export const createTask = async (task) => {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
     try {
         const response = await axios.post('/api/task/posttaskrecord', task, {
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Authorization': `Bearer ${token}`
             }
         });
         toast.success('Task created successfully');
@@ -38,6 +42,8 @@ export const createTask = async (task) => {
 };
 
 export const updateTask = async (taskId, updatedTask) => {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
     try {
         const formattedTask = {
             ...updatedTask,
@@ -46,7 +52,8 @@ export const updateTask = async (taskId, updatedTask) => {
 
         const response = await axios.put(`/api/task/puttaskdetails?taskId=${taskId}`, formattedTask, {
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             }
         });
         toast.success('Task updated successfully');
@@ -59,9 +66,20 @@ export const updateTask = async (taskId, updatedTask) => {
 };
 
 export const deleteTask = async (taskId) => {
+    const token = localStorage.getItem('token');
     try {
-        await axios.delete(`/api/task/deletetaskdetails/${taskId}`);
-        toast.success('Task deleted successfully');
+        const response = await axios.delete(`/api/task/deletetaskdetails/${taskId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}` 
+            }
+        });
+        
+        // Add check for response status
+        if (response.status === 200) {
+            toast.success('Task deleted successfully');
+            return true;
+        }
+        return false;
     } catch (error) {
         toast.error('Error deleting task');
         console.error('Error deleting task:', error);

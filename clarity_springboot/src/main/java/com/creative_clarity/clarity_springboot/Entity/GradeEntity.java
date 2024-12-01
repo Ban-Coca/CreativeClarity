@@ -3,6 +3,7 @@ package com.creative_clarity.clarity_springboot.Entity;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,7 +22,7 @@ public class GradeEntity {
 	private String assessment_type;
 	private Date dateRecorded; 
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "course")
 	private CourseEntity course;
 	

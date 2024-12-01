@@ -8,7 +8,7 @@ import { Button, Modal, Box, TextField, Select, MenuItem, FormControl, InputLabe
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { fetchTasks, createTask, updateTask, deleteTask } from '../service/taskService';
-import { Save, X, Edit, Trash2} from 'lucide-react';
+import { Save, X, Edit, Trash2, Plus} from 'lucide-react';
 import { lineWobble } from 'ldrs';
 // Set the base URL for Axios
 axios.defaults.baseURL = 'http://localhost:8080';
@@ -72,9 +72,9 @@ const TaskPage = ({onLogout}) => {
         course:null
     });
     const currentUser = JSON.parse(localStorage.getItem('user'));
-
+    const token = localStorage.getItem('token');
     useEffect(() => {
-        document.title = 'Tasks';
+        document.title = 'My Tasks';
         fetchTasks();
         fetchCourses() 
     }, []);
@@ -86,7 +86,7 @@ const TaskPage = ({onLogout}) => {
             const response = await axios.get(API_URL, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
+                    'Authorization': `Bearer ${token}`
                 }
             });
             //toast.success('Tasks fetched successfully');
@@ -105,7 +105,7 @@ const TaskPage = ({onLogout}) => {
             const response = await axios.post('/api/task/posttaskrecord', task, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
+                    'Authorization': `Bearer ${token}`
                 }
             });
             setTasks([...tasks, response.data]);
@@ -135,7 +135,8 @@ const TaskPage = ({onLogout}) => {
 
             const response = await axios.put(`/api/task/puttaskdetails?taskId=${taskData.taskId}`, formattedTask, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -171,7 +172,11 @@ const TaskPage = ({onLogout}) => {
     const fetchCourses = useCallback(async () => {
         try {
             console.log('Fetching courses...');
-            const response = await axios.get('/api/course/getallcourse');
+            const response = await axios.get('/api/course/getcourse/' + currentUser.userId, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             console.log('Courses fetched:', response.data);
             const courseData = Array.isArray(response.data) ? response.data : [];
             console.log(courseData)
@@ -200,12 +205,19 @@ const TaskPage = ({onLogout}) => {
 
     const confirmDelete = async () => {
         if(taskToDelete) {
-            await deleteTask(taskToDelete);
-            setTasks(tasks.filter(task => task.taskId !== taskToDelete));
-            setOpenDeleteModal(false);
-            setTaskToDelete(null);
-            setOpenTaskDetails(false);
-            fetchTasks();
+            try {
+                const deleted = await deleteTask(taskToDelete);
+                if (deleted) {
+                    setTasks(tasks.filter(task => task.taskId !== taskToDelete));
+                    setOpenDeleteModal(false);
+                    setTaskToDelete(null);
+                    setOpenTaskDetails(false);
+                    await fetchTasks(); // Refresh task list
+                }
+            } catch (error) {
+                console.error('Error during deletion:', error);
+                toast.error('Failed to delete task');
+            }
         }
     }
 
@@ -253,9 +265,18 @@ const TaskPage = ({onLogout}) => {
             <div className="flex-1 flex flex-col">
                 <div className="bg-[#f9fafb] h-full shadow-sm max-h-full p-4 w-100 overflow-auto">
                     <div className="flex justify-between items-center mt-4 ml-4">
-                        {tasks.length === 0 ? <h1 className="text-2xl font-bold text-gray-900">Ready to start tracking tasks?</h1> : <h1 className="text-2xl font-bold text-gray-900">My Tasks</h1>}
+                        <div className="flex items-center space-x-3 mb-2">
+                            <div className="h-8 w-2 bg-blue-600 rounded-full"></div>
+                            {tasks.length === 0 ? <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Ready to start tracking tasks?</h1> : <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">My Tasks</h1>}
+                        </div>
                         <div>
-                            <Button variant="contained" onClick={handleOpen}>Add Task</Button>
+                            <button
+                                onClick={handleOpen}
+                                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                            >
+                                <Plus className="h-5 w-5" />
+                                <span>Add Task</span>
+                            </button>
                         </div>
                     </div>
                     <div className="mt-8">

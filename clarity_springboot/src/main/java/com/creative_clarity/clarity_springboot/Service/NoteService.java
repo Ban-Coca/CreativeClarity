@@ -53,11 +53,11 @@ public class NoteService {
 	
 	//Delete of CRUD
 	public String deleteNote(int noteId) {
-    if(nrepo.existsById(noteId)) {
-      nrepo.deleteById(noteId);
-      return "Note record successfully deleted!";
-    } else {
-      return "Note ID " + noteId + " NOT FOUND!";
-    }
-  }
+		if(nrepo.existsById(noteId)) {
+			nrepo.deleteById(noteId);
+			return "Note record successfully deleted!";
+		} else {
+			return "Note ID " + noteId + " NOT FOUND!";
+		}
+  	}
 }

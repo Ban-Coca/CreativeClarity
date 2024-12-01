@@ -60,35 +60,40 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/user/login",
-                    "/api/user/postuserrecord",
-                    "/api/user/forgot1",
-                    "/api/user/forgot2",
-                    "/api/user/upload-profile-picture",
-                    "/oauth2/**",
-                    "/login/**",
-                    "/api/user/setup-profile",
-                    "/uploads/**",
-                    "/api/uploads/**" // Ensure this line is included to permit access to uploads
-                ).permitAll()
-                .requestMatchers("/api/user/update-profile").authenticated()
-                .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll() // Explicitly permit GET requests to uploads
-                .anyRequest().authenticated()
-                )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(this.oauth2UserService())
-                )
-                .successHandler(oauth2AuthenticationSuccessHandler())
+                .anyRequest().permitAll()  // Allow all requests
             )
-            .exceptionHandling(e -> e
-                .authenticationEntryPoint((request, response, authException) -> {
-                    logger.error("Unauthorized error: {}", authException.getMessage());
-                    response.sendError(HttpStatus.UNAUTHORIZED.value(), authException.getMessage());
-                })
-            );
+            
+            // .authorizeHttpRequests(auth -> auth
+            //     .requestMatchers(
+            //         "/api/user/login",
+            //         "/api/user/postuserrecord",
+            //         "/api/user/forgot1",
+            //         "/api/user/forgot2",
+            //         "/api/user/upload-profile-picture",
+            //         "/oauth2/**",
+            //         "/login/**",
+            //         "/api/user/setup-profile",
+            //         "/uploads/**",
+            //         "/api/uploads/**" // Ensure this line is included to permit access to uploads
+            //     ).permitAll()
+            //     .requestMatchers("/api/user/update-profile").authenticated()
+            //     .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll() // Explicitly permit GET requests to uploads
+            //     .anyRequest().authenticated()
+            //     )
+            // .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            // .oauth2Login(oauth2 -> oauth2
+            //     .userInfoEndpoint(userInfo -> userInfo
+            //         .userService(this.oauth2UserService())
+            //     )
+            //     .successHandler(oauth2AuthenticationSuccessHandler())
+            // )
+            // .exceptionHandling(e -> e
+            //     .authenticationEntryPoint((request, response, authException) -> {
+            //         logger.error("Unauthorized error: {}", authException.getMessage());
+            //         response.sendError(HttpStatus.UNAUTHORIZED.value(), authException.getMessage());
+            //     })
+            // )
+            ;
             
         return http.build();
     }
@@ -130,126 +135,126 @@ public class SecurityConfig {
 
 
     @Bean
-public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
-    DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
-    
-    return request -> {
-        OAuth2User oauth2User = delegate.loadUser(request);
-        String registrationId = request.getClientRegistration().getRegistrationId();
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
+        DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
         
-        String email = null;
-        String name = null;
-        String profilePicture = null;
-        
-        try {
-            // Extract user details based on provider
-            switch (registrationId) {
-                case "github":
-                    email = oauth2User.getAttribute("email");
-                    if (email == null) {
-                        String login = oauth2User.getAttribute("login");
-                        email = login + "@github.com";
-                    }
-                    name = oauth2User.getAttribute("name") != null 
-                        ? oauth2User.getAttribute("name") 
-                        : oauth2User.getAttribute("login");
-                    profilePicture = oauth2User.getAttribute("avatar_url");
-                    break;
-                
-                case "facebook":
-                    email = oauth2User.getAttribute("email");
-                    name = oauth2User.getAttribute("name");
-                    profilePicture = oauth2User.getAttribute("picture.data.url");
-                    break;
-                
-                default: // Google and others
-                    email = oauth2User.getAttribute("email");
-                    name = oauth2User.getAttribute("name");
-                    profilePicture = oauth2User.getAttribute("picture");
-                    break;
-            }
-
-            // Validate email
-            if (email == null || email.isEmpty()) {
-                throw new OAuth2AuthenticationException("No email provided");
-            }
-
-            // Create or update user
-            UserEntity user = userService.findByEmail(email);
-            if (user == null) {
-                user = new UserEntity();
-                user.setEmail(email);
-                user.setUsername(email);
-                user.setPassword(passwordEncoder().encode("oauth2user"));
-                user.setCreated_at(new Date());
-                
-                // Set name
-                if (name != null) {
-                    String[] nameParts = name.split(" ", 2);
-                    user.setFirstName(nameParts[0]);
-                    if (nameParts.length > 1) {
-                        user.setLastName(nameParts[1]);
-                    }
-                }
-
-                // Set profile picture
-                if (profilePicture != null) {
-                    user.setProfilePicturePath(profilePicture);
-                }
-                
-                // Set default values for required fields
-                user.setPhoneNumber("");
-                user.setInstitution("");
-                user.setRole("");
-                user.setAcademicLevel("");
-                user.setMajorField("");
-                
-                userService.postUserRecord(user);
-            }
-
-            // Create a custom OAuth2User that includes our user details
-            Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
-            attributes.put("userId", user.getUserId());
-            attributes.put("firstName", user.getFirstName());
-            attributes.put("lastName", user.getLastName());
-            attributes.put("profilePicturePath", user.getProfilePicturePath());
-
-            return new DefaultOAuth2User(
-                oauth2User.getAuthorities(), 
-                attributes, 
-                registrationId.equals("github") ? "login" : "email"
-            );
-        } catch (Exception e) {
-            logger.error("OAuth2 User Service Error: ", e);
-            throw new OAuth2AuthenticationException(new OAuth2Error("authentication_failed"), e.getMessage(), e);
-        }
-    };
-}
-@Bean
-public AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler() {
-    return (request, response, authentication) -> {
-        OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-        String email = oauth2User.getAttribute("email");
-        
-        try {
-            UserEntity user = userService.findByEmail(email);
-            if (user == null) {
-                logger.error("No user found for email: " + email);
-                response.sendRedirect("http://localhost:5173/login?error=no_user");
-                return;
-            }
+        return request -> {
+            OAuth2User oauth2User = delegate.loadUser(request);
+            String registrationId = request.getClientRegistration().getRegistrationId();
             
-            String token = generateToken(user);
-            logger.info("Generated token for user: " + email);
+            String email = null;
+            String name = null;
+            String profilePicture = null;
+            
+            try {
+                // Extract user details based on provider
+                switch (registrationId) {
+                    case "github":
+                        email = oauth2User.getAttribute("email");
+                        if (email == null) {
+                            String login = oauth2User.getAttribute("login");
+                            email = login + "@github.com";
+                        }
+                        name = oauth2User.getAttribute("name") != null 
+                            ? oauth2User.getAttribute("name") 
+                            : oauth2User.getAttribute("login");
+                        profilePicture = oauth2User.getAttribute("avatar_url");
+                        break;
+                    
+                    case "facebook":
+                        email = oauth2User.getAttribute("email");
+                        name = oauth2User.getAttribute("name");
+                        profilePicture = oauth2User.getAttribute("picture.data.url");
+                        break;
+                    
+                    default: // Google and others
+                        email = oauth2User.getAttribute("email");
+                        name = oauth2User.getAttribute("name");
+                        profilePicture = oauth2User.getAttribute("picture");
+                        break;
+                }
 
-            // Ensure clean, single redirect
-            response.sendRedirect(
-                String.format("http://localhost:5173/oauth2/redirect?token=%s", token)
-            );
-        } catch (Exception e) {
-            logger.error("Error in OAuth2 success handler", e);
-            response.sendRedirect("http://localhost:5173/login?error=auth_failed");
-        }
-    };
-}
+                // Validate email
+                if (email == null || email.isEmpty()) {
+                    throw new OAuth2AuthenticationException("No email provided");
+                }
+
+                // Create or update user
+                UserEntity user = userService.findByEmail(email);
+                if (user == null) {
+                    user = new UserEntity();
+                    user.setEmail(email);
+                    user.setUsername(email);
+                    user.setPassword(passwordEncoder().encode("oauth2user"));
+                    user.setCreated_at(new Date());
+                    
+                    // Set name
+                    if (name != null) {
+                        String[] nameParts = name.split(" ", 2);
+                        user.setFirstName(nameParts[0]);
+                        if (nameParts.length > 1) {
+                            user.setLastName(nameParts[1]);
+                        }
+                    }
+
+                    // Set profile picture
+                    if (profilePicture != null) {
+                        user.setProfilePicturePath(profilePicture);
+                    }
+                    
+                    // Set default values for required fields
+                    user.setPhoneNumber("");
+                    user.setInstitution("");
+                    user.setRole("");
+                    user.setAcademicLevel("");
+                    user.setMajorField("");
+                    
+                    userService.postUserRecord(user);
+                }
+
+                // Create a custom OAuth2User that includes our user details
+                Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
+                attributes.put("userId", user.getUserId());
+                attributes.put("firstName", user.getFirstName());
+                attributes.put("lastName", user.getLastName());
+                attributes.put("profilePicturePath", user.getProfilePicturePath());
+
+                return new DefaultOAuth2User(
+                    oauth2User.getAuthorities(), 
+                    attributes, 
+                    registrationId.equals("github") ? "login" : "email"
+                );
+            } catch (Exception e) {
+                logger.error("OAuth2 User Service Error: ", e);
+                throw new OAuth2AuthenticationException(new OAuth2Error("authentication_failed"), e.getMessage(), e);
+            }
+        };
+    }
+    @Bean
+    public AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler() {
+        return (request, response, authentication) -> {
+            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+            String email = oauth2User.getAttribute("email");
+            
+            try {
+                UserEntity user = userService.findByEmail(email);
+                if (user == null) {
+                    logger.error("No user found for email: " + email);
+                    response.sendRedirect("http://localhost:5173/login?error=no_user");
+                    return;
+                }
+                
+                String token = generateToken(user);
+                logger.info("Generated token for user: " + email);
+
+                // Ensure clean, single redirect
+                response.sendRedirect(
+                    String.format("http://localhost:5173/oauth2/redirect?token=%s", token)
+                );
+            } catch (Exception e) {
+                logger.error("Error in OAuth2 success handler", e);
+                response.sendRedirect("http://localhost:5173/login?error=auth_failed");
+            }
+        };
+    }
 }
