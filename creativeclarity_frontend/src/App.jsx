@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import LoginPage from './pages/LoginPage';
@@ -33,7 +33,9 @@ const NotFound = () => {
     status: 404,
     message: 'The requested page could not be found.'
   };
-
+  useEffect(() => {
+    document.title = 'Error 404';
+  }, []);
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">

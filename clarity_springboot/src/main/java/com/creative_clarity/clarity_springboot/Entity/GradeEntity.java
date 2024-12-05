@@ -24,8 +24,9 @@ public class GradeEntity {
 	private String assessment_type;
 	private Date dateRecorded; 
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "course")
+	@JsonBackReference
 	private CourseEntity course;
 	
 	public GradeEntity() {

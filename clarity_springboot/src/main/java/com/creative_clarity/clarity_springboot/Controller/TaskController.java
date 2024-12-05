@@ -35,7 +35,7 @@ public class TaskController {
 	}
 	
 	//Create of CRUD
-	@PostMapping("/posttaskrecord")
+	@PostMapping(value = "/posttaskrecord", consumes = "application/json")
 	public TaskEntity postTaskRecord(@RequestBody TaskEntity task) {
 		return tserv.postTaskRecord(task);
 	}
@@ -51,6 +51,7 @@ public class TaskController {
 	public List<TaskEntity> getTasksByCourseId(@PathVariable int courseId) {
 		return tserv.getTasksByCourseId(courseId);
 	}
+	
 	@GetMapping("/getbyuser/{userId}")
 	public List<TaskEntity> getTasksByUserId(@PathVariable int userId) {
 		return tserv.getTasksByUserId(userId);

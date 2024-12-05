@@ -7,14 +7,15 @@ import SideBar from '../components/Sidebar'; // Import SideBar component
 axios.defaults.baseURL = 'http://localhost:8080';
 
 const Progress = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState('progress');
+  const [activeTab, setActiveTab] = useState('courses');
   const [courses, setCourses] = useState([]);
   const [chartData, setChartData] = useState([]);
-
+  const currentUser = JSON.parse(localStorage.getItem('user'));
   useEffect(() => {
+    console.log('Current User:', currentUser); // Debug log
     const fetchCourses = async () => {
       try {
-        const coursesResponse = await axios.get('/api/course/getallcourse');
+        const coursesResponse = await axios.get('/api/course/getcourse/'+currentUser.userId);
         console.log('Fetched courses data:', coursesResponse.data); // Debug log
         setCourses(coursesResponse.data);
       } catch (error) {

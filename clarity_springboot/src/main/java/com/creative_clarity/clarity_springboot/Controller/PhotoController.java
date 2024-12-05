@@ -37,9 +37,10 @@ public class PhotoController {
     // Upload a photo
     @PostMapping("/upload")
     public ResponseEntity<String> uploadPhoto(@RequestParam("file") MultipartFile file,
-                                              @RequestParam("caption") String caption) {
+                                              @RequestParam("caption") String caption,
+                                              @RequestParam("courseId") int courseId) {
         try {
-            PhotoEntity photo = photoService.uploadPhoto(file, caption);
+            PhotoEntity photo = photoService.uploadPhoto(file, caption, courseId);
             return new ResponseEntity<>("File uploaded successfully: " + photo.getFilename(), HttpStatus.CREATED);
         } catch (IOException e) {
             logger.error("Error uploading photo.", e);
@@ -48,9 +49,15 @@ public class PhotoController {
     }
 
     // Get all photos
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<PhotoEntity>> getAllPhotos() {
         List<PhotoEntity> photos = photoService.getAllPhotos();
+        return new ResponseEntity<>(photos, HttpStatus.OK);
+    }
+
+    @GetMapping("/course/{courseId}")
+    public ResponseEntity<List<PhotoEntity>> getPhotosByCourse(@PathVariable int courseId) {
+        List<PhotoEntity> photos = photoService.getPhotosByCourseId(courseId);
         return new ResponseEntity<>(photos, HttpStatus.OK);
     }
 

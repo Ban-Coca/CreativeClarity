@@ -45,7 +45,7 @@ public class CourseController {
 	//GET COURSE BY USER ID
 	@GetMapping("/getcourse/{userId}")
 	public List<CourseEntity> getCourseByUserId(@PathVariable int userId){
-		return cserv.getCourseByUserId(userId);
+		return cserv.findByUserId(userId);
 	}
 	
 	@GetMapping("{courseId}")

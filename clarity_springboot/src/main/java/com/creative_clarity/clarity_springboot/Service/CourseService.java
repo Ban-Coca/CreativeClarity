@@ -5,12 +5,15 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Repository.CourseRepository;
+
+import jakarta.transaction.Transactional;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @Service
@@ -53,6 +56,7 @@ public class CourseService {
 	}
 
 	//Update of CRUD
+
 	public CourseEntity putCourseDetails (int courseId, CourseEntity newCourseDetails) {
 		CourseEntity course = crepo.findById(courseId).orElseThrow(() -> new NoSuchElementException("Course " + courseId + " not found"));
 		
@@ -66,10 +70,17 @@ public class CourseService {
 	}
 	
 	//Delete of CRUD
+	@Transactional
 	public String deleteCourse(int courseId) {
 		String msg = "";
 		
 		if(crepo.findById(courseId).isPresent()) {
+			CourseEntity course = crepo.findById(courseId).get();
+			course.getGrades().forEach(grade -> grade.setCourse(null));
+			course.getTasks().forEach(task -> task.setCourse(null));
+			course.getPhotos().forEach(photo -> photo.setCourse(null));
+			course.setUser(null);
+			crepo.save(course);
 			crepo.deleteById(courseId);
 			msg = "Course record successfully deleted!";
 		}else {
@@ -89,9 +100,9 @@ public class CourseService {
 			})
 			.collect(Collectors.toList());
 	
-		if (userCourses.isEmpty()) {
-			throw new NoSuchElementException("No courses found for user ID: " + userId);
-		}
+		// if (userCourses.isEmpty()) {
+		// 	throw new NoSuchElementException("No courses found for user ID: " + userId);
+		// }
 		return userCourses;
 	}
 }

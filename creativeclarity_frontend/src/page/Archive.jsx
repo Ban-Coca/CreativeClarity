@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import { Snackbar, Alert, Menu, MenuItem, RadioGroup, FormControlLabel, Radio, Button} from '@mui/material';
 
-function ArchivePage ({onLogout}) {
+function ArchivePage ({courseId}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('courses');
@@ -60,9 +60,10 @@ function ArchivePage ({onLogout}) {
   };
 
   useEffect(() => {
+    console.log('Course ID:', courseId);
     const fetchArchives = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/archive/getallarchives');
+        const response = await axios.get('http://localhost:8080/api/archive/getbycourseid/' + courseId);
         setArchives(response.data);
       } catch (error) {
         console.error('Error fetching archives:', error);

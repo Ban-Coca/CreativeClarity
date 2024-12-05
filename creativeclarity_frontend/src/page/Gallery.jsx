@@ -23,7 +23,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import UploadIcon from '@mui/icons-material/Upload';
 
-const Picture = () => {
+const Picture = ({courseId}) => {
   const [media, setMedia] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [snackbar, setSnackbar] = useState({
@@ -76,8 +76,10 @@ const Picture = () => {
   const handleUpload = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
+    console.log("file: ", file);
     formData.append("caption", "My file caption");
-
+    formData.append("courseId", courseId);
+    console.log(formData)
     try {
       const response = await fetch("http://localhost:8080/api/photos/upload", {
         method: "POST",
@@ -98,7 +100,7 @@ const Picture = () => {
 
   const fetchMedia = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/photos");
+      const response = await fetch("http://localhost:8080/api/photos/course/"+courseId);
       if (response.ok) {
         const data = await response.json();
         setMedia(data);
@@ -157,6 +159,7 @@ const Picture = () => {
   };
 
   useEffect(() => {
+    console.log("Course ID: ", courseId);
     fetchMedia();
     setSelectedFiles([]);
   }, []);

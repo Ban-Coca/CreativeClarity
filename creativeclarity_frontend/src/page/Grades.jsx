@@ -14,7 +14,6 @@ function Grades({ onLogout, onGradesChange }) {
   const { courseId } = useParams();
   const [activeTab, setActiveTab] = useState('courses');
   const [courses, SetCourses] = useState(location.state?.courses || []); // Add this line to initialize courses state
-  const [activeTab, setActiveTab] = useState('courses');
   const [grades, setGrades] = useState(() => {
     const savedGrades = localStorage.getItem(`grades_${courseId}`);
     return savedGrades ? JSON.parse(savedGrades) : [];
@@ -172,7 +171,7 @@ function Grades({ onLogout, onGradesChange }) {
             'Content-Type': 'application/json'
           }
         });
-        showSnackbar('Grade added successfully');
+        showToast('Grade added successfully');
       }
       setGrades((prev) => {
         const updatedGrades = selectedGrade
@@ -302,7 +301,7 @@ function Grades({ onLogout, onGradesChange }) {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
+    <Box sx={{ display: 'flex' }}>
         <SideBar 
           onLogout={onLogout}
           activeTab={activeTab}

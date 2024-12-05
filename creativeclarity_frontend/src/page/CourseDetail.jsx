@@ -16,14 +16,14 @@ function CourseDetail({ onLogout }) {
     message: '',
     severity: 'success',
   });
-  const validTabs = ['notes', 'archive', 'grades', 'gallery'];
+  const validTabs = ['archive', 'grades', 'gallery'];
   const [courseName, setCourseName] = useState('');
   const [courseCode, setCourseCode] = useState('');
   const { courseId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const tabFromPath = location.pathname.split('/').pop();
-  const [activeTab, setActiveTab] = useState(validTabs.includes(tabFromPath) ? tabFromPath : 'notes');
+  const [activeTab, setActiveTab] = useState(validTabs.includes(tabFromPath) ? tabFromPath : 'grades');
   const [grades, setGrades] = useState(() => {
     const savedGrades = localStorage.getItem(`grades_${courseId}`);
     return savedGrades ? JSON.parse(savedGrades) : [];
@@ -141,22 +141,22 @@ function CourseDetail({ onLogout }) {
             indicatorColor="primary"
             sx={{ marginTop: '10px' }}
           >
-            <Tab value="notes" label="Notes" />
-            <Tab value="archive" label="Archive" />
+            {/* <Tab value="notes" label="Notes" /> */}
             <Tab value="grades" label="Grades" />
+            <Tab value="archive" label="Archive" />
             <Tab value="gallery" label="Gallery" />
           </Tabs>
         </Box>
 
         {/* Tab Content */}
         <Box mt={1.5}>
-          {activeTab === 'archive' && <ArchivePage />}
+          {activeTab === 'archive' && <ArchivePage courseId={course.courseId} />}
           {activeTab === 'grades' && (
             <Box sx={{ marginLeft: '-250px' }}>
               <Grades onLogout={onLogout} onGradesChange={handleGradesChange} />
             </Box>
           )}
-          {activeTab === 'gallery' && <Gallery />}
+          {activeTab === 'gallery' && <Gallery courseId={course.courseId}/>}
         </Box>
       </main>
 

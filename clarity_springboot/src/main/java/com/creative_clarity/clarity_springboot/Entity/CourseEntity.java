@@ -22,6 +22,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CourseEntity {
 	
 	@Id
@@ -35,19 +36,25 @@ public class CourseEntity {
 	private Date created_at;
 	private boolean isArchived;
 	
-	@JsonManagedReference("course-grade")
-	@OneToMany(fetch = FetchType.EAGER,mappedBy = "course", cascade = CascadeType.ALL)
+	
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
 	private List<GradeEntity> grades;
 	
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "course", cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
 	//@JsonManagedReference
 	@Fetch(FetchMode.JOIN)
     private List<TaskEntity> tasks = new ArrayList<>();
 	
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+	// @Fetch(FetchMode.JOIN)
+	@JsonManagedReference
+	private List<PhotoEntity> photos;
+
 	@ManyToOne
     @JoinColumn(name = "user_id")
-	// @JsonBackReference
-	@JsonIgnoreProperties({"courses"})
+	@JsonBackReference
+	// @JsonIgnoreProperties({"courses"})
     private UserEntity user;
 
 	public CourseEntity() {
@@ -130,6 +137,10 @@ public class CourseEntity {
     public void setTasks(List<TaskEntity> tasks) {
         this.tasks = tasks;
     }
+
+	public List<PhotoEntity> getPhotos() {
+		return photos;
+	}
 
     public UserEntity getUser() {
         return user;

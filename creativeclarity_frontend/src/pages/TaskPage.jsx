@@ -7,7 +7,7 @@ import { Priority, PriorityColors, PriorityList } from '../utils/Priority';
 import { Button, Modal, Box, TextField, Select, MenuItem, FormControl, InputLabel, IconButton } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import { fetchTasks, createTask, updateTask, deleteTask } from '../service/taskService';
+import { deleteTask } from '../service/taskService';
 import { Save, X, Edit, Trash2, Plus} from 'lucide-react';
 import { lineWobble } from 'ldrs';
 // Set the base URL for Axios
@@ -69,7 +69,7 @@ const TaskPage = ({onLogout}) => {
         completed: false,
         due_date: '',
         priority: '',
-        course:null
+        course:null,
     });
     const currentUser = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
@@ -294,7 +294,7 @@ const TaskPage = ({onLogout}) => {
                 >
                     <Box sx={style}>
                         <h2 className="text-2xl font-semibold">Add Task</h2>
-                        <div className="mt-2 flex flex-col">
+                        <div className="mt-4 flex flex-col">
                             <TextField
                                 label="Title"
                                 variant="outlined"
@@ -528,7 +528,7 @@ const TaskDetailsModal = ({ task, editedTask, setEditedTask, onClose, open, onDe
                                 <FormControl fullWidth size="small">
                                     <Select
                                         name="completed"
-                                        value={editedTask.completed}
+                                        value={editedTask.completed !== undefined ? editedTask.completed : false}
                                         onChange={handleInputChange}
                                     >
                                         <MenuItem value={false}>Ongoing</MenuItem>

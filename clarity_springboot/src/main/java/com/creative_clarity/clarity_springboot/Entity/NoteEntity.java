@@ -14,11 +14,11 @@ public class NoteEntity {
 	private int noteId;
 	
 	private int userId;
-  private String title;
-  private String content;
-  private String subject;
-  private Date created_at;
-  private Date lastModified;
+	private String title;
+	private String content;
+	private String subject;
+	private Date created_at;
+	private Date lastModified;
 	
 	public NoteEntity() {
 		

@@ -2,17 +2,24 @@ package com.creative_clarity.clarity_springboot.Entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
-
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.FetchType;
 @Entity
 public class PhotoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "photo_id")
     private Long id;
 
     private String filename;
@@ -20,23 +27,17 @@ public class PhotoEntity {
     private String type;
     private String filePath;
 
-    // @JsonBackReference("course-photo")
-    // @ManyToOne
-    // @JoinColumn(name = "course")
-    // private CourseEntity course;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "course")
+    // @JsonIgnoreProperties("photos")
+    @JsonBackReference
+    private CourseEntity course;
 
     @Lob
     private byte[] media; // Store the media as byte array
 
     private LocalDateTime uploadDate;
-
-    // public CourseEntity getCourse() {
-    //     return course;
-    // }
-
-    // public void setCourse(CourseEntity course) {
-    //     this.course = course;
-    // }
 
     // Getters and setters
     public Long getId() {
@@ -93,5 +94,13 @@ public class PhotoEntity {
 
     public void setUploadDate(LocalDateTime uploadDate) {
         this.uploadDate = uploadDate;
+    }
+
+    public CourseEntity getCourse() {
+        return course;
+    }
+
+    public void setCourse(CourseEntity course) {
+        this.course = course;
     }
 }

@@ -5,7 +5,8 @@ import { BookOpen, Calendar, CheckSquare, User, LogOut, FileText, Bell, Clock, X
 import { toast } from 'sonner';
 import SideBar from '../components/Sidebar';
 import { formatDate } from '../utils/dateUtils';
-import { fetchTasks } from '../service/taskService'; 
+import { fetchTasks } from '../service/taskService';
+import axios from 'axios';
 
 const DashboardPage = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -13,9 +14,14 @@ const DashboardPage = ({ onLogout }) => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [isUpdatingImage, setIsUpdatingImage] = useState(false);
   const [imageError, setImageError] = useState('');
-  
-  const [activeTab, setActiveTab] = useState('overview');
+  const [tasks, setTasks] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageForCourses, setPageForCourses] = useState(1);
+  const itemsPerPage = 3;
 
+  const [activeTab, setActiveTab] = useState('overview');
+  const token = localStorage.getItem('token');
   const handleProfileImageUpdate = async (imageUrl) => {
     setIsUpdatingImage(true);
     setImageError('');
@@ -52,14 +58,14 @@ const DashboardPage = ({ onLogout }) => {
       };
 
       localStorage.setItem('user', JSON.stringify(finalUserData));
-    setShowImageModal(false);
-  } catch (error) {
-    console.error('Profile image update error:', error);
-    setImageError(error.message || 'Failed to update profile picture');
-  } finally {
-    setIsUpdatingImage(false);
+      setShowImageModal(false);
+    } catch (error) {
+      console.error('Profile image update error:', error);
+      setImageError(error.message || 'Failed to update profile picture');
+    } finally {
+      setIsUpdatingImage(false);
   }
-};
+  };
 
   const ImageUploadModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -92,9 +98,7 @@ const DashboardPage = ({ onLogout }) => {
       </div>
     </div>
   );
-  const [tasks, setTasks] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  
 
   const currentUser = JSON.parse(localStorage.getItem('user'));
 
@@ -109,25 +113,53 @@ const DashboardPage = ({ onLogout }) => {
       toast.error('Failed to fetch tasks');
     } 
   }
+
+  const getCourses = async () => {
+    try {
+      console.log('Fetching courses...');
+      const response = await axios.get('/api/course/getcourse/' + currentUser.userId, {
+          headers: {
+              'Authorization': `Bearer ${token}`
+          }
+      });
+      console.log('Courses fetched:', response.data);
+      const courseData = Array.isArray(response.data) ? response.data : [];
+      console.log(courseData)
+      setCourses(courseData);
+      console.log('Courses names:', courseData.map(course => course.courseName));
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      toast.error('Failed to fetch courses');
+    }
+  }
   useEffect(() => {
     document.title = 'Home';
     console.log('User logged in', localStorage.getItem('token'));
-    getTasks(); 
+    getTasks();
+    getCourses();
+    // Reset currentPage based on tasks
+    if (tasks.length === 0) {
+      setCurrentPage(1);
+    }
   }, []);
   const handleTaskClick = () => {
     navigate(`/tasks/`);
   };
   // Calculate pagination
   const indexOfLastTask = currentPage * itemsPerPage;
-  const indexOfFirstTask = indexOfLastTask - itemsPerPage;
-  const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
+  const indexOfFirstTask = (currentPage - 1) * itemsPerPage;
+  const currentTasks = tasks.length > 0 ? tasks.slice(indexOfFirstTask, indexOfLastTask) : [];
   const totalPages = Math.ceil(tasks.length / itemsPerPage);
 
-  const courses = [
-    { id: 1, name: 'History 101', progress: 75 },
-    { id: 2, name: 'Calculus II', progress: 60 },
-    { id: 3, name: 'Physics 201', progress: 85 }
-  ];
+  const indexOfLastCourse = pageForCourses * itemsPerPage;
+  const indexOfFirstCourse = (pageForCourses - 1) * itemsPerPage;
+  const currentCourses = courses.length > 0 ? courses.slice(indexOfFirstCourse, indexOfLastCourse) : [];
+  const totalPagesForCourses = Math.ceil(courses.length / itemsPerPage);
+  // const courses = [
+  //   { id: 1, name: 'History 101', progress: 75 },
+  //   { id: 2, name: 'Calculus II', progress: 60 },
+  //   { id: 3, name: 'Physics 201', progress: 85 }
+  // ];
 
   const storedUser = localStorage.getItem('user');
   const user = storedUser ? JSON.parse(storedUser) : { firstName: 'Student' };
@@ -169,7 +201,7 @@ const DashboardPage = ({ onLogout }) => {
                 >
                   <div className="h-8 w-8 rounded-full overflow-hidden relative">
                     <img 
-                      src={user.profilePicture || "/api/placeholder/32/32"} 
+                      src={user.profilePicture || "/src/assets/images/default-profile.png"} 
                       alt="Profile" 
                       className="h-full w-full object-cover"
                       onError={(e) => {
@@ -195,21 +227,20 @@ const DashboardPage = ({ onLogout }) => {
                   <h2 className="text-lg font-semibold text-gray-900">Upcoming Assignments</h2>
                 </div>
                 
-
                 <div className="flex justify-between items-center ">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
+                    disabled={currentPage <= 1}
                     className="px-1 py-1 text-blue-600 mr-1 rounded-md disabled:opacity-50"
                   >
                     <ChevronLeft/>
                   </button>
                   <span className="text-sm text-gray-600">
-                    {currentPage}
+                    {tasks.length > 0 ? currentPage : 0}
                   </span>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
+                    disabled={currentPage >= totalPages}
                     className="px-1 py-1 text-blue-600 ml-1 rounded-md disabled:opacity-50"
                   >
                     <ChevronRight/>
@@ -217,21 +248,31 @@ const DashboardPage = ({ onLogout }) => {
                 </div>
               </div>
             </div>
-            <div className="p-6 min-h-80">
+            <div className="p-6 min-h-96">
               <div className="space-y-4">
-                {currentTasks.map(assignment => (
-                  <div 
-                    key={assignment.taskId} 
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                    onClick={handleTaskClick}
-                    >
-                    <div>
-                      <h3 className="font-medium text-gray-900">{assignment.title}</h3>
-                      <p className="text-sm text-gray-600">{assignment.course.courseName}</p>
-                    </div>
-                    <div className="text-sm text-blue-600">Due: {formatDate(assignment.due_date)}</div>
+                {currentTasks.length === 0 ? (
+                  <div className="text-gray-600 text-center">
+                    <FileText className="h-6 w-6 mx-auto" />
+                    <p className="text-md font-semibold">No task has been made</p>
+                    <button className='my-2'>
+                      <a href="/tasks" className="text-blue-600">Create a new task</a>
+                    </button>
                   </div>
-                ))}
+                ) : (
+                  currentTasks.map(assignment => (
+                    <div 
+                      key={assignment.taskId} 
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      onClick={handleTaskClick}
+                      >
+                      <div>
+                        <h3 className="font-medium text-gray-900">{assignment.title}</h3>
+                        <p className="text-sm text-gray-600">{assignment.course.courseName}</p>
+                      </div>
+                      <div className="text-sm text-blue-600">Due: {formatDate(assignment.due_date)}</div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -239,33 +280,61 @@ const DashboardPage = ({ onLogout }) => {
             {/* Course Progress Card */}
             <div className="bg-white rounded-lg shadow-sm h-full">
               <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center space-x-2">
-                  <BookOpen className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Course Progress
-                  </h2>
+                <div className="flex justify-between">
+                  <div className='flex items-center space-x-2'>
+                    <BookOpen className="h-5 w-5 text-blue-600" />
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Courses
+                    </h2>
+                  </div>
+                  
+                  <div className="flex justify-between items-center ">
+                    <button
+                      onClick={() => setPageForCourses(prev => Math.max(prev - 1, 1))}
+                      disabled={pageForCourses <= 1}
+                      className="px-1 py-1 text-blue-600 mr-1 rounded-md disabled:opacity-50"
+                    >
+                      <ChevronLeft/>
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      {courses.length > 0 ? pageForCourses : 0}
+                    </span>
+                    <button
+                      onClick={() => setPageForCourses(prev => Math.min(prev + 1, totalPages))}
+                      disabled={pageForCourses >= totalPagesForCourses}
+                      className="px-1 py-1 text-blue-600 ml-1 rounded-md disabled:opacity-50"
+                    >
+                      <ChevronRight/>
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="p-6">
                 <div className="space-y-6">
-                  {courses.map(course => (
-                    <div key={course.id} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-700">
-                          {course.name}
-                        </span>
-                        <span className="text-sm text-gray-600">
-                          {course.progress}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${course.progress}%` }}
-                        />
-                      </div>
+                  {currentCourses.length === 0 ? (
+                    <div className="text-gray-600 text-center">
+                      <BookOpen className="h-6 w-6 mx-auto" />
+                      <p className="text-md font-semibold">No courses available</p>
+                      <button className='my-2'>
+                        <a href="/courses" className="text-blue-600">Create a new course</a>
+                      </button>
                     </div>
-                  ))}
+                  ): (
+                    currentCourses.map(course => (
+                      <div key={course.courseId} className="space-y-2">
+                        <div 
+                          onClick={() => navigate(`/course/${course.courseId}`)}
+                          className="flex flex-col justify-between items-start bg-gray-50 p-2 rounded-md">
+                          <span className="h-7 font-medium text-gray-900">
+                            {course.courseName}
+                          </span>
+                          <p className="text-sm text-gray-600">
+                            {course.code}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
                 <button 
                   onClick={() => navigate('/courses')}

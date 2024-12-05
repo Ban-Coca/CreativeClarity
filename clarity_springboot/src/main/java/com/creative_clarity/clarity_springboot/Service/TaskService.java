@@ -8,9 +8,11 @@ import java.util.Optional;
 
 import javax.naming.NameNotFoundException;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.creative_clarity.clarity_springboot.Entity.ArchiveEntity;
 import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
@@ -18,8 +20,7 @@ import com.creative_clarity.clarity_springboot.Entity.TaskEntity;
 import com.creative_clarity.clarity_springboot.Repository.ArchiveRepository;
 import com.creative_clarity.clarity_springboot.Repository.CourseRepository;
 import com.creative_clarity.clarity_springboot.Repository.TaskRepository;
-import com.creative_clarity.clarity_springboot.Repository.CourseRepository;
-import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
+
 @Service
 public class TaskService {
 
@@ -47,23 +48,29 @@ public class TaskService {
 	}
 	
 	//Update of CRUD
-	@SuppressWarnings("finally")
+	@Transactional
 	public TaskEntity putTaskDetails (int taskId, TaskEntity newTaskDetails) {
-		TaskEntity task = new TaskEntity();
+		Optional<TaskEntity> taskOptional = trepo.findById(taskId);
+
+        if (!taskOptional.isPresent()) {
+            throw new NoSuchElementException("Task with ID " + taskId + " not found");
+        }
+
+        TaskEntity task = taskOptional.get();
+
+        task.setDescription(newTaskDetails.getDescription());
+        task.setTitle(newTaskDetails.getTitle());
+        task.setDue_date(newTaskDetails.getDue_date());
+        task.setCompleted(newTaskDetails.getIsCompleted());
+        task.setPriority(newTaskDetails.getPriority());
+
+        TaskEntity updatedTask = trepo.save(task);
+
+        // Initialize lazy-loaded properties
+        Hibernate.initialize(updatedTask.getCourse());
+        Hibernate.initialize(updatedTask.getArchive());
 		
-		try {
-			task = trepo.findById(taskId).get();
-			
-			task.setDescription(newTaskDetails.getDescription());
-			task.setTitle(newTaskDetails.getTitle());
-			task.setDue_date(newTaskDetails.getDue_date());
-			task.setCompleted(newTaskDetails.getIsCompleted());
-			task.setPriority(newTaskDetails.getPriority());
-		}catch(NoSuchElementException nex){
-			throw new NameNotFoundException("User "+ taskId +"not found");
-		}finally {
-			return trepo.save(task);
-		}
+		return updatedTask;
 	}
 	
 	//Delete of CRUD
@@ -93,9 +100,14 @@ public class TaskService {
          // Collect all tasks from user's courses
          return userCourses.stream()
              .flatMap(course -> course.getTasks().stream())
+			 .filter(task -> task.getIsArchived() == false)
              .collect(Collectors.toList());
      }
      
+	//  public List<TaskEntity> getTaskByArchiveAndUserId(int userId) {
+
+	//  }
+
      // New method to get all courses
      public List<CourseEntity> getAllCourses() {
          return courseRepository.findAll();
@@ -106,6 +118,7 @@ public class TaskService {
          return courseRepository.findById(courseId)
              .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
      }
+
      // Method to archive completed tasks
 	public void archiveCompletedTask(int taskId) {
 		System.out.println("Task ID "+taskId);

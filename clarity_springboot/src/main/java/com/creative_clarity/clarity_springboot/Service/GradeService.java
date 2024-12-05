@@ -45,7 +45,7 @@ public class GradeService {
         logger.info("Fetching grades for courseId: {}", courseId);
         try {
             List<GradeEntity> grades = grepo.findAll().stream()
-                    .filter(grade -> grade.getCourse().getCourseId() == courseId)
+                    .filter(grade -> grade.getCourse() != null && grade.getCourse().getCourseId() == courseId)
                     .collect(Collectors.toList());
             logger.info("Found {} grades for courseId: {}", grades.size(), courseId);
             return grades;

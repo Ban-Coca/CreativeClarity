@@ -148,7 +148,7 @@ function Course({onLogout}) {
         await axios.put(`/api/course/putcoursedetails/${selectedCourse.courseId}`, courseData, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            //'Authorization': `Bearer ${token}`
           },
         });
         showSnackbar('Course updated successfully');
@@ -158,7 +158,7 @@ function Course({onLogout}) {
         await axios.post('/api/course/postcourserecord', courseData, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            //'Authorization': `Bearer ${token}`
           },
         });
         showSnackbar('Course created successfully');
@@ -237,27 +237,34 @@ function Course({onLogout}) {
                 Courses
               </h1>
             </div>
-            <button
-                onClick={() => handleOpen()}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              <Plus className="h-5 w-5" />
-              <span>Add Course</span>
-            </button>
-            <Button
-                variant="contained"
-                color="secondary"
-                startIcon={<LeaderboardRoundedIcon />}
-                onClick={handleViewAnalytics}
-                sx={{ marginLeft: '10px' }}
+            <div className='flex space-x-2'>
+              <button
+                  onClick={() => handleOpen()}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                View Analytics
-            </Button>
+                <Plus className="h-5 w-5" />
+                <span>Add Course</span>
+              </button>
+              <button
+                  className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  onClick={handleViewAnalytics}
+  
+                >
+                  <LeaderboardRoundedIcon/>
+                  <span>View Analytics</span>
+              </button>
+            </div>
+            
           </div>
 
           {courseGridVisible && (
             <div className="course-grid">
-              {courses.map((course) => (
+              {courses.length === 0 ? (
+                <div className="flex items-center p-4">
+                  No courses found
+                </div>
+              ) : (
+                courses.map((course) => (
                 <div 
                   key={course.courseId}
                   className="course-card" 
@@ -301,7 +308,8 @@ function Course({onLogout}) {
                     </IconButton>
                   </Box>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           )}
         </Box>

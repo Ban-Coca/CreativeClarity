@@ -5,7 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.creative_clarity.clarity_springboot.Entity.CourseEntity;
 import com.creative_clarity.clarity_springboot.Entity.PhotoEntity;
+import com.creative_clarity.clarity_springboot.Repository.CourseRepository;
 import com.creative_clarity.clarity_springboot.Repository.PhotoRepository;
 
 @Service
@@ -27,7 +30,10 @@ public class PhotoService {
     @Autowired
     private PhotoRepository prepo;
 
-    public PhotoEntity uploadPhoto(MultipartFile file, String caption) throws IOException {
+    @Autowired
+    private CourseRepository crepo;
+
+    public PhotoEntity uploadPhoto(MultipartFile file, String caption, int courseId) throws IOException {
         Path path = Paths.get(uploadDirectory);
 
         // Ensure the upload directory exists
@@ -61,7 +67,9 @@ public class PhotoService {
             photoEntity.setFilePath(filePath.toString());
             photoEntity.setMedia(media);
             photoEntity.setUploadDate(java.time.LocalDateTime.now()); // Set the upload date
-
+            CourseEntity course = crepo.findById(courseId).orElseThrow(() -> 
+                new RuntimeException("Course not found"));
+            photoEntity.setCourse(course);
             return prepo.save(photoEntity);
 
         } catch (IOException e) {
@@ -101,5 +109,11 @@ public class PhotoService {
         } else {
             logger.warn("Photo with ID " + id + " not found for deletion.");
         }
+    }
+
+    public List<PhotoEntity> getPhotosByCourseId(int courseId){
+        return prepo.findAll().stream()
+            .filter(photo -> photo.getCourse() != null && photo.getCourse().getCourseId() == courseId)
+            .collect(Collectors.toList());
     }
 }

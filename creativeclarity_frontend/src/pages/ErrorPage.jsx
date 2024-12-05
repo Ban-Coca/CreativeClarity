@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const ErrorPage = () => {
@@ -9,7 +10,7 @@ const ErrorPage = () => {
     status: 404,
     message: 'The requested page could not be found.'
   };
-
+  
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">

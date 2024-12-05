@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
 import { EyeClosed, Eye } from 'lucide-react';
@@ -26,7 +26,9 @@ const LoginPage = ({ onLoginSuccess }) => {
   const handleFacebookLogin = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/facebook';
   };
-
+  useEffect(() => {
+    document.title = 'Creative Clarity | Login';
+  });
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({

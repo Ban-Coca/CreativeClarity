@@ -15,13 +15,7 @@ const NotesPage = ({ onLogout }) => {
   const currentUserId = JSON.parse(localStorage.getItem('user'))?.userId;
   const [activeTab, setActiveTab] = useState('notes');
   const [notes, setNotes] = useState([]);
-  const [subjects, setSubjects] = useState([
-    'Mathematics',
-    'Science',
-    'History',
-    'English',
-    'Computer Science'
-  ]);
+  const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
@@ -29,7 +23,7 @@ const NotesPage = ({ onLogout }) => {
   const [newNote, setNewNote] = useState({
     title: '',
     content: '',
-    subject: '',
+    subject: subjects.length > 0 ? subjects[0].courseName : '',
     userId: currentUserId,
     lastModified: new Date().toISOString()
   });
@@ -53,19 +47,27 @@ const NotesPage = ({ onLogout }) => {
         }
       }
     };
-
+    const fetchSubjects = async () => {
+      try{
+        const response = await axios.get('/api/course/getcourse/' + currentUserId);
+        setSubjects(response.data);
+      }catch(error){
+        console.error('Error fetching subjects:', error);
+      }
+    }
     fetchNotes();
+    fetchSubjects();
   }, [currentUserId, token]);
 
-  const handleAddSubject = () => {
-    const trimmedSubject = newSubjectName.trim();
-    if (trimmedSubject && !subjects.includes(trimmedSubject)) {
-      const updatedSubjects = [...subjects, trimmedSubject];
-      setSubjects(updatedSubjects);
-      setNewSubjectName('');
-      setShowAddSubjectModal(false);
-    }
-  };
+  // const handleAddSubject = () => {
+  //   const trimmedSubject = newSubjectName.trim();
+  //   if (trimmedSubject && !subjects.includes(trimmedSubject)) {
+  //     const updatedSubjects = [...subjects, trimmedSubject];
+  //     setSubjects(updatedSubjects);
+  //     setNewSubjectName('');
+  //     setShowAddSubjectModal(false);
+  //   }
+  // };
 
   const filteredNotes = notes.filter(note => {
     const matchesUser = note.userId === currentUserId;
@@ -81,7 +83,7 @@ const NotesPage = ({ onLogout }) => {
     setNewNote({
       title: '',
       content: '',
-      subject: subjects[0],
+      subject: subjects.length > 0 ? subjects[0].courseName : '',
       userId: currentUserId,
       lastModified: new Date().toISOString()
     });
@@ -89,7 +91,7 @@ const NotesPage = ({ onLogout }) => {
 
   const handleSaveNote = async () => {
     if (!currentUserId) return;
-
+    console.log('New note to save:', newNote);
     try {
       const noteToSave = {
         ...newNote,
@@ -240,8 +242,8 @@ const NotesPage = ({ onLogout }) => {
                     </button>
                     {subjects.map(subject => (
                       <button
-                        key={subject}
-                        onClick={() => setSelectedSubject(subject)}
+                        key={subject.courseId}
+                        onClick={() => setSelectedSubject(subject.courseName)}
                         className={`w-full flex items-center space-x-2 px-3 py-2 rounded-lg transition ${
                           selectedSubject === subject
                             ? 'bg-blue-50 text-blue-600'
@@ -249,7 +251,7 @@ const NotesPage = ({ onLogout }) => {
                         }`}
                       >
                         <Folder className="h-4 w-4" />
-                        <span>{subject}</span>
+                        <span>{subject.courseName}</span>
                       </button>
                     ))}
                   </div>
@@ -276,7 +278,7 @@ const NotesPage = ({ onLogout }) => {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                       <button
-                        onClick={handleAddSubject}
+                        // onClick={handleAddSubject}
                         className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                       >
                         Add Subject
@@ -314,8 +316,8 @@ const NotesPage = ({ onLogout }) => {
                       onChange={(e) => setNewNote({ ...newNote, subject: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      {subjects.map(subject => (
-                        <option key={subject} value={subject}>{subject}</option>
+                      {subjects.map((subject, index) => (
+                        <option key={index} value={subject.courseName}>{subject.courseName}</option>
                       ))}
                     </select>
                     <textarea

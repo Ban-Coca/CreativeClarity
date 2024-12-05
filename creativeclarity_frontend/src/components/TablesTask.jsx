@@ -25,10 +25,8 @@ import { alpha } from '@mui/material/styles';
 import { visuallyHidden } from '@mui/utils';
 
 // Icons
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { lineWobble } from 'ldrs'
-import { Plus, BookCheck, Timer, CircleCheckBig, ListFilter } from 'lucide-react';
+import { Plus, BookCheck, Timer, CircleCheckBig, ListFilter,Archive,Trash2  } from 'lucide-react';
 
 // Services and Utils
 import axios from 'axios';
@@ -191,7 +189,6 @@ function EnhancedTableToolbar(props) {
         await axios.put(`/api/task/updateCompleted/${taskId}?completed=true`, {}, {
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
           },
         });
   
@@ -199,7 +196,6 @@ function EnhancedTableToolbar(props) {
         await axios.put(`/api/task/archive/${taskId}`, {}, {
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
           },
         });
       });
@@ -212,7 +208,7 @@ function EnhancedTableToolbar(props) {
   
       // Remove archived tasks from the state
       setTasks((prevTasks) => prevTasks.filter((task) => !selected.includes(task.taskId)));
-  
+      //fetchTasks();
       // Clear selected tasks
       setSelected([]);
     } catch (error) {
@@ -259,12 +255,12 @@ function EnhancedTableToolbar(props) {
         <>
           <Tooltip title="Delete">
             <IconButton onClick={handleDelete}>
-              <DeleteIcon />
+              <Trash2 />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Mark as completed">
+          <Tooltip title="Archive this task">
             <IconButton onClick={submitArchive}> {/*Added a onclick for Completed Tasks*/}
-              <CheckCircleIcon />
+              <Archive  />
             </IconButton>
           </Tooltip>
         </>
@@ -313,6 +309,7 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
         description: task.description,
         due_date: task.due_date,
         priority: task.priority,
+        isCompleted: task.isCompleted,
         course: task.course
       })),
     [tasks]

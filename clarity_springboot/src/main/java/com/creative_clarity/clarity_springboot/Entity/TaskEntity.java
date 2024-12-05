@@ -13,8 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
-import com.creative_clarity.clarity_springboot.DTO.CourseDTO;
-
 @Entity
 public class TaskEntity {
 	
@@ -35,8 +33,9 @@ public class TaskEntity {
 	//@JsonBackReference
 	private CourseEntity course;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "archive")
+	@JsonIgnoreProperties("tasks")
     private ArchiveEntity archive;
 
 	public TaskEntity() {
