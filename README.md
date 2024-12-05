@@ -35,14 +35,8 @@
 
 ## Key Features
 
-* Project Planning and Scheduling
-  - Create project timelines
-  - Define project goals
-  - Add team members to the project
-  - Use visual Gantt charts to see project timelines
 * Task Management
   - Create to-do list for the project
-  - Assign task to members
   - Set due dates for tasks
   - Update task status
   - Track overall progress
@@ -50,22 +44,20 @@
   - Create user accounts
   - Log in securely
   - Reset forgotten passwords
-* Real-Time Collaboration
-  - Get notifications about the project updates
-  - Work on the same project simultaneously
-  - Chat with team members
+* Track Courses
+  - User can input their current courses
 * Reporting and Analytics
-  - Track time spent on task
-  - View project dashboard with information
-* Document management and file sharing
-  - Upload project related files
-  - Store documents
+  - Track grades
+  - View grades dashboard with information
+* Upload pictures and archiving
+  - Upload pictures related to courses
   - Search specific files
-  - Share files with team members
+* Notes
+  - write notes specific to courses
 
 ## Setup and Installation
 
-To clone and run this application, you'll need [Git](https://git-scm.com) and [Python](https://www.python.org/) installed on your computer. From your command line:
+To clone and run this application, you'll need [Git](https://git-scm.com), [Node.js](https://nodejs.org/), and [Java JDK](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) installed on your computer. From your command line:
 
 ```bash
 # Clone this repository
@@ -83,18 +75,17 @@ $ npm install
 # Run 
 $ npm run dev
 ```
-
+Once the application is running, you can access the frontend at http://localhost:5173 and the backend at http://localhost:8080.
 
 ## Credits
 
 This software uses the following:
 
-- [react](https://www.djangoproject.com/)
-- [javascript](https://www.javascript.com/)
-- [Springboot](https://fullcalendar.io/)
-- [MaterialUI]
-- [TailwindCSS]
-
+- [React](https://react.dev/)
+- [JavaScript](https://www.javascript.com/)
+- [Spring Boot](https://spring.io/)
+- [Material UI](https://mui.com/)
+- [TailwindCSS](https://tailwindcss.com/)
 
 ## Contributors
 
