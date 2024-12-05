@@ -9,19 +9,19 @@
 <h4 align="center">An Academic organizers built using  <a href="https://www.https:/spring.io/" target="_blank">Spring Boot </a> + <a href="https://www.https:/https://react.dev/" target="_blank"> React </a>.</h4>
 
 <p align="center">
-  <a>
+  <a href="https://react.dev/">
     <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB">
   </a>
-  <a>
+  <a href="https://mui.com/">
     <img src="https://img.shields.io/badge/Material%20UI-007FFF?style=for-the-badge&logo=mui&logoColor=white">
   </a>
-  <a>
+  <a href="https://tailwindcss.com/">
     <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white">
   </a>
-  <a>
+  <a href="https://spring.io/">
     <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white">
   </a>
-  <a>
+  <a href="https://www.javascript.com/">
     <img src="https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E">
   </a>
 </p>
@@ -86,6 +86,8 @@ This software uses the following:
 - [Spring Boot](https://spring.io/)
 - [Material UI](https://mui.com/)
 - [TailwindCSS](https://tailwindcss.com/)
+
+og credits sa tanan nagmahal
 
 ## Contributors
 
