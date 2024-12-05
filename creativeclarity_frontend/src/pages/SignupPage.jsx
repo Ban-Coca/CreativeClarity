@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { EyeClosed, Eye } from 'lucide-react';
 
 const SignupPage = ({ onSignupSuccess }) => {
   const navigate = useNavigate();
@@ -14,8 +15,10 @@ const SignupPage = ({ onSignupSuccess }) => {
 
   const [errorMessages, setErrorMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [phoneError, setPhoneError] = useState('');
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'phoneNumber') {
@@ -219,6 +222,11 @@ const SignupPage = ({ onSignupSuccess }) => {
                   className={inputClasses}
                   required
                 />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowPassword(prev => !prev)}>
+                  
+                  {showPassword ? <Eye className="h-4 w-4 opacity-60" /> : <EyeClosed className="h-4 w-4 opacity-60" />}
+              
+                </div>
               </div>
 
               <div className="relative">
@@ -238,6 +246,11 @@ const SignupPage = ({ onSignupSuccess }) => {
                   className={inputClasses}
                   required
                 />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowConfirmPassword(prev => !prev)}>
+                  
+                  {showConfirmPassword ? <Eye className="h-4 w-4 opacity-60" /> : <EyeClosed className="h-4 w-4 opacity-60" />}
+              
+                </div>
               </div>
 
               <button
@@ -279,8 +292,8 @@ const SignupPage = ({ onSignupSuccess }) => {
                 </button>
                 <button className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50">
                   <img
-                    src="/src/assets/images/appleIcon2.png"
-                    alt="Apple"
+                    src="/src/assets/images/github.png"
+                    alt="Github"
                     className="h-7 w-7"
                   />
                 </button>

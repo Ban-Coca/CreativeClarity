@@ -52,4 +52,10 @@ public class ArchiveController {
 	public String deleteArchive(@PathVariable int archiveId) {
 		return aserv.deleteArchive(archiveId);
 	}
+
+	//Get archive by ID
+	@GetMapping("/getbycourseid/{courseId}")
+	public List<ArchiveEntity> getArchivesByCourseId(@PathVariable int courseId) {
+		return aserv.getArchivesByCourseId(courseId);
+	}
 }

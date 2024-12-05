@@ -2,16 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import ArrowBack from "@mui/icons-material/ArrowBack";
-import { Snackbar, Alert } from '@mui/material';
+import { Snackbar, Alert, Menu, MenuItem, RadioGroup, FormControlLabel, Radio, Button} from '@mui/material';
 
-const ArchivePage = () => {
+function ArchivePage ({courseId}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('courses');
   const [archives, setArchives] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [openMenuId, setOpenMenuId] = useState(null);
   const [archiveToDelete, setArchiveToDelete] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
   const [selectedArchive, setSelectedArchive] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -39,15 +41,29 @@ const ArchivePage = () => {
     });
   };
 
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleChange = (event) => {
+    setSelectedCourse(event.target.value);
+    handleMenuClose(); // Close the menu after selection
+  };
+
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   useEffect(() => {
+    console.log('Course ID:', courseId);
     const fetchArchives = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/archive/getallarchives');
+        const response = await axios.get('http://localhost:8080/api/archive/getbycourseid/' + courseId);
         setArchives(response.data);
       } catch (error) {
         console.error('Error fetching archives:', error);
@@ -111,33 +127,12 @@ const ArchivePage = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="w-64 bg-white shadow-md">
-        <Sidebar />
-      </div>
-      
-      <main className="flex-1 p-6 overflow-auto">
+      <main className="flex-1 p-2.5 overflow-auto">
         <section className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <ArrowBack className="cursor-pointer" />
-            <h2 className="text-2xl font-semibold">Archives</h2>
-            <select
-              value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              className="ml-auto px-4 py-2 border rounded-md"
-            >
-              <option value="">All Courses</option>
-              {courses.map((course) => (
-                <option key={course.courseId} value={course.courseId}>
-                  {course.courseName}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="grid gap-4">
             {filteredArchives.length > 0 ? (
               filteredArchives.map((archive) => (
-                <div key={archive.archiveId} className="bg-white border rounded-lg p-4 flex justify-between items-center">
+                <div key={archive.archiveId} className="bg-white border rounded-lg p-7 flex justify-between items-center ">
                   <div
                     className="flex-1 cursor-pointer"
                     onClick={() => openArchiveDetailsModal(archive)}
@@ -153,7 +148,7 @@ const ArchivePage = () => {
                       ⋮
                     </button>
                     {openMenuId === archive.archiveId && !selectedArchive && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border" ref={menuRef}>
+                      <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg z-50 border" ref={menuRef}>
                         <button
                           className="w-full text-left px-4 py-2 hover:bg-gray-100"
                           onClick={() => {
@@ -163,13 +158,16 @@ const ArchivePage = () => {
                         >
                           Delete
                         </button>
+                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100">
+                          Unarchive
+                        </button>
                       </div>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-500">No archives available.</p>
+              <p className="text-center text-gray-500 mb-5">No archives available.</p>
             )}
           </div>
         </section>
@@ -206,7 +204,9 @@ const ArchivePage = () => {
                 </div>
               </div>
               <div className='space-y-4'>
-                <p className='text-gray-700'>{selectedArchive.description}</p>
+                <p className="text-gray-700 w-auto max-w-full break-words whitespace-normal m-[10px]">
+                  {selectedArchive.description}
+                </p>
                 <p><strong>Type:</strong> {selectedArchive.type}</p>
                 <p><strong>Tags:</strong> {selectedArchive.tags}</p>
                 <p><strong>Archived:</strong> {formatDate(selectedArchive.archive_date)}</p>

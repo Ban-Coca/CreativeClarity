@@ -1,17 +1,27 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 
 @Entity
 public class UserEntity {
 	
-	@Id
+  @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int userId;
 	
@@ -34,6 +44,14 @@ public class UserEntity {
 	@Column(name = "major_field")
 	private String majorField;
 	
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  // @Fetch(FetchMode.JOIN)
+  private List<CourseEntity> courses = new ArrayList<>();
+	
+  @Column(name = "profile_picture_path")
+    private String profilePicturePath;
+
 	public UserEntity() {
 		
 	}
@@ -64,6 +82,14 @@ public class UserEntity {
 
   public void setUsername(String username) {
     this.username = username;
+  }
+
+  public String getProfilePicturePath() {
+    return profilePicturePath;
+}
+
+  public void setProfilePicturePath(String profilePicturePath) {
+      this.profilePicturePath = profilePicturePath;
   }
 
   public String getEmail() {
@@ -145,5 +171,13 @@ public class UserEntity {
 
   public void setMajorField(String majorField) {
     this.majorField = majorField;
+  }
+
+  public List<CourseEntity> getCourses() {
+    return courses;
+  }
+
+  public void setCourses(List<CourseEntity> courses) {
+    this.courses = courses;
   }
 }

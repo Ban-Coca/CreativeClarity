@@ -5,10 +5,8 @@ import PropTypes from 'prop-types';
 // MUI Components
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
-import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -27,16 +25,14 @@ import { alpha } from '@mui/material/styles';
 import { visuallyHidden } from '@mui/utils';
 
 // Icons
-import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { lineWobble } from 'ldrs'
-import { Plus, BookCheck } from 'lucide-react';
+import { Plus, BookCheck, Timer, CircleCheckBig, ListFilter,Archive,Trash2  } from 'lucide-react';
 
 // Services and Utils
 import axios from 'axios';
 import { toast } from 'sonner';
 import { fetchTasks, deleteTask } from '../service/taskService';
+import { PriorityColors } from '../utils/Priority';
 
 axios.defaults.baseURL = "http://localhost:8080/";
 function descendingComparator(a, b, orderBy) {
@@ -69,10 +65,16 @@ const headCells = [
     label: 'Title',
   },
   {
-    id: 'description',
+    id: 'course',
     numeric: false,
     disablePadding: false,
-    label: 'Description',
+    label: 'Course',
+  }, 
+  {
+    id: 'isCompleted',
+    numeric: false,
+    disablePadding: false,
+    label: 'Status',
   },
   {
     id: 'due_date',
@@ -107,7 +109,6 @@ function LoadingComponent({loading}){
   }else{
     return null
   }
-  
 }
 function EnhancedTableHead(props) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
@@ -126,7 +127,7 @@ function EnhancedTableHead(props) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{
-              'aria-label': 'select all desserts',
+              'aria-label': 'select all tasks',
             }}
           />
         </TableCell>
@@ -179,6 +180,45 @@ function EnhancedTableToolbar(props) {
     }
   };
 
+  // New Function for submitting tasks that are completed to archive
+  const submitArchive = async () => {
+    try {
+      // Archive the selected tasks and set them as completed (true) first
+      const archivePromises = selected.map(async (taskId) => {
+        // Update the task to set completed to true
+        await axios.put(`/api/task/updateCompleted/${taskId}?completed=true`, {}, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        // Then archive the task
+        await axios.put(`/api/task/archive/${taskId}`, {}, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      });
+  
+      // Wait for all archive requests to finish
+      await Promise.all(archivePromises);
+  
+      // Show success message
+      toast.success('Tasks archived successfully');
+  
+      // Remove archived tasks from the state
+      setTasks((prevTasks) => prevTasks.filter((task) => !selected.includes(task.taskId)));
+      //fetchTasks();
+      // Clear selected tasks
+      setSelected([]);
+    } catch (error) {
+      // Show error message in case of failure
+      toast.error('Error archiving tasks');
+      console.error('Error archiving tasks:', error);
+    }
+  };
+  
+
   return (
     <Toolbar
       sx={[
@@ -215,19 +255,19 @@ function EnhancedTableToolbar(props) {
         <>
           <Tooltip title="Delete">
             <IconButton onClick={handleDelete}>
-              <DeleteIcon />
+              <Trash2 />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Mark as completed">
-            <IconButton>
-              <CheckCircleIcon />
+          <Tooltip title="Archive this task">
+            <IconButton onClick={submitArchive}> {/*Added a onclick for Completed Tasks*/}
+              <Archive  />
             </IconButton>
           </Tooltip>
         </>
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
-            <FilterListIcon />
+            <ListFilter  />
           </IconButton>
         </Tooltip>
       )}
@@ -261,13 +301,17 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
   }
 
   const rows = React.useMemo(() => 
-    tasks.map(task => ({
-      id: task.taskId,
-      title: task.title,
-      description: task.description,
-      due_date: task.due_date,
-      priority: task.priority
-    })),
+    tasks
+      .filter(task => !task.isArchived)  // Filter out archived tasks -Jeric
+      .map(task => ({
+        id: task.taskId,
+        title: task.title,
+        description: task.description,
+        due_date: task.due_date,
+        priority: task.priority,
+        isCompleted: task.isCompleted,
+        course: task.course
+      })),
     [tasks]
   );
 
@@ -397,9 +441,23 @@ export default function EnhancedTable({tasks: initialTasks, onRowClick: onRowCli
                         {row.id}
                       </TableCell>
                       <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.title}</TableCell>
-                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.description}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.course.courseName}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.isCompleted ?
+                        <span className='flex '>
+                          <CircleCheckBig className='mr-1'/>
+                          <p className='p-1'>Completed</p>
+                        </span>
+                        : <span className='flex'>
+                            <Timer className='mr-1'/>
+                            <p className='p-1'>Ongoing</p>
+                          </span>}
+                      </TableCell>
                       <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{formatDate(row.due_date)}</TableCell>
-                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>{row.priority}</TableCell>
+                      <TableCell align="left" onClick={(event) => handleClickedRows(event, row.id)}>
+                        <div className='flex justify-center' style={{backgroundColor: PriorityColors[row.priority], color: 'white', padding: '0.5rem', borderRadius: '0.25rem'}}>
+                          {row.priority}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })}

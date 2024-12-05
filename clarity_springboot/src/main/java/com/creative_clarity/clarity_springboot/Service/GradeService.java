@@ -45,7 +45,7 @@ public class GradeService {
         logger.info("Fetching grades for courseId: {}", courseId);
         try {
             List<GradeEntity> grades = grepo.findAll().stream()
-                    .filter(grade -> grade.getCourse().getCourseId() == courseId)
+                    .filter(grade -> grade.getCourse() != null && grade.getCourse().getCourseId() == courseId)
                     .collect(Collectors.toList());
             logger.info("Found {} grades for courseId: {}", grades.size(), courseId);
             return grades;
@@ -70,14 +70,17 @@ public class GradeService {
     }
     
     // Delete of CRUD
-    public String deleteGrade(int gradeId) {
+    public String deleteGrade(int gradeId) {//delete the relationship by setting grades to null inside the course
         String msg = "";
         
-        if(grepo.findById(gradeId).isPresent()) {
-            grepo.deleteById(gradeId);
+        if (grepo.findById(gradeId).isPresent()) {
+            GradeEntity grade = grepo.findById(gradeId).get();
+            grade.setCourse(null); // Set course to null
+            grepo.save(grade); // Save the grade with course set to null
+            grepo.deleteById(gradeId); // Delete the grade
             msg = "Grade record successfully deleted!";
-        }else {
-            msg = "Grade ID "+ gradeId +" NOT FOUND!";
+        } else {
+            msg = "Grade ID " + gradeId + " NOT FOUND!";
         }
         return msg;
     }

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
+import { EyeClosed, Eye } from 'lucide-react';
 
 const LoginPage = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
@@ -10,16 +11,24 @@ const LoginPage = ({ onLoginSuccess }) => {
   });
   const [errorMessages, setErrorMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
-  const handleGithubLogin = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/github';
+  const handleGithubLogin = async () => {
+    try {
+        // Redirect to GitHub OAuth2 authorization endpoint
+        window.location.href = 'http://localhost:8080/oauth2/authorization/github';
+    } catch (error) {
+        console.error('GitHub login error:', error);
+    }
   };
   const handleFacebookLogin = () => {
     window.location.href = 'http://localhost:8080/oauth2/authorization/facebook';
   };
-
+  useEffect(() => {
+    document.title = 'Creative Clarity | Login';
+  });
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -62,6 +71,9 @@ const LoginPage = ({ onLoginSuccess }) => {
         if (onLoginSuccess) {
           onLoginSuccess();
         }
+
+        const storedToken = localStorage.getItem('token');
+        console.log('Stored token:', storedToken);
         
         navigate('/dashboard');
       } else {
@@ -73,6 +85,7 @@ const LoginPage = ({ onLoginSuccess }) => {
       setIsLoading(false);
     }
   };
+  
 
   const inputClasses = "w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-200 placeholder:text-gray-500 placeholder:opacity-60";
 
@@ -133,6 +146,7 @@ const LoginPage = ({ onLoginSuccess }) => {
                   type="text"
                   name="email"
                   value={formData.email}
+                  autoComplete='email'
                   onChange={handleInputChange}
                   placeholder="Email/Phone Number"
                   className={inputClasses}
@@ -155,8 +169,9 @@ const LoginPage = ({ onLoginSuccess }) => {
                   />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
+                  autoComplete='current-password'
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Password"
@@ -169,6 +184,11 @@ const LoginPage = ({ onLoginSuccess }) => {
                   }}
                   required
                 />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowPassword(prev => !prev)}>
+                  
+                  {showPassword ? <Eye className="h-4 w-4 opacity-60" /> : <EyeClosed className="h-4 w-4 opacity-60" />}
+              
+                </div>
               </div>
 
               <div className="flex items-center justify-between">

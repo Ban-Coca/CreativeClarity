@@ -17,17 +17,18 @@ import {
   InputLabel 
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded'; // Import LeaderboardRoundedIcon
 import axios from 'axios';
 import SideBar from '../components/Sidebar';
-import TopBar from '../components/TopBar';
 import '../components/css/Course.css';
-import { ArrowBack } from '@mui/icons-material';
-import Grades from './Grades'; // Import the Grades component
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
+import {Plus} from 'lucide-react';
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
 
 function Course({onLogout}) {
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const token = localStorage.getItem('token');
   const [courses, setCourses] = useState([]); // Ensure initial state is an empty array
   const [activeTab, setActiveTab] = useState('courses');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -37,17 +38,20 @@ function Course({onLogout}) {
     message: '',
     severity: 'success'
   });
+  
   const [courseDetails, setCourseDetails] = useState({
     courseName: '',
     code: '',
     semester: '',
     academicYear: '',
+    user: {userId: currentUser.userId}
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [courseGridVisible, setCourseGridVisible] = useState(true); // New state for course grid visibility
   const location = useLocation();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Define semester options
   const semesterOptions = [
@@ -55,7 +59,7 @@ function Course({onLogout}) {
     { value: '2nd Semester', label: '2nd Semester', period:'January-May' },
     { value: 'Summer', label: 'Summer', period:'June-July' }
   ];
-
+  
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
   };
@@ -68,7 +72,12 @@ function Course({onLogout}) {
   const fetchCourses = useCallback(async () => {
     try {
       console.log('Fetching courses...');
-      const response = await axios.get('/api/course/getallcourse');
+      const response = await axios.get('/api/course/getcourse/' + currentUser.userId, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
       console.log('Courses fetched:', response.data);
       setCourses(Array.isArray(response.data) ? response.data : []); // Ensure response data is an array
       setCourseGridVisible(true); // Ensure course grid is visible after fetching courses
@@ -79,6 +88,8 @@ function Course({onLogout}) {
   }, []);
 
   useEffect(() => {
+    document.title = 'Courses';
+    console.log("User: ", currentUser.userId);
     fetchCourses();
   }, [fetchCourses, location]);
 
@@ -98,6 +109,7 @@ function Course({onLogout}) {
         code: '',
         semester: '',
         academicYear: '',
+        user: null
       });
     }
     setModalOpen(true);
@@ -121,17 +133,34 @@ function Course({onLogout}) {
 
   const handleSubmit = async () => {
     try {
-      const { courseName, code, semester, academicYear } = courseDetails;
-      const courseData = { courseName, code, semester, academicYear };
+      // const { courseName, code, semester, academicYear, user = { userId: currentUser.userId } } = courseDetails;
+      // const courseData = { courseName, code, semester, academicYear, user };
+      const courseData = {
+        courseName: courseDetails.courseName,
+        code: courseDetails.code,
+        semester: courseDetails.semester,
+        academicYear: courseDetails.academicYear,
+        user: { userId: currentUser.userId } // Always include the user object
+      };
 
       if (selectedCourse) {
         // Update existing course
-        await axios.put(`/api/course/putcoursedetails/${selectedCourse.courseId}`, courseData);
+        await axios.put(`/api/course/putcoursedetails/${selectedCourse.courseId}`, courseData, {
+          headers: {
+            'Content-Type': 'application/json',
+            //'Authorization': `Bearer ${token}`
+          },
+        });
         showSnackbar('Course updated successfully');
       } else {
         // Create new course
         console.log(courseData);
-        await axios.post('/api/course/postcourserecord', courseData);
+        await axios.post('/api/course/postcourserecord', courseData, {
+          headers: {
+            'Content-Type': 'application/json',
+            //'Authorization': `Bearer ${token}`
+          },
+        });
         showSnackbar('Course created successfully');
       }
 
@@ -150,7 +179,12 @@ function Course({onLogout}) {
       return;
     }
     try {
-      await axios.delete(`/api/course/deletecoursedetails/${courseToDelete}`);
+      await axios.delete(`/api/course/deletecoursedetails/${courseToDelete}`,{
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
       await fetchCourses();
       showSnackbar('Course deleted successfully');
       setDeleteDialogOpen(false);
@@ -182,6 +216,11 @@ function Course({onLogout}) {
     handleMenuClose();
   };
 
+  const handleViewAnalytics = () => {
+    setActiveTab('progress');
+    navigate(`/progress`);
+  };
+
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <SideBar
@@ -189,43 +228,88 @@ function Course({onLogout}) {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px' }}>
-        <Box sx={{ marginTop: '64px' }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px', overflow:'auto' }}>
+        <Box>
           <div className="title-container">
-            <h2>Courses</h2>
-            <Button variant="contained" color="primary" onClick={() => handleOpen()}>
-              Add Course
-            </Button>
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="h-8 w-2 bg-blue-600 rounded-full"></div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                Courses
+              </h1>
+            </div>
+            <div className='flex space-x-2'>
+              <button
+                  onClick={() => handleOpen()}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                <Plus className="h-5 w-5" />
+                <span>Add Course</span>
+              </button>
+              <button
+                  className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  onClick={handleViewAnalytics}
+  
+                >
+                  <LeaderboardRoundedIcon/>
+                  <span>View Analytics</span>
+              </button>
+            </div>
+            
           </div>
 
           {courseGridVisible && (
             <div className="course-grid">
-              {courses.map((course) => (
-                <div key={course.courseId} className="course-card" style={{ position: 'relative', height:'180px'}}>
-                  <h3>{course.courseName}</h3>
-                  <p>{course.code}</p>
-                  <p>{course.semester} - {course.academicYear}</p>
-                  
+              {courses.length === 0 ? (
+                <div className="flex items-center p-4">
+                  No courses found
+                </div>
+              ) : (
+                courses.map((course) => (
+                <div 
+                  key={course.courseId}
+                  className="course-card" 
+                  style={{
+                    position: 'relative',
+                    height: '150px',
+                    padding: '20px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    margin: '8px',
+                  }}
+                >
+                  {/* Wrap most of the card content in Link, excluding the menu */}
+                  <Link
+                    to={`/course/${course.courseId}`}
+                    state={{ course }} // Pass course details as state
+                    style={{ 
+                      textDecoration: 'none', 
+                      color: 'inherit',
+                      display: 'block',
+                      height: '100%',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s'
+                    }}
+                  >
+                    {/* Course Details */}
+                    <div className="course-content">
+                      <h3>{course.courseName}</h3>
+                      <p>{course.code}</p>
+                      <p>{course.semester} - {course.academicYear}</p>
+                      <p>{course.subject}</p>
+                    </div>
+                  </Link>
+
+                  {/* Menu Icon outside of Link */}
                   <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                    <IconButton onClick={(event) => handleMenuClick(event, course)}>
+                    <IconButton 
+                      onClick={(event) => handleMenuClick(event, course)}
+                    >
                       <MoreVertIcon />
                     </IconButton>
-                    <p>{course.subject}</p>
-                    
-                  </Box>
-                  <Box sx={{ mt: 1, display: 'flex', gap: 1, justifyContent: 'center' }}>
-                    <Button
-                      component={Link}
-                      to={`/grades/${course.courseId}`}
-                      variant="outlined"
-                      color="primary"
-                      state={{ course }}
-                    >
-                      View Grades
-                    </Button>
                   </Box>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           )}
         </Box>

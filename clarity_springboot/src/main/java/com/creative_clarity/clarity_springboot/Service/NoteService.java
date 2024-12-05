@@ -2,8 +2,8 @@ package com.creative_clarity.clarity_springboot.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Date;
 
-import javax.naming.NameNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,38 +27,37 @@ public class NoteService {
 	}
 	
 	//Read of CRUD
-	public List<NoteEntity> getAllNotes(){
+	public List<NoteEntity> getNotesByUserId(int userId){
+    return nrepo.findByUserId(userId);
+  }
+
+	public List<NoteEntity> getAllNotes() {
+
 		return nrepo.findAll();
-	}
+
+}
 	
 	//Update of CRUD
 	@SuppressWarnings("finally")
-	public NoteEntity putNoteDetails (int noteId, NoteEntity newNoteDetails) {
-		NoteEntity note = new NoteEntity();
-		
-		try {
-			note = nrepo.findById(noteId).get();
-			
-			note.setTitle(newNoteDetails.getTitle());
-			note.setContent(newNoteDetails.getContent());
-			note.setTags(newNoteDetails.getTags());
-		}catch(NoSuchElementException nex){
-			throw new NameNotFoundException("Note "+ noteId +"not found");
-		}finally {
-			return nrepo.save(note);
-		}
-	}
+  public NoteEntity putNoteDetails (int noteId, NoteEntity newNoteDetails) {
+	NoteEntity note = nrepo.findById(noteId)
+	  .orElseThrow(() -> new NoSuchElementException("Note " + noteId + " not found"));
+    
+    note.setTitle(newNoteDetails.getTitle());
+    note.setContent(newNoteDetails.getContent());
+    note.setSubject(newNoteDetails.getSubject());
+    note.setLastModified(new Date());
+    
+    return nrepo.save(note);
+  }
 	
 	//Delete of CRUD
 	public String deleteNote(int noteId) {
-		String msg = "";
-		
-		if(nrepo.findById(noteId).isPresent()) {
+		if(nrepo.existsById(noteId)) {
 			nrepo.deleteById(noteId);
-			msg = "Note record successfully deleted!";
-		}else {
-			msg = "Note ID "+ noteId +" NOT FOUND!";
+			return "Note record successfully deleted!";
+		} else {
+			return "Note ID " + noteId + " NOT FOUND!";
 		}
-		return msg;
-	}
+  	}
 }

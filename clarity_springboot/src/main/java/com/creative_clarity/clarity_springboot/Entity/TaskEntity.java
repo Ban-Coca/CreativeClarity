@@ -1,10 +1,17 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class TaskEntity {
@@ -18,7 +25,19 @@ public class TaskEntity {
 	private Date due_date;
 	private boolean completed;
 	private String priority;  // new field
+	private boolean isArchived;  // New field to track archive status
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    @JsonIgnoreProperties({"tasks", "grades"}) 
+	//@JsonBackReference
+	private CourseEntity course;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "archive")
+	@JsonIgnoreProperties("tasks")
+    private ArchiveEntity archive;
+
 	public TaskEntity() {
 		
 	}
@@ -75,4 +94,28 @@ public class TaskEntity {
 	public void setPriority(String priority) {
 		this.priority = priority;
 	}
+
+	public boolean getIsArchived() {
+        return isArchived;
+    }
+
+    public void setIsArchived(boolean isArchived) {
+        this.isArchived = isArchived;
+    }
+	
+	public CourseEntity getCourse() {
+        return course;
+    }
+
+    public void setCourse(CourseEntity course) {
+        this.course = course;
+    }
+
+    public ArchiveEntity getArchive() {
+        return archive;
+    }
+
+    public void setArchive(ArchiveEntity archive) {
+        this.archive = archive;
+    }
 }

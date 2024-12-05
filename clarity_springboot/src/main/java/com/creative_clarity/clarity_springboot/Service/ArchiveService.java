@@ -2,6 +2,7 @@ package com.creative_clarity.clarity_springboot.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import javax.naming.NameNotFoundException;
 
@@ -15,7 +16,8 @@ import com.creative_clarity.clarity_springboot.Repository.ArchiveRepository;
 public class ArchiveService {
 	@Autowired
 	ArchiveRepository arepo;
-	
+	@Autowired
+	CourseService courseService;
 	public ArchiveService() {
 		super();
 	}
@@ -61,5 +63,12 @@ public class ArchiveService {
 			msg = "Archive ID "+ archiveId +" NOT FOUND!";
 		}
 		return msg;
+	}
+
+	public List<ArchiveEntity> getArchivesByCourseId(int courseId) {
+		return arepo.findAll().stream()
+			.filter(archive -> archive.getCourse().getCourseId() == courseId)
+			.collect(Collectors.toList());
+		
 	}
 }
