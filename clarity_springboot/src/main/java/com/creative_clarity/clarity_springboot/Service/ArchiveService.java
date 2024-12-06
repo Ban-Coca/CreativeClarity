@@ -27,6 +27,12 @@ public class ArchiveService {
 	@Autowired
 	CourseRepository courseRepository;
 	
+	@Autowired
+	TaskService taskService;
+
+	@Autowired
+	CourseService courseService;
+	
 	public ArchiveService() {
 		super();
 	}
@@ -80,6 +86,7 @@ public class ArchiveService {
 				task.setArchive(null);
 				task.setIsArchived(false);
 				taskRepository.save(task); // Save the task to persist changes
+				taskService.deleteTask(task.getTaskId());
 			}
 		}
 		else if("Courses".equals(archiveType)){
@@ -88,6 +95,7 @@ public class ArchiveService {
 				course.setArchive(null);
 				course.setIsArchived(false);
 				courseRepository.save(course); // Save the course to persist changes
+				courseService.deleteCourse(course.getCourseId());
 			}
 		}
 	

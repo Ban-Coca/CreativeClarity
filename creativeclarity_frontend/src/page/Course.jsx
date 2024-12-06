@@ -239,7 +239,7 @@ function Course({onLogout}) {
         setActiveTab={setActiveTab}
         />
       <Box component="main" sx={{ flexGrow: 1, p: 3, marginLeft: '240px' }}>
-        <Box sx={{ marginTop: '64px' }}>
+        <Box>
           <div className="title-container">
             <h2>Courses</h2>
             <Button variant="contained" color="primary" onClick={() => handleOpen()}>
@@ -260,6 +260,7 @@ function Course({onLogout}) {
                     border: '1px solid #ddd',
                     borderRadius: '8px',
                     margin: '8px',
+                    marginLeft: '30px',
                   }}
                 >
                   {/* Wrap most of the card content in Link, excluding the menu */}
