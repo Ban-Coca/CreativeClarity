@@ -8,15 +8,17 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import com.creative_clarity.clarity_springboot.Entity.NoteEntity;
 import com.creative_clarity.clarity_springboot.Repository.NoteRepository;
+
 
 @Service
 public class NoteService {
 	
 	@Autowired
 	NoteRepository nrepo;
-	
+
 	public NoteService() {
 		super();
 	}
@@ -38,18 +40,18 @@ public class NoteService {
 }
 	
 	//Update of CRUD
-	@SuppressWarnings("finally")
-  public NoteEntity putNoteDetails (int noteId, NoteEntity newNoteDetails) {
-	NoteEntity note = nrepo.findById(noteId)
-	  .orElseThrow(() -> new NoSuchElementException("Note " + noteId + " not found"));
-    
-    note.setTitle(newNoteDetails.getTitle());
-    note.setContent(newNoteDetails.getContent());
-    note.setSubject(newNoteDetails.getSubject());
-    note.setLastModified(new Date());
-    
-    return nrepo.save(note);
-  }
+	
+	public NoteEntity putNoteDetails (int noteId, NoteEntity newNoteDetails) {
+		NoteEntity note = nrepo.findById(noteId)
+		.orElseThrow(() -> new NoSuchElementException("Note " + noteId + " not found"));
+		
+		note.setTitle(newNoteDetails.getTitle());
+		note.setContent(newNoteDetails.getContent());
+		note.setSubject(newNoteDetails.getSubject());
+		note.setLastModified(new Date());
+		
+		return nrepo.save(note);
+	}
 	
 	//Delete of CRUD
 	public String deleteNote(int noteId) {

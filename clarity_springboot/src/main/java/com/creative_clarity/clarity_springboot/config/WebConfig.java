@@ -1,7 +1,7 @@
 package com.creative_clarity.clarity_springboot.config;
 
 import java.util.concurrent.TimeUnit;
-import java.io.IOException;
+
 import java.io.File;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.core.io.Resource;
+
 
 import jakarta.annotation.PostConstruct;
 

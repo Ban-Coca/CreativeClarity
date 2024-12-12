@@ -3,6 +3,7 @@ package com.creative_clarity.clarity_springboot.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,4 +59,15 @@ public class ArchiveController {
 	public List<ArchiveEntity> getArchivesByCourseId(@PathVariable int courseId) {
 		return aserv.getArchivesByCourseId(courseId);
 	}
+
+	@PutMapping("/unarchive/{archiveId}")
+    public ResponseEntity<String> unarchive(@PathVariable("archiveId") int archiveId) {
+        String responseMessage = aserv.unarchive(archiveId);
+        
+        if (responseMessage.contains("successfully")) {
+            return ResponseEntity.ok(responseMessage);  // Success
+        } else {
+            return ResponseEntity.status(404).body(responseMessage);  // Not Found or error
+        }
+    }
 }

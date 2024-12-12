@@ -7,6 +7,7 @@ import SideBar from '../components/Sidebar';
 import { formatDate } from '../utils/dateUtils';
 import { fetchTasks } from '../service/taskService';
 import axios from 'axios';
+import { Toaster } from 'sonner';
 
 const DashboardPage = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -22,6 +23,35 @@ const DashboardPage = ({ onLogout }) => {
 
   const [activeTab, setActiveTab] = useState('overview');
   const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    console.log("Starting EventSource connection...");
+    const eventSource = new EventSource('http://localhost:8080/api/reminder/notifications');
+    const bellAudio = new Audio('/mixkit-bell-notification-933.wav');
+    eventSource.onopen = () => {
+      console.log('EventSource connection opened');
+    }
+    eventSource.addEventListener('reminder', (event) => {
+      try{
+        const notification = JSON.parse(event.data);
+        console.log('Received notification:', notification);
+        bellAudio.play();
+        toast.info(notification.title, {
+          description: notification.reminderDateTime,
+        })
+      } catch (error) {
+        console.error('Failed to parse notification:', error);
+      }
+    })
+    eventSource.onerror = (error) => {
+      console.error('EventSource failed:', error);
+      eventSource.close();
+    }
+    return () => {
+      eventSource.close();
+    }
+  },[])
+
   const handleProfileImageUpdate = async (imageUrl) => {
     setIsUpdatingImage(true);
     setImageError('');
@@ -110,7 +140,7 @@ const DashboardPage = ({ onLogout }) => {
       console.log(tasks)
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      toast.error('Failed to fetch tasks');
+      //toast.error('Failed to fetch tasks');
     } 
   }
 
@@ -174,6 +204,7 @@ const DashboardPage = ({ onLogout }) => {
         activeTab={activeTab}
         setActiveTab={setActiveTab} />
 
+      <Toaster richColors position="bottom-right" closeButton/>
       {/* Main Content */}
       <div className="flex-1 ml-64">
         <div className="h-full p-8 overflow-y-auto">
@@ -186,12 +217,12 @@ const DashboardPage = ({ onLogout }) => {
               <p className="text-gray-600">Here&apos;s your academic overview</p>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="flex items-center space-x-2 bg-white p-2 rounded-lg shadow hover:shadow-md transition">
+              {/* <button className="flex items-center space-x-2 bg-white p-2 rounded-lg shadow hover:shadow-md transition">
                 <Bell className="h-5 w-5 text-gray-600" />
                 <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   3
                 </span>
-              </button>
+              </button> */}
 
               {/* Profile Picture with Redirect to UserProfile */}
               <div className="relative group">
@@ -252,7 +283,7 @@ const DashboardPage = ({ onLogout }) => {
               <div className="space-y-4">
                 {currentTasks.length === 0 ? (
                   <div className="text-gray-600 text-center">
-                    <FileText className="h-6 w-6 mx-auto" />
+                    <CheckSquare className="h-6 w-6 mx-auto" />
                     <p className="text-md font-semibold">No task has been made</p>
                     <button className='my-2'>
                       <a href="/tasks" className="text-blue-600">Create a new task</a>
@@ -350,19 +381,19 @@ const DashboardPage = ({ onLogout }) => {
                 <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
               </div>
               <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-200 flex flex-col items-center justify-center space-y-2">
+                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-200 flex flex-col items-center justify-center space-y-2" onClick={() => navigate('/timer')}>
                   <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
                     <Clock className="h-6 w-6 text-blue-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">Start Timer</span>
                 </button>
-                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-200 flex flex-col items-center justify-center space-y-2">
+                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-200 flex flex-col items-center justify-center space-y-2" onClick={()=>navigate('/new-study-session')}>
                   <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
                     <BookOpen className="h-6 w-6 text-green-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">New Study Session</span>
                 </button>
-                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-200 flex flex-col items-center justify-center space-y-2">
+                <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-200 flex flex-col items-center justify-center space-y-2" onClick={()=> navigate('/reminder')}>
                   <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
                     <Bell className="h-6 w-6 text-purple-600" />
                   </div>

@@ -51,6 +51,10 @@ public class CourseEntity {
 	@JsonManagedReference
 	private List<PhotoEntity> photos;
 
+	@JsonManagedReference("course-archive")
+	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+	private List<ArchiveEntity> archive;
+
 	@ManyToOne
     @JoinColumn(name = "user_id")
 	@JsonBackReference
@@ -140,6 +144,15 @@ public class CourseEntity {
 
 	public List<PhotoEntity> getPhotos() {
 		return photos;
+	}
+
+	public List<ArchiveEntity> getArchive() {
+		return archive;
+	}
+
+	// Added Archive -Jeric
+    public void setArchive(List<ArchiveEntity> archive) {
+		this.archive = archive;
 	}
 
     public UserEntity getUser() {

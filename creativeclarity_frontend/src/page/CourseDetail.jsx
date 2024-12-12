@@ -6,6 +6,7 @@ import ArchivePage from './Archive';
 import Grades from './Grades';
 import Gallery from './Gallery';
 import axios from 'axios'; // Import axios
+import CourseArchive from './CourseArchive';
 
 axios.defaults.baseURL = 'http://localhost:8080'; // Set the base URL for axios
 axios.defaults.withCredentials = true; // Enable cross-origin requests with credentials
@@ -16,6 +17,7 @@ function CourseDetail({ onLogout }) {
     message: '',
     severity: 'success',
   });
+  const token = localStorage.getItem('token');
   const validTabs = ['archive', 'grades', 'gallery'];
   const [courseName, setCourseName] = useState('');
   const [courseCode, setCourseCode] = useState('');
@@ -52,7 +54,13 @@ function CourseDetail({ onLogout }) {
 
   const fetchGrades = async () => {
     try {
-      const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`);
+      const response = await axios.get(`/api/grade/getallgradesbycourse/${courseId}`,
+        {
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          }
+      })
       if (response.status !== 200) {
         showSnackbar('Failed to load grades.', 'error');
         return;
@@ -79,7 +87,12 @@ function CourseDetail({ onLogout }) {
     } else {
       const fetchCourseDetails = async () => {
         try {
-          const response = await axios.get(`/api/course/${courseId}`);
+          const response = await axios.get(`/api/course/${courseId}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
           if (response.status !== 200) {
             showSnackbar('Failed to load course details.', 'error');
             return;
@@ -150,7 +163,7 @@ function CourseDetail({ onLogout }) {
 
         {/* Tab Content */}
         <Box mt={1.5}>
-          {activeTab === 'archive' && <ArchivePage courseId={course.courseId} />}
+          {activeTab === 'archive' && <CourseArchive courseId={course.courseId} />}
           {activeTab === 'grades' && (
             <Box sx={{ marginLeft: '-250px' }}>
               <Grades onLogout={onLogout} onGradesChange={handleGradesChange} />

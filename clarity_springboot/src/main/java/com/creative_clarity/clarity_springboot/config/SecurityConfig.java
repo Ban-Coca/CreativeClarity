@@ -27,6 +27,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.creative_clarity.clarity_springboot.Service.UserService;
 import com.creative_clarity.clarity_springboot.Entity.UserEntity;
 import java.util.Date;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
@@ -74,10 +76,13 @@ public class SecurityConfig {
             //         "/login/**",
             //         "/api/user/setup-profile",
             //         "/uploads/**",
-            //         "/api/uploads/**" // Ensure this line is included to permit access to uploads
+            //         "/api/uploads/**", // Ensure this line is included to permit access to uploads
+            //         "api/archive/**"
             //     ).permitAll()
             //     .requestMatchers("/api/user/update-profile").authenticated()
             //     .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll() // Explicitly permit GET requests to uploads
+            //     .requestMatchers(HttpMethod.OPTIONS, "/api/archive/**").permitAll() // Allow OPTIONS requests for CORS preflight
+            //     .requestMatchers(HttpMethod.PUT, "/api/archive/unarchive/**").authenticated() // Ensure PUT requests to unarchive are authenticated
             //     .anyRequest().authenticated()
             //     )
             // .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -248,9 +253,16 @@ public class SecurityConfig {
                 logger.info("Generated token for user: " + email);
 
                 // Ensure clean, single redirect
+                // response.sendRedirect(
+                //     String.format("http://localhost:5173/oauth2/redirect?token=%s", token)
+                // );
                 response.sendRedirect(
-                    String.format("http://localhost:5173/oauth2/redirect?token=%s", token)
-                );
+                String.format("http://localhost:5173/oauth2/redirect?token=%s&userId=%s&email=%s", 
+                    token, 
+                    user.getUserId(), 
+                    URLEncoder.encode(email, StandardCharsets.UTF_8)
+                )
+            );
             } catch (Exception e) {
                 logger.error("Error in OAuth2 success handler", e);
                 response.sendRedirect("http://localhost:5173/login?error=auth_failed");

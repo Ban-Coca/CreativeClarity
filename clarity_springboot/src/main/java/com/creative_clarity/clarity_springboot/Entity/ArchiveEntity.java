@@ -1,15 +1,20 @@
 package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class ArchiveEntity {
@@ -23,11 +28,15 @@ public class ArchiveEntity {
 	private String type;
 	private Date archive_date;
 	private String tags;
-	
+
 	@JsonBackReference("course-archive")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "course")
     private CourseEntity course;
+
+	@OneToOne(mappedBy = "archive", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private TaskEntity task;
 	
 	public ArchiveEntity() {
 		
@@ -90,6 +99,13 @@ public class ArchiveEntity {
         return course;  // Getter for the associated course
     }
 
+	public TaskEntity getTask() {
+        return task;
+    }
+
+    public void setTask(TaskEntity task) {
+        this.task = task;
+    }
     public void setCourse(CourseEntity course) {
         this.course = course;  // Setter for the associated course
     }

@@ -35,7 +35,7 @@ const Picture = ({courseId}) => {
   const [selectedImage, setSelectedImage] = useState(null); // Selected image state
 
   const fileInputRef = useRef(null);
-
+  const token = localStorage.getItem('token');
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
@@ -84,6 +84,9 @@ const Picture = ({courseId}) => {
       const response = await fetch("http://localhost:8080/api/photos/upload", {
         method: "POST",
         body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (response.ok) {
@@ -100,7 +103,12 @@ const Picture = ({courseId}) => {
 
   const fetchMedia = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/photos/course/"+courseId);
+      const response = await fetch("http://localhost:8080/api/photos/course/"+courseId, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setMedia(data);
@@ -139,6 +147,10 @@ const Picture = ({courseId}) => {
       for (const id of selectedFiles) {
         const response = await fetch(`http://localhost:8080/api/photos/delete/${id}`, {
           method: "DELETE",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
         });
 
         if (!response.ok) {

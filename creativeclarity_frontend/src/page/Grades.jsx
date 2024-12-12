@@ -45,7 +45,7 @@ function Grades({ onLogout, onGradesChange }) {
   const getHeaders = () => {
     const token = getAuthToken();
     return {
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
   };

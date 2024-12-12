@@ -116,7 +116,7 @@ function EnhancedTableHead(props) {
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
-
+  
   return (
     <TableHead>
       <TableRow>
@@ -168,7 +168,7 @@ EnhancedTableHead.propTypes = {
 
 function EnhancedTableToolbar(props) {
   const { numSelected, selected, setSelected, setTasks } = props;
-
+  const token = localStorage.getItem('token');
   const handleDelete = async () => {
     try {
       await Promise.all(selected.map(taskId => deleteTask(taskId)));
@@ -189,6 +189,7 @@ function EnhancedTableToolbar(props) {
         await axios.put(`/api/task/updateCompleted/${taskId}?completed=true`, {}, {
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
         });
   
@@ -196,6 +197,7 @@ function EnhancedTableToolbar(props) {
         await axios.put(`/api/task/archive/${taskId}`, {}, {
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
         });
       });
@@ -267,7 +269,7 @@ function EnhancedTableToolbar(props) {
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
-            <ListFilter  />
+            {/* <ListFilter  /> */}
           </IconButton>
         </Tooltip>
       )}

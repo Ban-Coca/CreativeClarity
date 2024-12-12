@@ -2,7 +2,6 @@ package com.creative_clarity.clarity_springboot.Entity;
 
 import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Entity;
@@ -12,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class TaskEntity {
@@ -27,15 +27,21 @@ public class TaskEntity {
 	private String priority;  // new field
 	private boolean isArchived;  // New field to track archive status
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "course_id")
     @JsonIgnoreProperties({"tasks", "grades"}) 
 	//@JsonBackReference
 	private CourseEntity course;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // @ManyToOne(fetch = FetchType.EAGER)
+    // @JoinColumn(name = "archive")
+	// @JsonIgnoreProperties("tasks")
+    // private ArchiveEntity archive;
+
+	@OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "archive")
-	@JsonIgnoreProperties("tasks")
+    //@JsonBackReference
+    @JsonIgnoreProperties("tasks")
     private ArchiveEntity archive;
 
 	public TaskEntity() {

@@ -19,10 +19,13 @@ import Grades from './page/Grades';
 import Calendar from './pages/Calendar';
 import UserProfile from './pages/UserProfile';
 import NotesPage from './pages/NotesPage';
-
+import Timer from './pages/Timer';
 import Picture from './page/Gallery';
 import CourseDetail from './page/CourseDetail';
 import Progress from './page/Progress'; // Import Progress component
+import ReminderPage from './pages/ReminderPage';
+import NewStudySession from './pages/NewStudySession';
+import { Toaster } from 'sonner';
 
 // Custom 404 component
 const NotFound = () => {
@@ -214,6 +217,32 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Course onLogout={handleLogout}/>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/timer"
+            element={
+              <ProtectedRoute>
+                <Timer />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/new-study-session"
+            element={
+              <ProtectedRoute>
+                <NewStudySession />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/reminder"
+            element={
+              <ProtectedRoute>
+                <ReminderPage />
               </ProtectedRoute>
             }
           />

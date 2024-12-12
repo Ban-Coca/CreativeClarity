@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +90,7 @@ public class PhotoService {
         if (photo != null) {
             Path filePath = Paths.get(photo.getFilePath());
             logger.info("Attempting to delete file: " + filePath.toString()); // Log the file path
-    
+            PhotoEntity pEntity = prepo.findById(id).get();
             try {
                 if (Files.exists(filePath)) {
                     Files.delete(filePath);
@@ -99,7 +98,8 @@ public class PhotoService {
                 } else {
                     logger.warn("File not found, could not delete: " + photo.getFilename());
                 }
-    
+                pEntity.setCourse(null); // Set course to null
+                prepo.save(pEntity); // Save the photo with course set to null
                 prepo.deleteById(id);
                 logger.info("Photo entity deleted from database: " + photo.getFilename());
             } catch (IOException e) {

@@ -13,7 +13,7 @@ export const fetchTasks = async () => {
                 'Authorization': `Bearer ${token}`
             }
         });
-        toast.success('Tasks fetched successfully');
+        //toast.success('Tasks fetched successfully');
         return response.data;
     } catch (error) {
         toast.error('Error fetching tasks');

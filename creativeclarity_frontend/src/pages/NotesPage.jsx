@@ -49,7 +49,11 @@ const NotesPage = ({ onLogout }) => {
     };
     const fetchSubjects = async () => {
       try{
-        const response = await axios.get('/api/course/getcourse/' + currentUserId);
+        const response = await axios.get('/api/course/getcourse/' + currentUserId, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         setSubjects(response.data);
       }catch(error){
         console.error('Error fetching subjects:', error);

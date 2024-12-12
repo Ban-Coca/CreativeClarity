@@ -1,16 +1,14 @@
 package com.creative_clarity.clarity_springboot.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.Optional;
 
-import javax.naming.NameNotFoundException;
-
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +76,9 @@ public class TaskService {
 		String msg = "";
 		
 		if(trepo.findById(taskId).isPresent()) {
+			TaskEntity task = trepo.findById(taskId).get();
+			task.setCourse(null);
+			trepo.save(task);
 			trepo.deleteById(taskId);
 			msg = "Task record successfully deleted!";
 		}else {
@@ -140,13 +141,16 @@ public class TaskService {
     
 		// Create the ArchiveEntity
 		ArchiveEntity archive = new ArchiveEntity();
+
+		// TaskEntity tasks = taskOptional.get();
 		archive.setTitle(task.getTitle());
 		archive.setDescription(task.getDescription());
 		archive.setType("Task");
 		archive.setArchive_date(new Date());
 		archive.setTags("Completed Task");
+    	archive.setTask(task);
 		archive.setCourse(course);
-
+		task.setArchive(archive);
 		archiveRepository.save(archive);
 
 		// Set the task as archived
@@ -162,7 +166,7 @@ public class TaskService {
         TaskEntity task = taskOptional.get();
         
         // Update the 'completed' field
-        task.setCompleted(completed);
+        task.setCompleted(true);
         
         // Save the updated task back to the repository
         return trepo.save(task);

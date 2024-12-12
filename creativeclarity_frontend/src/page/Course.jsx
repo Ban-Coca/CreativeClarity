@@ -23,9 +23,28 @@ import SideBar from '../components/Sidebar';
 import '../components/css/Course.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
 import {Plus} from 'lucide-react';
-
+import { lineWobble } from 'ldrs'
 axios.defaults.baseURL = 'http://localhost:8080'; // Ensure this line is present to set the base URL for axios
-
+function LoadingComponent({loading}){
+  useEffect(() => {
+    lineWobble.register()
+  }, []);
+  if(loading){
+    return (
+        <Box display="flex" justifyContent="center" alignItems="center" height={200}>
+          <l-line-wobble
+            size="80"
+            stroke="5"
+            bg-opacity="0.1"
+            speed="1.75" 
+            color="black" 
+          ></l-line-wobble>
+        </Box>
+    )
+  }else{
+    return null
+  }
+}
 function Course({onLogout}) {
   const currentUser = JSON.parse(localStorage.getItem('user'));
   const token = localStorage.getItem('token');
@@ -38,7 +57,7 @@ function Course({onLogout}) {
     message: '',
     severity: 'success'
   });
-  
+  const [loading, setLoading] = useState(false);
   const [courseDetails, setCourseDetails] = useState({
     courseName: '',
     code: '',
@@ -52,7 +71,7 @@ function Course({onLogout}) {
   const [courseGridVisible, setCourseGridVisible] = useState(true); // New state for course grid visibility
   const location = useLocation();
   const navigate = useNavigate(); // Initialize useNavigate
-
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   // Define semester options
   const semesterOptions = [
     { value: '1st Semester', label: '1st Semester', period:'August-December' },
@@ -70,6 +89,7 @@ function Course({onLogout}) {
   };
 
   const fetchCourses = useCallback(async () => {
+    setLoading(true);
     try {
       console.log('Fetching courses...');
       const response = await axios.get('/api/course/getcourse/' + currentUser.userId, {
@@ -78,12 +98,15 @@ function Course({onLogout}) {
           'Authorization': `Bearer ${token}`
         },
       });
+      
       console.log('Courses fetched:', response.data);
       setCourses(Array.isArray(response.data) ? response.data : []); // Ensure response data is an array
       setCourseGridVisible(true); // Ensure course grid is visible after fetching courses
     } catch (error) {
       console.error('Error fetching courses:', error);
       showSnackbar('Failed to fetch courses', 'error');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -148,7 +171,7 @@ function Course({onLogout}) {
         await axios.put(`/api/course/putcoursedetails/${selectedCourse.courseId}`, courseData, {
           headers: {
             'Content-Type': 'application/json',
-            //'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`
           },
         });
         showSnackbar('Course updated successfully');
@@ -158,7 +181,7 @@ function Course({onLogout}) {
         await axios.post('/api/course/postcourserecord', courseData, {
           headers: {
             'Content-Type': 'application/json',
-            //'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`
           },
         });
         showSnackbar('Course created successfully');
@@ -220,7 +243,47 @@ function Course({onLogout}) {
     setActiveTab('progress');
     navigate(`/progress`);
   };
+  // New Function for submitting course to archive - Jeric
+  const handleArchiveCourse = () => {
+    if (!selectedCourse) {
+      showSnackbar('No course selected for archiving', 'error');
+      return;
+    }
 
+    // Open the archive confirmation dialog
+    setArchiveDialogOpen(true);
+  };
+
+  // New Function for submitting course to archive - Jeric
+  const handleConfirmArchive = async () => {
+    if (!selectedCourse) {
+      showSnackbar('No course selected for archiving', 'error');
+      return;
+    }
+  
+    try {
+      const response = await axios.put(`/api/course/archive/${selectedCourse.courseId}`, {}, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (response.status === 200) {
+        showSnackbar('Course archived successfully');
+        setCourses((prevCourses) =>
+          prevCourses.filter(course => course.courseId !== selectedCourse.courseId)
+        );
+      } else {
+        showSnackbar('Failed to archive course', 'error');
+      }
+    } catch (error) {
+      showSnackbar('Error archiving course', 'error');
+      console.error('Error archiving course:', error);
+    }
+  
+    setArchiveDialogOpen(false); // Close the dialog after archiving
+  };
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <SideBar
@@ -256,62 +319,64 @@ function Course({onLogout}) {
             </div>
             
           </div>
-
-          {courseGridVisible && (
-            <div className="course-grid">
-              {courses.length === 0 ? (
-                <div className="flex items-center p-4">
-                  No courses found
-                </div>
-              ) : (
-                courses.map((course) => (
-                <div 
-                  key={course.courseId}
-                  className="course-card" 
-                  style={{
-                    position: 'relative',
-                    height: '150px',
-                    padding: '20px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    margin: '8px',
-                  }}
-                >
-                  {/* Wrap most of the card content in Link, excluding the menu */}
-                  <Link
-                    to={`/course/${course.courseId}`}
-                    state={{ course }} // Pass course details as state
-                    style={{ 
-                      textDecoration: 'none', 
-                      color: 'inherit',
-                      display: 'block',
-                      height: '100%',
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s'
+          {loading ? ( <LoadingComponent loading={loading} />) : (
+            courseGridVisible && (
+              <div className="course-grid">
+                {courses.length === 0 ? (
+                  <div className="flex items-center p-4">
+                    No courses found
+                  </div>
+                ) : (
+                  courses.map((course) => (
+                  <div 
+                    key={course.courseId}
+                    className="course-card" 
+                    style={{
+                      position: 'relative',
+                      height: '150px',
+                      padding: '20px',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      margin: '8px',
                     }}
                   >
-                    {/* Course Details */}
-                    <div className="course-content">
-                      <h3>{course.courseName}</h3>
-                      <p>{course.code}</p>
-                      <p>{course.semester} - {course.academicYear}</p>
-                      <p>{course.subject}</p>
-                    </div>
-                  </Link>
-
-                  {/* Menu Icon outside of Link */}
-                  <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                    <IconButton 
-                      onClick={(event) => handleMenuClick(event, course)}
+                    {/* Wrap most of the card content in Link, excluding the menu */}
+                    <Link
+                      to={`/course/${course.courseId}`}
+                      state={{ course }} // Pass course details as state
+                      style={{ 
+                        textDecoration: 'none', 
+                        color: 'inherit',
+                        display: 'block',
+                        height: '100%',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s'
+                      }}
                     >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </Box>
-                </div>
-              ))
-              )}
-            </div>
+                      {/* Course Details */}
+                      <div className="course-content">
+                        <h3>{course.courseName}</h3>
+                        <p>{course.code}</p>
+                        <p>{course.semester} - {course.academicYear}</p>
+                        <p>{course.subject}</p>
+                      </div>
+                    </Link>
+  
+                    {/* Menu Icon outside of Link */}
+                    <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                      <IconButton 
+                        onClick={(event) => handleMenuClick(event, course)}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    </Box>
+                  </div>
+                ))
+                )}
+              </div>
+            )
           )}
+          
         </Box>
 
         <Menu
@@ -321,6 +386,7 @@ function Course({onLogout}) {
         >
           <MenuItem onClick={handleEditCourse}>Edit</MenuItem>
           <MenuItem onClick={handleDeleteConfirmation}>Delete</MenuItem>
+          <MenuItem onClick={handleArchiveCourse}>Archive</MenuItem>
         </Menu>
 
         <Dialog open={modalOpen} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -412,6 +478,29 @@ function Course({onLogout}) {
           </DialogActions>
         </Dialog>
 
+        {/* Archive Confirmation Dialog */}
+        <Dialog open={archiveDialogOpen} onClose={() => setArchiveDialogOpen(false)}>
+          <DialogTitle>Confirm Archive</DialogTitle>
+          <DialogContent>
+            Are you sure you want to archive this course?
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setArchiveDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleConfirmArchive}
+              sx={{
+                backgroundColor: 'orange',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'darkorange',
+                },
+              }}
+            >
+              Archive
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
@@ -428,6 +517,7 @@ function Course({onLogout}) {
         </Snackbar>
       </Box>
     </Box>
+
   );
 }
 

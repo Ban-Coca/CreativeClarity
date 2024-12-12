@@ -5,7 +5,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -79,6 +78,7 @@ public class CourseService {
 			course.getGrades().forEach(grade -> grade.setCourse(null));
 			course.getTasks().forEach(task -> task.setCourse(null));
 			course.getPhotos().forEach(photo -> photo.setCourse(null));
+			course.getArchive().forEach(archive -> archive.setCourse(null));;
 			course.setUser(null);
 			crepo.save(course);
 			crepo.deleteById(courseId);
